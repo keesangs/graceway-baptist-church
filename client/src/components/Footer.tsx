@@ -17,7 +17,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <img
-                src="/manus-storage/graceway_updated_youtube_icon_0a4ecf05.png"
+                src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
                 alt="Graceway Baptist Church"
                 className="w-12 h-12 rounded-full object-cover"
               />
