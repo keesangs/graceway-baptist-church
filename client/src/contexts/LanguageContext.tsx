@@ -17,7 +17,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "nav.about": { en: "About", ko: "소개" },
   "nav.sermons": { en: "Sermons", ko: "설교" },
   "nav.ministries": { en: "Ministries", ko: "사역" },
-  "nav.connect": { en: "Connect", ko: "연락" },
+  "nav.connect": { en: "Connect", ko: "문의" },
   "nav.planVisit": { en: "Plan a Visit", ko: "방문 안내" },
 
   // Home — Hero
