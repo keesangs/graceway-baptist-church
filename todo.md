@@ -15,8 +15,12 @@
 - [x] MediaLibrary page (/media): upload UI, category filter, file list, delete (admin only)
 - [x] Navbar: Media link added (KO: 미디어 / EN: Media)
 - [x] Vitest: 8 tests passing (auth.logout + media upload/list/delete)
+- [x] Leadership profile photos: real photos for Pastor Hunsuk Lee and ShinYoung Kim
+- [x] Leadership profile photos: subtle hover zoom effect (scale 110%, 500ms ease-out)
+- [x] Hero section: 은혜의 강물 looping muted video background (S3-hosted, 1.4MB, poster frame, navy overlay stack)
+- [x] Connect page: real interactive Google Map with geocoded marker + InfoWindow
+- [x] Fixed Map.tsx proxy loader: fetch+Blob URL (script tags send no Origin header, which the proxy requires)
 
 ## Pending
-- [ ] Connect page: Google Maps embed (interactive map instead of text link)
 - [ ] Sermon cards: real sermon titles and scripture references
 - [ ] Newsletter signup: backend integration (currently frontend-only form)

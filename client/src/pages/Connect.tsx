@@ -2,10 +2,16 @@
  * Connect Page — Graceway Baptist Church
  * Sections: Hero, Plan a Visit, Service Times, Contact Form, Map, Newsletter
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Clock, MapPin, Mail, Phone, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { MapView } from "@/components/Map";
+import { useLang } from "@/contexts/LanguageContext";
+
+// 2791 Driscoll Rd, Fremont, CA 94539
+const CHURCH_COORDS = { lat: 37.5223, lng: -121.9188 };
+const CHURCH_ADDRESS = "2791 Driscoll Rd, Fremont, CA 94539";
 
 const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 
@@ -18,12 +24,52 @@ const faqs = [
 ];
 
 export default function Connect() {
+  const { lang } = useLang();
+  const ko = lang === "ko";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formSent, setFormSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormSent(true);
+  };
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  // Geocode the church address so the marker lands on the real building, then
+  // drop an AdvancedMarkerElement with a small info window.
+  const handleMapReady = (map: google.maps.Map) => {
+    mapRef.current = map;
+
+    const placeMarker = (position: google.maps.LatLngLiteral | google.maps.LatLng) => {
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        map,
+        position,
+        title: "Graceway Baptist Church",
+      });
+
+      const info = new google.maps.InfoWindow({
+        content: `<div style="font-family:system-ui,sans-serif;padding:2px 4px;max-width:220px">
+            <strong style="color:#17324D;font-size:13px">Graceway Baptist Church</strong>
+            <div style="color:#5b6b7c;font-size:12px;margin-top:3px">${CHURCH_ADDRESS}</div>
+          </div>`,
+      });
+
+      marker.addListener("click", () => info.open({ anchor: marker, map }));
+      info.open({ anchor: marker, map });
+    };
+
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: CHURCH_ADDRESS }, (results, status) => {
+      if (status === "OK" && results?.[0]) {
+        const loc = results[0].geometry.location;
+        map.setCenter(loc);
+        placeMarker(loc);
+      } else {
+        // Fall back to the hardcoded coordinates if geocoding is unavailable.
+        placeMarker(CHURCH_COORDS);
+      }
+    });
   };
 
   return (
@@ -245,20 +291,40 @@ export default function Connect() {
         </div>
       </section>
 
-      {/* Map placeholder */}
-      <section className="h-72 bg-[#17324D]/10 relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <MapPin size={32} className="text-[#17324D]/30 mx-auto mb-2" />
-            <p className="text-[#17324D]/40 text-sm">2791 Driscoll Rd, Fremont, CA 94539</p>
-            <a
-              href="https://maps.google.com/?q=2791+Driscoll+Rd,+Fremont,+CA+94539"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-[#2F6F9F] text-xs font-medium hover:text-[#17324D] transition-colors"
-            >
-              Open in Google Maps <ChevronRight size={12} />
-            </a>
+      {/* Interactive Google Map */}
+      <section className="relative">
+        <MapView
+          className="w-full h-[420px]"
+          initialCenter={CHURCH_COORDS}
+          initialZoom={16}
+          onMapReady={handleMapReady}
+        />
+
+        {/* Address card overlaid on the map */}
+        <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:max-w-sm bg-white shadow-xl border-l-4 border-[#C9973E] p-5 pointer-events-auto">
+          <div className="flex items-start gap-3">
+            <MapPin size={18} className="text-[#C9973E] shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p
+                className="text-[#17324D] font-semibold text-sm mb-1"
+                style={{ fontFamily: "'Source Serif 4', serif" }}
+              >
+                {ko ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
+              </p>
+              <p className="text-[#17324D]/60 text-sm leading-relaxed">
+                2791 Driscoll Rd
+                <br />
+                Fremont, CA 94539
+              </p>
+              <a
+                href="https://maps.google.com/?q=2791+Driscoll+Rd,+Fremont,+CA+94539"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1 text-[#2F6F9F] text-xs font-semibold hover:text-[#17324D] transition-colors"
+              >
+                {ko ? "길찾기" : "Get Directions"} <ChevronRight size={12} />
+              </a>
+            </div>
           </div>
         </div>
       </section>

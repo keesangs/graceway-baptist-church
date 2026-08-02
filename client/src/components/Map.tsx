@@ -92,21 +92,61 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
-function loadMapScript() {
-  return new Promise(resolve => {
-    const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.onload = () => {
-      resolve(null);
-      script.remove(); // Clean up immediately
-    };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
-    };
-    document.head.appendChild(script);
-  });
+// The Manus Maps proxy gates responses on the request's `Origin` header (it
+// answers 403 {"error":"origin is required"} without one, and its response
+// carries `vary: Origin, Referer`). A plain `<script src>` load does NOT send
+// an Origin header, so the proxy rejects it and `script.onerror` fires — even
+// though the very same URL returns 200 with a 1.4 MB bundle via `fetch()`.
+//
+// So: fetch the bundle (fetch always sends Origin for cross-site requests),
+// then execute it from a same-origin Blob URL. Verified working — after this
+// the `google.maps` namespace is populated.
+let mapScriptPromise: Promise<void> | null = null;
+
+async function loadMapScript(): Promise<void> {
+  // Already available (e.g. a second MapView mounting) — reuse it.
+  if (window.google?.maps) return;
+  // In-flight load — share the promise instead of fetching the bundle twice.
+  if (mapScriptPromise) return mapScriptPromise;
+
+  mapScriptPromise = (async () => {
+    const src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
+
+    const res = await fetch(src);
+    if (!res.ok) {
+      throw new Error(`Maps proxy returned ${res.status} ${res.statusText}`);
+    }
+
+    const code = await res.text();
+    const blobUrl = URL.createObjectURL(
+      new Blob([code], { type: "text/javascript" })
+    );
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = blobUrl;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Maps bundle failed to execute"));
+        document.head.appendChild(script);
+      });
+    } finally {
+      URL.revokeObjectURL(blobUrl);
+    }
+
+    if (!window.google?.maps) {
+      throw new Error("Maps bundle ran but google.maps is still undefined");
+    }
+  })();
+
+  try {
+    return await mapScriptPromise;
+  } catch (err) {
+    mapScriptPromise = null; // allow a later retry
+    console.error("Failed to load Google Maps script:", err);
+    throw err;
+  }
 }
 
 interface MapViewProps {
@@ -126,9 +166,17 @@ export function MapView({
   const map = useRef<google.maps.Map | null>(null);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
+    try {
+      await loadMapScript();
+    } catch {
+      return; // load failure already logged
+    }
     if (!mapContainer.current) {
       console.error("Map container not found");
+      return;
+    }
+    if (!window.google?.maps) {
+      console.error("Google Maps namespace unavailable after script load");
       return;
     }
     map.current = new window.google.maps.Map(mapContainer.current, {
