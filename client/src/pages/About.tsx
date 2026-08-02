@@ -132,7 +132,7 @@ export default function About() {
             {staff.map((s, i) => (
               <div key={i} className="text-center group">
                 <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-4 border-2 border-[#C9973E]/30 group-hover:border-[#C9973E] transition-colors duration-300">
-                  <img src={s.img} alt={s.name} className="w-full h-full object-cover" />
+                  <img src={s.img} alt={s.name} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
                 </div>
                 <h3
                   className="text-white font-semibold"
