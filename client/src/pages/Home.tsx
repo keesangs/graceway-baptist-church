@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
 
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
-const HERO_VIDEO = "/manus-storage/hero_bokeh_a253cc8e.mp4";
+const HERO_VIDEO = "/hero_bokeh.mp4";
 const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
@@ -121,7 +121,7 @@ export default function Home() {
           muted
           playsInline
           poster={HERO_BG}
-          style={{ opacity: 0.4, mixBlendMode: "screen" }}
+          style={{ opacity: 0.7, mixBlendMode: "screen" }}
         />
 
         {/* Navy overlay — keeps text crisp and readable */}
