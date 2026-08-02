@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 
 const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
+const PASTOR_IMG = "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp";
 
 const beliefs = [
   { title: "Scripture", desc: "We believe the Bible is the inspired, authoritative Word of God — our ultimate guide for faith and life." },
@@ -20,7 +21,7 @@ const beliefs = [
 ];
 
 const staff = [
-  { name: "Pastor David Kim", role: "Lead Pastor", img: SERMON_IMG },
+  { name: "Pastor Hunsuk Lee", role: "Lead Pastor", img: PASTOR_IMG },
   { name: "Pastor Sarah Lee", role: "Associate Pastor", img: COMMUNITY_IMG },
   { name: "Elder James Park", role: "Elder / Worship", img: SERMON_IMG },
   { name: "Deacon Grace Choi", role: "Children's Ministry", img: COMMUNITY_IMG },
