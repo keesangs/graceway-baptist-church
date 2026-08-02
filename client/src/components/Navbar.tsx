@@ -2,22 +2,18 @@
  * Navbar — Graceway Baptist Church
  * Design: Modern Reverence — transparent on hero, opaque Grace Navy on scroll
  * Sticky top nav with smooth transition, gold accent on active link
+ * Language toggle: KO / EN
  */
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
-
-const navLinks = [
-  { href: "/about", label: "About" },
-  { href: "/sermons", label: "Sermons" },
-  { href: "/ministries", label: "Ministries" },
-  { href: "/connect", label: "Connect" },
-];
+import { useLang } from "@/contexts/LanguageContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
+  const { lang, toggleLang, t } = useLang();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -30,6 +26,13 @@ export default function Navbar() {
   }, [location]);
 
   const isHome = location === "/";
+
+  const navLinks = [
+    { href: "/about", label: t("nav.about") },
+    { href: "/sermons", label: t("nav.sermons") },
+    { href: "/ministries", label: t("nav.ministries") },
+    { href: "/connect", label: t("nav.connect") },
+  ];
 
   return (
     <header
@@ -61,7 +64,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -80,22 +83,45 @@ export default function Navbar() {
               />
             </Link>
           ))}
+
+          {/* Language Toggle */}
+          <button
+            onClick={toggleLang}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/30 text-xs font-semibold tracking-widest text-white/80 hover:text-white hover:border-white/60 transition-all duration-200 active:scale-[0.97]"
+            aria-label="Toggle language"
+          >
+            <span className={lang === "ko" ? "text-[#C9973E]" : "text-white/50"}>KO</span>
+            <span className="text-white/30 mx-0.5">|</span>
+            <span className={lang === "en" ? "text-[#C9973E]" : "text-white/50"}>EN</span>
+          </button>
+
           <Link
             href="/connect"
-            className="ml-2 px-5 py-2 bg-[#C9973E] text-white text-sm font-semibold rounded-sm tracking-wide hover:bg-[#b8862e] transition-colors duration-200 active:scale-[0.97]"
+            className="ml-1 px-5 py-2 bg-[#C9973E] text-white text-sm font-semibold rounded-sm tracking-wide hover:bg-[#b8862e] transition-colors duration-200 active:scale-[0.97]"
           >
-            Plan a Visit
+            {t("nav.planVisit")}
           </Link>
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden text-white p-2"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile: lang toggle + hamburger */}
+        <div className="md:hidden flex items-center gap-3">
+          <button
+            onClick={toggleLang}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/30 text-[0.65rem] font-bold tracking-widest text-white/80 hover:text-white transition-all duration-200"
+            aria-label="Toggle language"
+          >
+            <span className={lang === "ko" ? "text-[#C9973E]" : "text-white/50"}>KO</span>
+            <span className="text-white/30">|</span>
+            <span className={lang === "en" ? "text-[#C9973E]" : "text-white/50"}>EN</span>
+          </button>
+          <button
+            className="text-white p-2"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -119,7 +145,7 @@ export default function Navbar() {
               href="/connect"
               className="mt-2 mx-4 px-5 py-3 bg-[#C9973E] text-white text-sm font-semibold rounded-sm text-center tracking-wide"
             >
-              Plan a Visit
+              {t("nav.planVisit")}
             </Link>
           </nav>
         </div>

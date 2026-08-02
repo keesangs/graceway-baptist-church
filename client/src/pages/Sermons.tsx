@@ -1,36 +1,119 @@
 /**
  * Sermons Page — Graceway Baptist Church
  * Sections: Hero, Featured Sermon, Sermon Archive with filter
+ * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
 import { useState } from "react";
-import { Play, Clock, BookOpen, Search } from "lucide-react";
+import { Play, Clock, BookOpen, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useLang } from "@/contexts/LanguageContext";
 
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 
+// Replace videoId values with real YouTube video IDs for your church
 const sermons = [
-  { title: "Walking in Grace", scripture: "Ephesians 2:1–10", date: "July 28, 2026", speaker: "Pastor David Kim", duration: "42 min", series: "Grace Series" },
-  { title: "The Way of the Cross", scripture: "John 14:1–6", date: "July 21, 2026", speaker: "Pastor David Kim", duration: "38 min", series: "Grace Series" },
-  { title: "Community of Grace", scripture: "Acts 2:42–47", date: "July 14, 2026", speaker: "Pastor Sarah Lee", duration: "35 min", series: "Acts" },
-  { title: "Faith That Moves Mountains", scripture: "Matthew 17:14–20", date: "July 7, 2026", speaker: "Pastor David Kim", duration: "44 min", series: "Faith Series" },
-  { title: "The Good Shepherd", scripture: "John 10:1–18", date: "June 30, 2026", speaker: "Pastor Sarah Lee", duration: "36 min", series: "John" },
-  { title: "Renewed in the Spirit", scripture: "Romans 12:1–2", date: "June 23, 2026", speaker: "Pastor David Kim", duration: "40 min", series: "Romans" },
-  { title: "Bearing One Another's Burdens", scripture: "Galatians 6:1–5", date: "June 16, 2026", speaker: "Elder James Park", duration: "33 min", series: "Galatians" },
-  { title: "The Armor of God", scripture: "Ephesians 6:10–20", date: "June 9, 2026", speaker: "Pastor David Kim", duration: "45 min", series: "Grace Series" },
+  {
+    titleEn: "Walking in Grace",
+    titleKo: "은혜 안에서 걷기",
+    scripture: "Ephesians 2:1–10",
+    date: "July 28, 2026",
+    speaker: "Pastor David Kim",
+    duration: "42 min",
+    series: "Grace Series",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "The Way of the Cross",
+    titleKo: "십자가의 길",
+    scripture: "John 14:1–6",
+    date: "July 21, 2026",
+    speaker: "Pastor David Kim",
+    duration: "38 min",
+    series: "Grace Series",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "Community of Grace",
+    titleKo: "은혜의 공동체",
+    scripture: "Acts 2:42–47",
+    date: "July 14, 2026",
+    speaker: "Pastor Sarah Lee",
+    duration: "35 min",
+    series: "Acts",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "Faith That Moves Mountains",
+    titleKo: "산을 옮기는 믿음",
+    scripture: "Matthew 17:14–20",
+    date: "July 7, 2026",
+    speaker: "Pastor David Kim",
+    duration: "44 min",
+    series: "Faith Series",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "The Good Shepherd",
+    titleKo: "선한 목자",
+    scripture: "John 10:1–18",
+    date: "June 30, 2026",
+    speaker: "Pastor Sarah Lee",
+    duration: "36 min",
+    series: "John",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "Renewed in the Spirit",
+    titleKo: "성령 안에서 새로워짐",
+    scripture: "Romans 12:1–2",
+    date: "June 23, 2026",
+    speaker: "Pastor David Kim",
+    duration: "40 min",
+    series: "Romans",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "Bearing One Another's Burdens",
+    titleKo: "서로의 짐을 지라",
+    scripture: "Galatians 6:1–5",
+    date: "June 16, 2026",
+    speaker: "Elder James Park",
+    duration: "33 min",
+    series: "Galatians",
+    videoId: "dQw4w9WgXcQ",
+  },
+  {
+    titleEn: "The Armor of God",
+    titleKo: "하나님의 전신갑주",
+    scripture: "Ephesians 6:10–20",
+    date: "June 9, 2026",
+    speaker: "Pastor David Kim",
+    duration: "45 min",
+    series: "Grace Series",
+    videoId: "dQw4w9WgXcQ",
+  },
 ];
 
-const series = ["All", "Grace Series", "Acts", "Faith Series", "John", "Romans", "Galatians"];
+const seriesFilters = ["All", "Grace Series", "Acts", "Faith Series", "John", "Romans", "Galatians"];
+
+// YouTube thumbnail URL helper
+function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
+  return `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
+}
 
 export default function Sermons() {
+  const { lang, t } = useLang();
   const [activeSeries, setActiveSeries] = useState("All");
   const [search, setSearch] = useState("");
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   const filtered = sermons.filter((s) => {
     const matchSeries = activeSeries === "All" || s.series === activeSeries;
+    const title = lang === "ko" ? s.titleKo : s.titleEn;
     const matchSearch =
-      s.title.toLowerCase().includes(search.toLowerCase()) ||
+      title.toLowerCase().includes(search.toLowerCase()) ||
       s.scripture.toLowerCase().includes(search.toLowerCase()) ||
       s.speaker.toLowerCase().includes(search.toLowerCase());
     return matchSeries && matchSearch;
@@ -42,6 +125,35 @@ export default function Sermons() {
     <div className="min-h-screen bg-[#F4F6F7]">
       <Navbar />
 
+      {/* YouTube Modal Player */}
+      {playingId && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPlayingId(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPlayingId(null)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors flex items-center gap-1.5 text-sm"
+            >
+              <X size={18} /> {lang === "ko" ? "닫기" : "Close"}
+            </button>
+            <div className="aspect-video w-full rounded-sm overflow-hidden shadow-2xl">
+              <iframe
+                src={`https://www.youtube.com/embed/${playingId}?autoplay=1&rel=0`}
+                title="Sermon Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Page Hero */}
       <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
         <div className="absolute inset-0 opacity-20">
@@ -49,16 +161,18 @@ export default function Sermons() {
         </div>
         <div className="absolute inset-0 bg-[#17324D]/80" />
         <div className="relative container text-center">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">Messages</p>
+          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">
+            {t("sermons.messages")}
+          </p>
           <h1
             className="text-white mb-4"
             style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
           >
-            Sermons
+            {t("sermons.title")}
           </h1>
-          <div className="gold-rule w-16 mx-auto mb-4" />
+          <div className="w-16 h-0.5 bg-[#C9973E] mx-auto mb-4" />
           <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-            Explore our library of messages rooted in Scripture and relevant to everyday life.
+            {t("sermons.subtitle")}
           </p>
         </div>
       </section>
@@ -66,10 +180,21 @@ export default function Sermons() {
       {/* Featured Sermon */}
       <section className="py-16 bg-white">
         <div className="container">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-6">Latest Message</p>
+          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-6">
+            {t("sermons.latestMessage")}
+          </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div className="relative aspect-video rounded-sm overflow-hidden shadow-xl group cursor-pointer">
-              <img src={SERMON_IMG} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            {/* Thumbnail — click to open modal */}
+            <button
+              className="relative aspect-video rounded-sm overflow-hidden shadow-xl group cursor-pointer w-full text-left"
+              onClick={() => setPlayingId(featured.videoId)}
+            >
+              <img
+                src={ytThumb(featured.videoId, "maxresdefault")}
+                alt={lang === "ko" ? featured.titleKo : featured.titleEn}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
+              />
               <div className="absolute inset-0 bg-[#17324D]/50 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-[#C9973E] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Play size={22} className="text-white ml-1" />
@@ -78,7 +203,12 @@ export default function Sermons() {
               <div className="absolute bottom-4 left-4 bg-[#17324D]/80 text-white text-xs px-3 py-1.5 rounded-sm flex items-center gap-1.5">
                 <Clock size={11} /> {featured.duration}
               </div>
-            </div>
+              {/* YouTube badge */}
+              <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-sm font-bold tracking-wide flex items-center gap-1">
+                <Play size={8} className="fill-white" /> YouTube
+              </div>
+            </button>
+
             <div>
               <span className="inline-block text-xs px-3 py-1 bg-[#17324D]/10 text-[#17324D] rounded-sm font-medium tracking-wide mb-4">
                 {featured.series}
@@ -87,15 +217,18 @@ export default function Sermons() {
                 className="text-[#17324D] mb-3"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 700, lineHeight: 1.2 }}
               >
-                {featured.title}
+                {lang === "ko" ? featured.titleKo : featured.titleEn}
               </h2>
               <div className="flex items-center gap-2 mb-4">
                 <BookOpen size={14} className="text-[#C9973E]" />
                 <span className="text-[#2F6F9F] text-sm font-medium">{featured.scripture}</span>
               </div>
               <p className="text-[#242A30]/60 text-sm mb-6">{featured.speaker} · {featured.date}</p>
-              <button className="inline-flex items-center gap-2 px-6 py-3 bg-[#17324D] text-white text-sm font-semibold rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.97]">
-                <Play size={14} /> Watch Now
+              <button
+                onClick={() => setPlayingId(featured.videoId)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#17324D] text-white text-sm font-semibold rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.97]"
+              >
+                <Play size={14} /> {t("sermons.watchNow")}
               </button>
             </div>
           </div>
@@ -111,14 +244,14 @@ export default function Sermons() {
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#242A30]/40" />
               <input
                 type="text"
-                placeholder="Search sermons..."
+                placeholder={t("sermons.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {series.map((s) => (
+              {seriesFilters.map((s) => (
                 <button
                   key={s}
                   onClick={() => setActiveSeries(s)}
@@ -128,7 +261,7 @@ export default function Sermons() {
                       : "bg-white text-[#242A30]/60 hover:text-[#17324D] border border-[#242A30]/15"
                   }`}
                 >
-                  {s}
+                  {s === "All" ? t("sermons.all") : s}
                 </button>
               ))}
             </div>
@@ -137,15 +270,17 @@ export default function Sermons() {
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((s, i) => (
-              <div
+              <button
                 key={i}
-                className="bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer"
+                onClick={() => setPlayingId(s.videoId)}
+                className="bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer text-left w-full"
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={SERMON_IMG}
-                    alt={s.title}
+                    src={ytThumb(s.videoId, "mqdefault")}
+                    alt={lang === "ko" ? s.titleKo : s.titleEn}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
                   />
                   <div className="absolute inset-0 bg-[#17324D]/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-10 h-10 rounded-full bg-[#C9973E] flex items-center justify-center">
@@ -155,6 +290,10 @@ export default function Sermons() {
                   <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
                     {s.duration}
                   </div>
+                  {/* YouTube badge */}
+                  <div className="absolute top-2 left-2 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-bold flex items-center gap-0.5">
+                    <Play size={7} className="fill-white" /> YT
+                  </div>
                 </div>
                 <div className="p-4">
                   <p className="text-[#C9973E] text-[10px] font-medium mb-1 tracking-wide">{s.scripture}</p>
@@ -162,19 +301,21 @@ export default function Sermons() {
                     className="text-[#17324D] font-semibold mb-1.5 group-hover:text-[#2F6F9F] transition-colors text-sm leading-snug"
                     style={{ fontFamily: "'Source Serif 4', serif" }}
                   >
-                    {s.title}
+                    {lang === "ko" ? s.titleKo : s.titleEn}
                   </h3>
                   <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>
                   <p className="text-[#242A30]/40 text-[11px]">{s.date}</p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
           {filtered.length === 0 && (
             <div className="text-center py-16 text-[#242A30]/40">
               <BookOpen size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No sermons found matching your search.</p>
+              <p className="text-sm">
+                {lang === "ko" ? "검색 결과가 없습니다." : "No sermons found matching your search."}
+              </p>
             </div>
           )}
         </div>
