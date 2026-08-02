@@ -92,7 +92,7 @@ export default function Connect() {
                   {
                     icon: Mail,
                     title: "Email",
-                    lines: ["info@gracewaybaptist.org"],
+                    lines: ["info@graceway-baptist.org"],
                   },
                 ].map(({ icon: Icon, title, lines, link }) => (
                   <div key={title} className="flex items-start gap-4">

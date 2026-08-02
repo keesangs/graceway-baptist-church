@@ -102,10 +102,10 @@ export default function Footer() {
             <div className="flex items-center gap-2 mb-4">
               <Mail size={14} className="text-[#C9973E]" />
               <a
-                href="mailto:info@gracewaybaptist.org"
+                href="mailto:info@graceway-baptist.org"
                 className="text-white/70 hover:text-white text-sm transition-colors"
               >
-                info@gracewaybaptist.org
+                info@graceway-baptist.org
               </a>
             </div>
             <div className="flex gap-3">
