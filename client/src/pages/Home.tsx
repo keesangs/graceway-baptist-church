@@ -21,7 +21,7 @@ const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
 const sermons = [
   {
     title: "Sunday Sermon — July 26, 2026",
-    titleKo: "2026년 7월 26일 주일 말씨",
+    titleKo: "2026년 7월 26일 주일 말씀",
     scripture: "",
     date: "July 26, 2026",
     speaker: "Keesang Song",
@@ -30,7 +30,7 @@ const sermons = [
   },
   {
     title: "Sunday Sermon — July 19, 2026",
-    titleKo: "2026년 7월 19일 주일 말씨",
+    titleKo: "2026년 7월 19일 주일 말씀",
     scripture: "",
     date: "July 19, 2026",
     speaker: "Keesang Song",
@@ -39,7 +39,7 @@ const sermons = [
   },
   {
     title: "Sunday Sermon — July 12, 2026",
-    titleKo: "2026년 7월 12일 주일 말씨",
+    titleKo: "2026년 7월 12일 주일 말씀",
     scripture: "",
     date: "July 12, 2026",
     speaker: "Keesang Song",
