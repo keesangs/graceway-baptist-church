@@ -20,11 +20,13 @@ const beliefs = [
   { title: "Mission", desc: "We are called to make disciples of all nations, sharing the good news of Jesus with our city and the world." },
 ];
 
+const MYEONGJE_IMG = "https://media.licdn.com/dms/image/v2/C5603AQGC40_2yaKGdg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1632380620884?e=2147483647&v=beta&t=znvTv-YbEaN2UHNqMDqW8Y0N5PYsy0UoDMxJ6ctj6rw";
+
 const staff = [
   { name: "Pastor Hunsuk Lee", role: "Lead Pastor", img: PASTOR_IMG },
-  { name: "Pastor Sarah Lee", role: "Associate Pastor", img: COMMUNITY_IMG },
-  { name: "Elder James Park", role: "Elder / Worship", img: SERMON_IMG },
-  { name: "Deacon Grace Choi", role: "Children's Ministry", img: COMMUNITY_IMG },
+  { name: "Pastor MyeongJe Cho", role: "Pastoral Staff", img: MYEONGJE_IMG },
+  { name: "Pastor Hunsuk Lee", role: "Worship Leader", img: PASTOR_IMG },
+  { name: "ShinYoung Kim", role: "Children's Ministry", img: COMMUNITY_IMG },
 ];
 
 export default function About() {
