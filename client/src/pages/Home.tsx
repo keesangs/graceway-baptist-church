@@ -16,34 +16,34 @@ const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
 
-// YouTube sermon data — replace videoId with real YouTube video IDs
+// Real sermon videos from YouTube @keesangs channel
 const sermons = [
   {
-    title: "Walking in Grace",
-    titleKo: "은혜 안에서 걷기",
-    scripture: "Ephesians 2:1–10",
-    date: "July 28, 2026",
-    speaker: "Pastor David Kim",
-    duration: "42 min",
-    videoId: "dQw4w9WgXcQ", // replace with actual YouTube ID
+    title: "Sunday Sermon — July 26, 2026",
+    titleKo: "2026년 7월 26일 주일 말씨",
+    scripture: "",
+    date: "July 26, 2026",
+    speaker: "Keesang Song",
+    duration: "40 min",
+    videoId: "AGzMGv7vuhQ",
   },
   {
-    title: "The Way of the Cross",
-    titleKo: "십자가의 길",
-    scripture: "John 14:1–6",
-    date: "July 21, 2026",
-    speaker: "Pastor David Kim",
-    duration: "38 min",
-    videoId: "dQw4w9WgXcQ",
-  },
-  {
-    title: "Community of Grace",
-    titleKo: "은혜의 공동체",
-    scripture: "Acts 2:42–47",
-    date: "July 14, 2026",
-    speaker: "Pastor Sarah Lee",
+    title: "Sunday Sermon — July 19, 2026",
+    titleKo: "2026년 7월 19일 주일 말씨",
+    scripture: "",
+    date: "July 19, 2026",
+    speaker: "Keesang Song",
     duration: "35 min",
-    videoId: "dQw4w9WgXcQ",
+    videoId: "VaZcVqJo7DE",
+  },
+  {
+    title: "Sunday Sermon — July 12, 2026",
+    titleKo: "2026년 7월 12일 주일 말씨",
+    scripture: "",
+    date: "July 12, 2026",
+    speaker: "Keesang Song",
+    duration: "38 min",
+    videoId: "zEPMFqmhP_c",
   },
 ];
 
