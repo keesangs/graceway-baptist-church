@@ -48,8 +48,8 @@ const sermons = [
 ];
 
 const events = [
-  { date: "Aug 10", titleEn: "Sunday Worship Service", titleKo: "주일 예배", time: "11:00 AM", tag: "Weekly" },
-  { date: "Aug 13", titleEn: "Wednesday Bible Study", titleKo: "수요 성경 공부", time: "7:00 PM", tag: "Weekly" },
+  { date: "Aug 10", titleEn: "Sunday Worship Service", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
+  { date: "Aug 13", titleEn: "Wednesday Prayer Meeting", titleKo: "수요 기도회", time: "8:00 PM", tag: "Weekly" },
   { date: "Aug 17", titleEn: "Family Picnic & Fellowship", titleKo: "가족 소풍 & 교제", time: "1:00 PM", tag: "Special" },
   { date: "Aug 24", titleEn: "Youth Night", titleKo: "청년의 밤", time: "6:30 PM", tag: "Youth" },
 ];
@@ -249,9 +249,9 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {[
-              { icon: Clock, labelEn: "Sunday Worship", labelKo: "주일 예배", value: "11:00 AM" },
-              { icon: MapPin, labelEn: "Location", labelKo: "위치", value: "123 Grace Way, Your City" },
-              { icon: Clock, labelEn: "Wednesday Bible Study", labelKo: "수요 성경 공부", value: "7:00 PM" },
+              { icon: Clock, labelEn: "Sunday Worship", labelKo: "주일 예배", value: "1:30 PM" },
+              { icon: MapPin, labelEn: "Location", labelKo: "위치", value: "2791 Driscoll Rd, Fremont CA" },
+              { icon: Clock, labelEn: "Wednesday Prayer", labelKo: "수요 기도회", value: "8:00 PM" },
             ].map(({ icon: Icon, labelEn, labelKo, value }) => (
               <div key={labelEn} className="flex flex-col items-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-[#C9973E]/20 flex items-center justify-center">
