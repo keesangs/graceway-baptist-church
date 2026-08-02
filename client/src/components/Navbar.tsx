@@ -48,7 +48,7 @@ export default function Navbar() {
           <img
             src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
             alt="Graceway Baptist Church"
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full object-cover transition-transform duration-300 ease-out group-hover:scale-110"
           />
           <div className="hidden sm:block">
             <div
