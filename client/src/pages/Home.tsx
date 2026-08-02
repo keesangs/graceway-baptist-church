@@ -8,7 +8,7 @@ import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
+const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
 const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
