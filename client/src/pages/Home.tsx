@@ -13,7 +13,8 @@ import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
 
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
-const HERO_VIDEO = "/hero_bokeh.mp4";
+const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
+const HERO_VIDEO_POSTER = "/manus-storage/hero_river_poster_53c7cd5e.jpg";
 const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
@@ -112,21 +113,24 @@ export default function Home() {
           style={{ backgroundImage: `url(${HERO_BG})` }}
         />
 
-        {/* Looping golden bokeh video — muted, autoplay, 40% opacity */}
+        {/* 은혜의 강물 — slow, muted, looping river video. pointer-events-none so CTAs stay clickable */}
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           src={HERO_VIDEO}
           autoPlay
           loop
           muted
           playsInline
-          poster={HERO_BG}
-          style={{ opacity: 0.7, mixBlendMode: "screen" }}
+          preload="auto"
+          poster={HERO_VIDEO_POSTER}
+          aria-hidden="true"
+          style={{ opacity: 0.5 }}
         />
 
-        {/* Navy overlay — keeps text crisp and readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#17324D]/88 via-[#17324D]/65 to-[#17324D]/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/65 via-transparent to-transparent" />
+        {/* Navy overlay stack — text side stays dark and crisp, right side lets the water breathe */}
+        <div className="absolute inset-0 bg-[#17324D]/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#17324D]/95 via-[#17324D]/62 to-[#17324D]/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/72 via-transparent to-transparent" />
 
         {/* Vertical gold accent line */}
         <div
