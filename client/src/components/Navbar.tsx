@@ -46,7 +46,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <img
-            src="/manus-storage/graceway_updated_youtube_icon_0a4ecf05.png"
+            src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
             alt="Graceway Baptist Church"
             className="w-10 h-10 rounded-full object-cover"
           />
