@@ -4,7 +4,7 @@
  * No uniform card grid; editorial storytelling approach
  */
 import { Link } from "wouter";
-import { ArrowRight, BookOpen, Users, Heart, Music, Baby, Zap, Globe, Coffee } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Heart, Music, GraduationCap, Zap, Globe, Coffee } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -33,11 +33,11 @@ const ministryRows = [
     color: "#2F6F9F",
   },
   {
-    icon: Baby,
-    title: "Children's Ministry",
-    subtitle: "Sundays · During Worship Service",
-    desc: "We believe children are a gift from God. Our children's ministry provides safe, age-appropriate teaching and worship for nursery through 5th grade during the Sunday morning service. We'd love to meet your family!",
-    img: KIDS_IMG,
+    icon: GraduationCap,
+    title: "College Campus Ministry",
+    subtitle: "Weekdays · Nearby College Campuses",
+    desc: "We are passionate about reaching the next generation on campus. Our college ministry connects with students at nearby universities and community colleges throughout the week — building friendships, studying Scripture, and living out the gospel together in the places where students spend their days.",
+    img: COMMUNITY_IMG,
     reverse: true,
     color: "#C9973E",
   },

@@ -10,8 +10,9 @@ import About from "./pages/About";
 import Sermons from "./pages/Sermons";
 import Ministries from "./pages/Ministries";
 import Connect from "./pages/Connect";
-
+import MediaLibrary from "./pages/MediaLibrary";
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/sermons" component={Sermons} />
       <Route path="/ministries" component={Ministries} />
       <Route path="/connect" component={Connect} />
+      <Route path="/media" component={MediaLibrary} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

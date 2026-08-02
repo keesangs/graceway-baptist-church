@@ -32,6 +32,7 @@ export default function Navbar() {
     { href: "/sermons", label: t("nav.sermons") },
     { href: "/ministries", label: t("nav.ministries") },
     { href: "/connect", label: t("nav.connect") },
+    { href: "/media", label: lang === "ko" ? "미디어" : "Media" },
   ];
 
   return (

@@ -4,6 +4,7 @@
  * gold rule motifs, scripture blockquotes, warm community photography
  * Features: fade-in hero animation, KO/EN language toggle via useLang
  */
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, Music } from "lucide-react";
