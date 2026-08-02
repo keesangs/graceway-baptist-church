@@ -15,6 +15,13 @@
       "when": 1785666537896,
       "tag": "0001_spooky_tomas",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1785699295914,
+      "tag": "0002_slimy_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

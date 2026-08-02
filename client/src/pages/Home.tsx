@@ -7,10 +7,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, Music } from "lucide-react";
+import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, Music, Check, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
+import { trpc } from "@/lib/trpc";
 
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
@@ -76,7 +77,25 @@ function useFadeIn(threshold = 0.15) {
 
 export default function Home() {
   const { lang, t } = useLang();
+  const ko = lang === "ko";
   const [heroVisible, setHeroVisible] = useState(false);
+
+  // Newsletter signup — persists to the newsletter_subscribers table.
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const subscribeMutation = trpc.newsletter.subscribe.useMutation({
+    onSuccess: () => {
+      setSubscribed(true);
+      setEmail("");
+    },
+  });
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    subscribeMutation.mutate({ email: trimmed, lang });
+  };
 
   // Hero fade-in on mount
   useEffect(() => {
@@ -621,20 +640,51 @@ export default function Home() {
               <p className="text-white/60 text-sm leading-relaxed">{t("home.newsletterDesc")}</p>
             </div>
             <div>
-              <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
-                <input
-                  type="email"
-                  placeholder={t("home.emailPlaceholder")}
-                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm rounded-sm focus:outline-none focus:border-[#C9973E] transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-[#C9973E] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#b8862e] transition-colors active:scale-[0.97] whitespace-nowrap"
-                >
-                  {t("home.signUp")}
-                </button>
-              </form>
-              <p className="text-white/30 text-xs mt-3">{t("home.privacyNote")}</p>
+              {subscribed ? (
+                <div className="flex items-start gap-3 px-4 py-4 bg-[#C9973E]/15 border border-[#C9973E]/40 rounded-sm">
+                  <Check size={18} className="text-[#C9973E] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-white text-sm font-semibold">
+                      {ko ? "구독 승인되었습니다" : "You're subscribed"}
+                    </p>
+                    <p className="text-white/60 text-xs mt-1">
+                      {ko
+                        ? "매주 새로운 소식을 이메일로 보내드립니다."
+                        : "We'll send weekly reflections and announcements to your inbox."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <form className="flex flex-col sm:flex-row gap-3" onSubmit={handleNewsletterSubmit}>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={subscribeMutation.isPending}
+                      placeholder={t("home.emailPlaceholder")}
+                      className="flex-1 px-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm rounded-sm focus:outline-none focus:border-[#C9973E] transition-colors disabled:opacity-50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={subscribeMutation.isPending}
+                      className="px-6 py-3 bg-[#C9973E] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#b8862e] transition-colors active:scale-[0.97] whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                    >
+                      {subscribeMutation.isPending && <Loader2 size={15} className="animate-spin" />}
+                      {t("home.signUp")}
+                    </button>
+                  </form>
+                  {subscribeMutation.isError && (
+                    <p className="text-red-300 text-xs mt-3">
+                      {ko
+                        ? "구독 실패. 이메일 주소를 확인하고 다시 시도해 주세요."
+                        : "Signup failed. Please check the address and try again."}
+                    </p>
+                  )}
+                  <p className="text-white/30 text-xs mt-3">{t("home.privacyNote")}</p>
+                </>
+              )}
             </div>
           </div>
         </div>

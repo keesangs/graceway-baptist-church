@@ -1,6 +1,15 @@
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertMediaFile, InsertUser, mediaFiles, users } from "../drizzle/schema";
+import {
+  contactMessages,
+  InsertContactMessage,
+  InsertMediaFile,
+  InsertNewsletterSubscriber,
+  InsertUser,
+  mediaFiles,
+  newsletterSubscribers,
+  users,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -115,4 +124,52 @@ export async function deleteMediaFile(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(mediaFiles).where(eq(mediaFiles.id, id));
+}
+
+/**
+ * Newsletter signup. Idempotent by email: a repeat submission refreshes the
+ * language preference and re-activates a previously unsubscribed address rather
+ * than erroring out, so the visitor always sees a success state.
+ */
+export async function subscribeToNewsletter(data: InsertNewsletterSubscriber) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .insert(newsletterSubscribers)
+    .values(data)
+    .onDuplicateKeyUpdate({
+      set: { lang: data.lang ?? "en", isActive: 1 },
+    });
+
+  const [row] = await db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.email, data.email))
+    .limit(1);
+
+  return row;
+}
+
+export async function listNewsletterSubscribers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.isActive, 1))
+    .orderBy(desc(newsletterSubscribers.createdAt));
+}
+
+export async function insertContactMessage(data: InsertContactMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(contactMessages).values(data);
+  return result;
+}
+
+export async function listContactMessages() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
 }

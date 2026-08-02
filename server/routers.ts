@@ -1,7 +1,15 @@
 import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { deleteMediaFile, insertMediaFile, listMediaFiles } from "./db";
+import {
+  deleteMediaFile,
+  insertContactMessage,
+  insertMediaFile,
+  listContactMessages,
+  listMediaFiles,
+  listNewsletterSubscribers,
+  subscribeToNewsletter,
+} from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -89,6 +97,64 @@ export const appRouter = router({
         await deleteMediaFile(input.id);
         return { success: true };
       }),
+  }),
+
+  // ── Newsletter ─────────────────────────────────────────────────────
+  newsletter: router({
+    /**
+     * Public signup from the Home page form. Idempotent by email, so a repeat
+     * submission is treated as success instead of a duplicate-key error.
+     */
+    subscribe: publicProcedure
+      .input(
+        z.object({
+          // Trim before validating: mobile keyboards and autofill routinely append
+          // a trailing space, which would otherwise fail the email format check.
+          email: z.string().trim().toLowerCase().pipe(z.string().email().max(320)),
+          lang: z.enum(["en", "ko"]).default("en"),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        const row = await subscribeToNewsletter({
+          email: input.email,
+          lang: input.lang,
+        });
+        return { success: true, email: row?.email ?? input.email } as const;
+      }),
+
+    /** Church staff view of the subscriber list. */
+    list: adminProcedure.query(() => listNewsletterSubscribers()),
+  }),
+
+  // ── Contact form ───────────────────────────────────────────────
+  contact: router({
+    /** Public submission from the Connect page form. */
+    submit: publicProcedure
+      .input(
+        z.object({
+          firstName: z.string().trim().min(1).max(100),
+          lastName: z.string().trim().min(1).max(100),
+          // Trim/lowercase before format validation — see newsletter.subscribe.
+          email: z.string().trim().toLowerCase().pipe(z.string().email().max(320)),
+          phone: z.string().max(40).optional(),
+          topic: z.enum(["visit", "prayer", "ministry", "general"]).default("general"),
+          message: z.string().max(4000).optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        await insertContactMessage({
+          firstName: input.firstName,
+          lastName: input.lastName,
+          email: input.email,
+          phone: input.phone?.trim() || null,
+          topic: input.topic,
+          message: input.message?.trim() || null,
+        });
+        return { success: true } as const;
+      }),
+
+    /** Church staff inbox. */
+    list: adminProcedure.query(() => listContactMessages()),
   }),
 });
 

@@ -3,11 +3,23 @@
  * Sections: Hero, Plan a Visit, Service Times, Contact Form, Map, Newsletter
  */
 import { useState, useRef } from "react";
-import { Clock, MapPin, Mail, Phone, ChevronRight } from "lucide-react";
+import { Clock, MapPin, Mail, Phone, ChevronRight, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { MapView } from "@/components/Map";
 import { useLang } from "@/contexts/LanguageContext";
+import { trpc } from "@/lib/trpc";
+
+type ContactTopic = "visit" | "prayer" | "ministry" | "general";
+
+const EMPTY_FORM = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  topic: "visit" as ContactTopic,
+  message: "",
+};
 
 // 2791 Driscoll Rd, Fremont, CA 94539
 const CHURCH_COORDS = { lat: 37.5223, lng: -121.9188 };
@@ -28,10 +40,29 @@ export default function Connect() {
   const ko = lang === "ko";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formSent, setFormSent] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  // Contact form — persists to the contact_messages table.
+  const submitMutation = trpc.contact.submit.useMutation({
+    onSuccess: () => {
+      setFormSent(true);
+      setForm(EMPTY_FORM);
+    },
+  });
+
+  const setField = <K extends keyof typeof EMPTY_FORM>(key: K, value: (typeof EMPTY_FORM)[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSent(true);
+    submitMutation.mutate({
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || undefined,
+      topic: form.topic,
+      message: form.message.trim() || undefined,
+    });
   };
 
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -192,7 +223,10 @@ export default function Connect() {
                       <input
                         type="text"
                         required
-                        className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
+                        value={form.firstName}
+                        onChange={(e) => setField("firstName", e.target.value)}
+                        disabled={submitMutation.isPending}
+                        className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors disabled:opacity-50"
                       />
                     </div>
                     <div>
@@ -200,7 +234,10 @@ export default function Connect() {
                       <input
                         type="text"
                         required
-                        className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
+                        value={form.lastName}
+                        onChange={(e) => setField("lastName", e.target.value)}
+                        disabled={submitMutation.isPending}
+                        className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -209,19 +246,30 @@ export default function Connect() {
                     <input
                       type="email"
                       required
-                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
+                      value={form.email}
+                      onChange={(e) => setField("email", e.target.value)}
+                      disabled={submitMutation.isPending}
+                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors disabled:opacity-50"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">Phone (optional)</label>
                     <input
                       type="tel"
-                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
+                      value={form.phone}
+                      onChange={(e) => setField("phone", e.target.value)}
+                      disabled={submitMutation.isPending}
+                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors disabled:opacity-50"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">How can we help?</label>
-                    <select className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors text-[#242A30]">
+                    <select
+                      value={form.topic}
+                      onChange={(e) => setField("topic", e.target.value as ContactTopic)}
+                      disabled={submitMutation.isPending}
+                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors text-[#242A30] disabled:opacity-50"
+                    >
                       <option value="visit">I'd like to plan a visit</option>
                       <option value="prayer">Prayer request</option>
                       <option value="ministry">Ministry involvement</option>
@@ -232,14 +280,26 @@ export default function Connect() {
                     <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">Message</label>
                     <textarea
                       rows={4}
-                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors resize-none"
+                      value={form.message}
+                      onChange={(e) => setField("message", e.target.value)}
+                      disabled={submitMutation.isPending}
+                      className="w-full px-3 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors resize-none disabled:opacity-50"
                     />
                   </div>
+                  {submitMutation.isError && (
+                    <p className="text-red-600 text-xs">
+                      {ko
+                        ? "전송에 실패했습니다. 입력한 정보를 확인하고 다시 시도해 주세요."
+                        : "Could not send your message. Please check the fields and try again."}
+                    </p>
+                  )}
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#17324D] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.98]"
+                    disabled={submitMutation.isPending}
+                    className="w-full py-3 bg-[#17324D] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                   >
-                    Send Message
+                    {submitMutation.isPending && <Loader2 size={15} className="animate-spin" />}
+                    {submitMutation.isPending ? (ko ? "전송 중..." : "Sending...") : "Send Message"}
                   </button>
                 </form>
               )}
