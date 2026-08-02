@@ -26,7 +26,7 @@ const staff = [
   { name: "Pastor Hunsuk Lee", role: "Lead Pastor", img: PASTOR_IMG },
   { name: "Pastor MyeongJe Cho", role: "Pastoral Staff", img: MYEONGJE_IMG },
   { name: "Pastor Hunsuk Lee", role: "Worship Leader", img: PASTOR_IMG },
-  { name: "ShinYoung Kim", role: "Children's Ministry", img: COMMUNITY_IMG },
+  { name: "ShinYoung Kim", role: "Children's Ministry", img: "/manus-storage/shinyoung_kim_bc08e063.jpg" },
 ];
 
 export default function About() {
