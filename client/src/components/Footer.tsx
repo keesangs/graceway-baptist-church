@@ -73,22 +73,22 @@ export default function Footer() {
               <div className="flex items-start gap-2">
                 <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">Sunday Worship</p>
-                  <p className="text-white/60 text-xs">11:00 AM</p>
+                  <p className="text-white text-sm font-medium">주일 예배 / Sunday Worship</p>
+                  <p className="text-white/60 text-xs">1:30 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">Wednesday Bible Study</p>
-                  <p className="text-white/60 text-xs">7:00 PM</p>
+                  <p className="text-white text-sm font-medium">수요 기도회 / Wednesday Prayer</p>
+                  <p className="text-white/60 text-xs">8:00 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <MapPin size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
                   <p className="text-white text-sm font-medium">Location</p>
-                  <p className="text-white/60 text-xs">123 Grace Way, Your City, ST 00000</p>
+                  <p className="text-white/60 text-xs">2791 Driscoll Rd, Fremont, CA 94539</p>
                 </div>
               </div>
             </div>

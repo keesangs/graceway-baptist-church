@@ -70,24 +70,24 @@ export default function Connect() {
                 {[
                   {
                     icon: Clock,
-                    title: "Sunday Worship",
-                    lines: ["11:00 AM — English Service", "Children's classes available"],
+                    title: "주일 예배 / Sunday Worship",
+                    lines: ["1:30 PM — 매주 일요일", "Every Sunday at 1:30 PM"],
                   },
                   {
                     icon: Clock,
-                    title: "Wednesday Bible Study",
-                    lines: ["7:00 PM — All are welcome", "Childcare available upon request"],
+                    title: "수요 기도회 / Wednesday Prayer",
+                    lines: ["8:00 PM — 매주 수요일", "Every Wednesday at 8:00 PM"],
                   },
                   {
                     icon: MapPin,
                     title: "Location",
-                    lines: ["123 Grace Way", "Your City, ST 00000"],
-                    link: "https://maps.google.com",
+                    lines: ["2791 Driscoll Rd", "Fremont, CA 94539"],
+                    link: "https://maps.google.com/?q=2791+Driscoll+Rd,+Fremont,+CA+94539",
                   },
                   {
                     icon: Phone,
                     title: "Phone",
-                    lines: ["(555) 123-4567"],
+                    lines: ["+1 510-529-5636"],
                   },
                   {
                     icon: Mail,
@@ -250,9 +250,9 @@ export default function Connect() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <MapPin size={32} className="text-[#17324D]/30 mx-auto mb-2" />
-            <p className="text-[#17324D]/40 text-sm">123 Grace Way, Your City, ST 00000</p>
+            <p className="text-[#17324D]/40 text-sm">2791 Driscoll Rd, Fremont, CA 94539</p>
             <a
-              href="https://maps.google.com"
+              href="https://maps.google.com/?q=2791+Driscoll+Rd,+Fremont,+CA+94539"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-1 text-[#2F6F9F] text-xs font-medium hover:text-[#17324D] transition-colors"
