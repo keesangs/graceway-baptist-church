@@ -196,7 +196,7 @@ export default function Home() {
               className="text-white mb-6 transition-all duration-700 ease-out"
               style={{
                 fontFamily: "'Source Serif 4', serif",
-                fontSize: "clamp(2.8rem, 7vw, 5rem)",
+                fontSize: '64px',
                 fontWeight: 700,
                 lineHeight: 1.05,
                 opacity: heroVisible ? 1 : 0,
