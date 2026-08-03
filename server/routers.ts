@@ -11,9 +11,18 @@ import {
   subscribeToNewsletter,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { notifyOwner } from "./_core/notification";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
+
+/** Human-readable labels for the Connect-form topic values, used in staff alerts. */
+const TOPIC_LABELS = {
+  visit: "Plan a visit",
+  prayer: "Prayer request",
+  ministry: "Ministry involvement",
+  general: "General question",
+} as const;
 
 export const appRouter = router({
   system: systemRouter,
@@ -142,14 +151,45 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ input }) => {
+        const phone = input.phone?.trim() || null;
+        const message = input.message?.trim() || null;
+
         await insertContactMessage({
           firstName: input.firstName,
           lastName: input.lastName,
           email: input.email,
-          phone: input.phone?.trim() || null,
+          phone,
           topic: input.topic,
-          message: input.message?.trim() || null,
+          message,
         });
+
+        // Alert church staff so an enquiry is not left sitting unread in the
+        // database. The visitor's submission is already saved at this point, so a
+        // notification outage must never turn into a failed form submission.
+        try {
+          const notified = await notifyOwner({
+            title: `New ${TOPIC_LABELS[input.topic]} enquiry from ${input.firstName} ${input.lastName}`,
+            content: [
+              `Name: ${input.firstName} ${input.lastName}`,
+              `Email: ${input.email}`,
+              `Phone: ${phone ?? "—"}`,
+              `Topic: ${TOPIC_LABELS[input.topic]}`,
+              "",
+              message ?? "(no message provided)",
+            ].join("\n"),
+          });
+          if (!notified) {
+            // The notification service accepted the request but returned a
+            // non-success response. The enquiry is already persisted, so we
+            // log the outage for ops visibility without failing the visitor.
+            console.warn(
+              "[contact.submit] Notification service returned false — staff alert was not delivered.",
+            );
+          }
+        } catch (error) {
+          console.warn("[contact.submit] Owner notification failed:", error);
+        }
+
         return { success: true } as const;
       }),
 

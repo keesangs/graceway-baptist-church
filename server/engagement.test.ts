@@ -12,6 +12,12 @@ const listNewsletterSubscribers = vi.fn();
 const insertContactMessage = vi.fn();
 const listContactMessages = vi.fn();
 
+const notifyOwner = vi.fn();
+
+vi.mock("./_core/notification", () => ({
+  notifyOwner: (...args: unknown[]) => notifyOwner(...args),
+}));
+
 vi.mock("./db", () => ({
   // Engagement helpers under test
   subscribeToNewsletter: (...args: unknown[]) => subscribeToNewsletter(...args),
@@ -53,6 +59,7 @@ function makeContext(role?: "user" | "admin"): TrpcContext {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  notifyOwner.mockResolvedValue(true);
 });
 
 describe("newsletter.subscribe", () => {
@@ -155,6 +162,63 @@ describe("contact.submit", () => {
       }),
     ).rejects.toThrow();
     expect(insertContactMessage).not.toHaveBeenCalled();
+  });
+
+  it("alerts church staff with the enquiry details", async () => {
+    insertContactMessage.mockResolvedValue({ insertId: 9 });
+    const caller = appRouter.createCaller(makeContext());
+
+    await caller.contact.submit({
+      firstName: "Grace",
+      lastName: "Kim",
+      email: "grace.kim@example.com",
+      topic: "visit",
+      message: "We would like to visit this Sunday.",
+    });
+
+    expect(notifyOwner).toHaveBeenCalledTimes(1);
+    const { title, content } = notifyOwner.mock.calls[0][0];
+    expect(title).toContain("Grace Kim");
+    expect(content).toContain("grace.kim@example.com");
+    expect(content).toContain("We would like to visit this Sunday.");
+  });
+
+  it("still reports success to the visitor when the notification service throws", async () => {
+    insertContactMessage.mockResolvedValue({ insertId: 10 });
+    notifyOwner.mockRejectedValue(new Error("notification service down"));
+    const caller = appRouter.createCaller(makeContext());
+
+    const result = await caller.contact.submit({
+      firstName: "John",
+      lastName: "Park",
+      email: "john@example.com",
+      topic: "prayer",
+    });
+
+    // The enquiry was persisted, so a downstream alert outage must not surface as
+    // a failed submission to the visitor.
+    expect(result).toEqual({ success: true });
+    expect(insertContactMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it("still reports success when the notification service returns false (soft failure)", async () => {
+    insertContactMessage.mockResolvedValue({ insertId: 11 });
+    notifyOwner.mockResolvedValue(false);
+    const caller = appRouter.createCaller(makeContext());
+
+    const result = await caller.contact.submit({
+      firstName: "Sarah",
+      lastName: "Lee",
+      email: "sarah.lee@example.com",
+      topic: "ministry",
+    });
+
+    // A false return from notifyOwner means the service is temporarily
+    // unavailable. The enquiry is already in the database, so the visitor
+    // must still receive a success response.
+    expect(result).toEqual({ success: true });
+    expect(insertContactMessage).toHaveBeenCalledTimes(1);
+    expect(notifyOwner).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the message inbox admin-only", async () => {

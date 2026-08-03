@@ -6,8 +6,9 @@
  */
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Inbox } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,6 +27,8 @@ export default function Navbar() {
   }, [location]);
 
   const isHome = location === "/";
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   const navLinks = [
     { href: "/about", label: t("nav.about") },
@@ -85,6 +88,26 @@ export default function Navbar() {
             </Link>
           ))}
 
+          {/* Admin Inbox link — visible only to admin users */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className={`text-sm font-medium tracking-wide transition-colors duration-200 relative group flex items-center gap-1.5 ${
+                location === "/admin"
+                  ? "text-[#C9973E]"
+                  : "text-white/90 hover:text-white"
+              }`}
+            >
+              <Inbox size={14} />
+              {lang === "ko" ? "수신함" : "Inbox"}
+              <span
+                className={`absolute -bottom-1 left-0 h-px bg-[#C9973E] transition-all duration-200 ${
+                  location === "/admin" ? "w-full" : "w-0 group-hover:w-full"
+                }`}
+              />
+            </Link>
+          )}
+
           {/* Language Toggle */}
           <button
             onClick={toggleLang}
@@ -142,6 +165,19 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`px-4 py-3 text-sm font-medium rounded transition-colors flex items-center gap-2 ${
+                  location === "/admin"
+                    ? "text-[#C9973E] bg-white/5"
+                    : "text-white/90 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Inbox size={14} />
+                {lang === "ko" ? "수신함" : "Inbox"}
+              </Link>
+            )}
             <Link
               href="/connect"
               className="mt-2 mx-4 px-5 py-3 bg-[#C9973E] text-white text-sm font-semibold rounded-sm text-center tracking-wide"

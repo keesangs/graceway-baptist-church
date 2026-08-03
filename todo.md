@@ -23,9 +23,11 @@
 - [x] Newsletter signup wired to backend: newsletter.subscribe (public, idempotent by email), newsletter.list (admin)
 - [x] Connect contact form wired to backend: contact.submit (public), contact.list (admin)
 - [x] Server-side trim before email format validation (autofill/mobile trailing-space bug caught by tests)
-- [x] Vitest: 17 tests passing (auth.logout, media, newsletter, contact)
+- [x] Vitest: 17 tests passing (auth.logout, media, newsletter, contact) — now 19 after adding notification tests
 
 ## Pending
 - [ ] Sermon cards: real sermon titles and scripture references — BLOCKED: source YouTube video titles are date-only ("2026. 07.26 주일 말씀"), so titles/scripture must be supplied by the church
-- [ ] Admin inbox UI to browse contact_messages and newsletter_subscribers (data is stored; currently only readable via the Database panel)
-- [ ] Email notification to church staff when a contact form is submitted
+- [x] Admin inbox UI at /admin: Messages tab (contact_messages) + Subscribers tab (newsletter_subscribers), Export CSV, Refresh; admin-only access gate in both frontend and backend
+- [x] Admin-only Inbox link in Navbar (desktop + mobile), visible only when user.role === "admin"
+- [x] Email/push notification to church staff on each contact form submission via notifyOwner(); graceful degradation if notification service is down
+- [x] Vitest: 20 tests passing (3 new notification tests: alert details, throw fallback, false-return fallback)

@@ -11,6 +11,7 @@ import Sermons from "./pages/Sermons";
 import Ministries from "./pages/Ministries";
 import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
+import AdminInbox from "./pages/AdminInbox";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/ministries" component={Ministries} />
       <Route path="/connect" component={Connect} />
       <Route path="/media" component={MediaLibrary} />
+      <Route path="/admin" component={AdminInbox} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
