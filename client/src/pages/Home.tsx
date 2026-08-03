@@ -20,34 +20,34 @@ const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
 
-// Real sermon videos from YouTube @keesangs channel
+// Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
-    title: "Sunday Sermon — July 26, 2026",
-    titleKo: "2026년 7월 26일 주일 말씀",
-    scripture: "",
+    title: "What It Means to Follow God",
+    titleKo: "하나님을 따라간다는 것",
+    scripture: "사도행전 1:12–26",
+    date: "August 2, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "41 min",
+    videoId: "jStg7ksuSdM",
+  },
+  {
+    title: "A New Era Begins with Small Obedience",
+    titleKo: "작은 순종에서 시작되는 새로운 시대",
+    scripture: "사도행전 1:1–8",
     date: "July 26, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
     videoId: "AGzMGv7vuhQ",
   },
   {
-    title: "Sunday Sermon — July 19, 2026",
-    titleKo: "2026년 7월 19일 주일 말씀",
-    scripture: "",
+    title: "Do You Still Not Understand?",
+    titleKo: "아직도 깨닫지 못하느냐",
+    scripture: "마가복음 8:14–21",
     date: "July 19, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "35 min",
     videoId: "VaZcVqJo7DE",
-  },
-  {
-    title: "Sunday Sermon — July 12, 2026",
-    titleKo: "2026년 7월 12일 주일 말씀",
-    scripture: "",
-    date: "July 12, 2026",
-    speaker: "Pastor Hunsuk Lee",
-    duration: "38 min",
-    videoId: "zEPMFqmhP_c",
   },
 ];
 

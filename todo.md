@@ -26,7 +26,7 @@
 - [x] Vitest: 17 tests passing (auth.logout, media, newsletter, contact) — now 19 after adding notification tests
 
 ## Pending
-- [ ] Sermon cards: real sermon titles and scripture references — AWAITING USER INPUT: YouTube video titles are date-only ("2026. 07.26 주일 말씀"), so actual sermon titles and scripture references must be provided by the church before this can be implemented
+- [x] Sermon cards: all 9 real sermon titles and scripture references applied (Home latest 3 + Sermons page all 9); data supplied by church via chat
 - [x] Admin inbox UI at /admin: Messages tab (contact_messages) + Subscribers tab (newsletter_subscribers), Export CSV, Refresh; admin-only access gate in both frontend and backend
 - [x] Admin-only Inbox link in Navbar (desktop + mobile), visible only when user.role === "admin"
 - [x] Email/push notification to church staff on each contact form submission via notifyOwner(); graceful degradation if notification service is down
