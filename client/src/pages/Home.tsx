@@ -161,7 +161,7 @@ export default function Home() {
         <div
           className="absolute right-8 top-1/2 -translate-y-1/2 select-none pointer-events-none transition-all duration-[1400ms] ease-out"
           style={{
-            opacity: heroVisible ? 0.07 : 0,
+            opacity: heroVisible ? 0.18 : 0,
             transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-44%) scale(0.95)",
             fontFamily: "'Source Serif 4', serif",
             fontSize: "clamp(14rem, 30vw, 28rem)",
@@ -172,6 +172,31 @@ export default function Home() {
           }}
         >
           G
+        </div>
+
+        {/* Church logo emblem — centered under the G watermark, fades in gently */}
+        <div
+          className="absolute select-none pointer-events-none transition-all duration-[1600ms] ease-out hidden md:flex items-center justify-center"
+          style={{
+            right: "clamp(2rem, 8vw, 6rem)",
+            top: "58%",
+            opacity: heroVisible ? 0.28 : 0,
+            transform: heroVisible ? "translateY(0) scale(1)" : "translateY(12px) scale(0.95)",
+            transitionDelay: "700ms",
+          }}
+        >
+          <img
+            src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
+            alt=""
+            aria-hidden="true"
+            style={{
+              width: "clamp(6rem, 10vw, 11rem)",
+              height: "clamp(6rem, 10vw, 11rem)",
+              objectFit: "cover",
+              borderRadius: "50%",
+              filter: "brightness(1.4) saturate(0.6) drop-shadow(0 4px 20px rgba(0,0,0,0.5))",
+            }}
+          />
         </div>
 
         <div className="relative container pt-24 pb-32">
