@@ -49,11 +49,17 @@ export default function Navbar() {
       <div className="container mx-auto flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <img
-            src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
-            alt="Graceway Baptist Church"
-            className="w-10 h-10 rounded-full object-cover transition-transform duration-300 ease-out group-hover:scale-110"
-          />
+          <div className="relative flex-shrink-0">
+            <img
+              src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
+              alt="Graceway Baptist Church"
+              className="w-12 h-12 rounded-full object-cover transition-transform duration-300 ease-out group-hover:scale-110"
+              style={{
+                filter: "brightness(1.15) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.6))",
+                boxShadow: "0 0 0 2px rgba(201,151,62,0.5), 0 2px 8px rgba(0,0,0,0.5)",
+              }}
+            />
+          </div>
           <div className="hidden sm:block">
             <div
               className="font-bold text-white leading-tight tracking-wide"
