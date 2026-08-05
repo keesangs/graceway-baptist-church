@@ -174,15 +174,17 @@ export default function Home() {
           G
         </div>
 
-        {/* Church logo emblem — centered under the G watermark, fades in gently */}
+        {/* Gt emblem watermark — mirrors the hero_bg_navy emblem that the video covers.
+             Positioned right-side, vertically centered, large and ghosted so it
+             reads as texture rather than a hard logo. Desktop only. */}
         <div
-          className="absolute select-none pointer-events-none transition-all duration-[1600ms] ease-out hidden md:flex items-center justify-center"
+          className="absolute right-0 top-1/2 select-none pointer-events-none transition-all duration-[1600ms] ease-out hidden md:block"
           style={{
-            right: "clamp(2rem, 8vw, 6rem)",
-            top: "58%",
-            opacity: heroVisible ? 0.28 : 0,
-            transform: heroVisible ? "translateY(0) scale(1)" : "translateY(12px) scale(0.95)",
-            transitionDelay: "700ms",
+            opacity: heroVisible ? 0.07 : 0,
+            transform: heroVisible ? "translateY(-42%) scale(1)" : "translateY(-38%) scale(0.96)",
+            transitionDelay: "500ms",
+            width: "clamp(18rem, 30vw, 36rem)",
+            height: "clamp(18rem, 30vw, 36rem)",
           }}
         >
           <img
@@ -190,11 +192,10 @@ export default function Home() {
             alt=""
             aria-hidden="true"
             style={{
-              width: "clamp(6rem, 10vw, 11rem)",
-              height: "clamp(6rem, 10vw, 11rem)",
-              objectFit: "cover",
-              borderRadius: "50%",
-              filter: "brightness(1.4) saturate(0.6) drop-shadow(0 4px 20px rgba(0,0,0,0.5))",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              filter: "brightness(2.2) saturate(0) invert(0) drop-shadow(0 0 0 transparent)",
             }}
           />
         </div>
