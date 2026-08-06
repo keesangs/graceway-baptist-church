@@ -157,7 +157,7 @@ export default function Worship() {
             className="text-white mb-4"
             style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
           >
-            {lang === "ko" ? "주일 찬양" : "Sunday Worship"}
+            {lang === "ko" ? "주일예배 찬양" : "Sunday Worship"}
           </h1>
           <div className="w-16 h-0.5 bg-[#C9973E] mx-auto mb-4" />
           <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
