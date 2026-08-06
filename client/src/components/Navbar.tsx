@@ -33,6 +33,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/about", label: t("nav.about") },
     { href: "/sermons", label: t("nav.sermons") },
+    { href: "/worship", label: lang === "ko" ? "찬양" : "Worship" },
     { href: "/ministries", label: t("nav.ministries") },
     { href: "/connect", label: t("nav.connect") },
     { href: "/media", label: lang === "ko" ? "미디어" : "Media" },
