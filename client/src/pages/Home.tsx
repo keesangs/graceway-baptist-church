@@ -54,8 +54,8 @@ const sermons = [
 const events = [
   { date: "Aug 10", titleEn: "Sunday Worship Service", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
   { date: "Aug 13", titleEn: "Wednesday Prayer Meeting", titleKo: "수요 기도회", time: "8:00 PM", tag: "Weekly" },
-  { date: "Aug 17", titleEn: "Family Picnic & Fellowship", titleKo: "가족 소풍 & 교제", time: "1:00 PM", tag: "Special" },
-  { date: "Aug 24", titleEn: "Youth Night", titleKo: "청년의 밤", time: "6:30 PM", tag: "Youth" },
+  { date: "Aug 17", titleEn: "Sunday Worship", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
+  { date: "Aug 20", titleEn: "Wednesday Prayer Meeting", titleKo: "수요 기도회", time: "8:00 PM", tag: "Weekly" },
 ];
 
 // Fade-in hook using IntersectionObserver
@@ -111,10 +111,10 @@ export default function Home() {
   const newsletterFade = useFadeIn();
 
   const ministries = [
-    { icon: BookOpen, titleEn: "Bible Study", titleKo: "성경 공부", descEn: "Wednesday evenings — deep dive into Scripture together.", descKo: "수요일 저녁 — 함께 말씀을 깊이 탐구합니다." },
+    { icon: BookOpen, titleEn: "Bible Study", titleKo: "성경 공부", descEn: "Sunday afternoon (TBA) — read and share the Word together.", descKo: "주일오후(추후 공지) — 함께 말씀을 읽고 나눕니다." },
     { icon: Users, titleEn: "Small Groups", titleKo: "소그룹", descEn: "Connect in community through weekly life groups.", descKo: "주간 소그룹을 통해 공동체와 연결됩니다." },
     { icon: Heart, titleEn: "Outreach", titleKo: "지역 사역", descEn: "Serving our city with grace and compassion.", descKo: "은혜와 사랑으로 우리 도시를 섬깁니다." },
-    { icon: Music, titleEn: "Worship Team", titleKo: "찬양팀", descEn: "Join us in leading the congregation in praise.", descKo: "회중을 찬양으로 인도하는 팀에 함께하세요." },
+    { icon: Music, titleEn: "Worship Team", titleKo: "찬양사역팀", descEn: "Join us in leading the congregation in praise.", descKo: "회중을 찬양으로 인도하는 팀에 함께하세요." },
   ];
 
   return (
@@ -316,7 +316,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {[
               { icon: Clock, labelEn: "Sunday Worship", labelKo: "주일 예배", value: "1:30 PM" },
-              { icon: MapPin, labelEn: "Location", labelKo: "위치", value: "2791 Driscoll Rd, Fremont CA" },
+              { icon: MapPin, labelEn: "Location", labelKo: "교회 주소", value: "2791 Driscoll Rd, Fremont CA" },
               { icon: Clock, labelEn: "Wednesday Prayer", labelKo: "수요 기도회", value: "8:00 PM" },
             ].map(({ icon: Icon, labelEn, labelKo, value }) => (
               <div key={labelEn} className="flex flex-col items-center gap-2">

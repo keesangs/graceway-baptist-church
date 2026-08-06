@@ -47,8 +47,8 @@ const translations: Record<string, Record<Lang, string>> = {
     ko: "그레이스웨이 침례교회는 하나님의 말씀에 뿌리를 둔 다문화 공동체입니다. 모든 사람은 하나님의 형상대로 지음 받았으며, 그분의 은혜와 사랑과 공동체를 경험할 자격이 있다고 믿습니다.",
   },
   "home.storyBody2": {
-    en: "Whether you're exploring faith for the first time or looking for a church home — every Sunday, a seat is waiting for you.",
-    ko: "처음으로 신앙을 탐구하시든, 교회를 찾고 계시든 — 매 주일, 여러분을 위한 자리가 준비되어 있습니다.",
+    en: "Whether you're exploring faith for the first time or looking for a church home — we dream of being a united community that proclaims the Word, loves one another, and serves the next generation and the nations.",
+    ko: "처음으로 신앙을 탐구하시든, 예배드릴 교회를 찾고 계시든지 — 주님의 은혜가 가득한 예배 가운데 주님의 말씀이 선포되고 주님의 사랑으로 서로를 사랑하는 하나된 공동체를 이루어 다음세대와 열방을 섬기는 교회를 꿈꾸고 있습니다.",
   },
   "home.learnMore": { en: "Learn More About Us", ko: "더 알아보기" },
 
