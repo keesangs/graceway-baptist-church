@@ -172,7 +172,7 @@ export default function Worship() {
       <section className="py-16 bg-white">
         <div className="container">
           <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-6">
-            {lang === "ko" ? "최신 찬양" : "Latest Worship"}
+            {lang === "ko" ? "최근 주일예배 찬양" : "Latest Worship"}
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Thumbnail — click to open modal */}
@@ -237,13 +237,13 @@ export default function Worship() {
           <div className="mb-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-4">
-                {lang === "ko" ? "찬양 보관함" : "Worship Archive"}
+                {lang === "ko" ? "지난 주일예배 찬양" : "Worship Archive"}
               </p>
               <h2
                 className="text-[#17324D]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 700 }}
               >
-                {lang === "ko" ? "모든 찬양" : "All Worship"}
+                {lang === "ko" ? "" : "All Worship"}
               </h2>
             </div>
             {/* Search */}
