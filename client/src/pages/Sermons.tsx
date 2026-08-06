@@ -178,7 +178,7 @@ export default function Sermons() {
             className="text-white mb-4"
             style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
           >
-            {t("sermons.title")}
+            {lang === "ko" ? "주일예배 설교" : t("sermons.title")}
           </h1>
           <div className="w-16 h-0.5 bg-[#C9973E] mx-auto mb-4" />
           <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
