@@ -385,30 +385,10 @@ export default function Home() {
           className="container transition-all duration-700 ease-out"
           style={{ opacity: sermonFade.visible ? 1 : 0, transform: sermonFade.visible ? "translateY(0)" : "translateY(32px)" }}
         >
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-px w-8 bg-[#C9973E]" />
-                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.messages")}</p>
-              </div>
-              <h2
-                className="text-[#17324D]"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 700 }}
-              >
-                {t("home.recentSermons")}
-              </h2>
-            </div>
-            <Link
-              href="/sermons"
-              className="hidden sm:inline-flex items-center gap-1 text-[#2F6F9F] text-sm font-medium hover:text-[#17324D] transition-colors"
-            >
-              {t("home.viewAll")} <ChevronRight size={14} />
-            </Link>
-          </div>
+          {/* Two-column: left = featured video (unchanged), right = list + quote */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
-          {/* Featured + 2 smaller — asymmetric */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-            {/* Featured */}
+            {/* ── LEFT: Featured video — unchanged from original ── */}
             <a
               href={`https://www.youtube.com/watch?v=${sermons[0].videoId}`}
               target="_blank"
@@ -441,42 +421,66 @@ export default function Home() {
               </div>
             </a>
 
-            {/* Two smaller */}
-            <div className="lg:col-span-2 flex flex-col gap-5">
-              {sermons.slice(1).map((s, i) => (
-                <a
-                  key={i}
-                  href={`https://www.youtube.com/watch?v=${s.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer flex flex-col flex-1 block"
+            {/* ── RIGHT: header + list rows + scripture quote ── */}
+            <div className="lg:col-span-2 flex flex-col">
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-4">
+                <h2
+                  className="text-[#17324D] font-bold"
+                  style={{ fontFamily: "'Source Serif 4', serif", fontSize: "1.2rem" }}
                 >
-                  <div className="relative h-36 overflow-hidden">
-                    <img
-                      src={`https://img.youtube.com/vi/${s.videoId}/mqdefault.jpg`}
-                      alt={s.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
-                    />
-                    <div className="absolute inset-0 bg-[#17324D]/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-10 h-10 rounded-full bg-[#C9973E] flex items-center justify-center">
-                        <Play size={14} className="text-white ml-0.5" />
-                      </div>
+                  {lang === "ko" ? "최근 설교" : "Recent Sermons"}
+                </h2>
+                <Link
+                  href="/sermons"
+                  className="text-[#2F6F9F] text-xs font-medium hover:text-[#17324D] transition-colors flex items-center gap-0.5"
+                >
+                  {t("home.viewAll")} <ChevronRight size={12} />
+                </Link>
+              </div>
+
+              {/* Sermon list rows — all 3 sermons */}
+              <div className="flex flex-col divide-y divide-[#E8ECF0] mb-5">
+                {sermons.map((s, i) => (
+                  <a
+                    key={i}
+                    href={`https://www.youtube.com/watch?v=${s.videoId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 py-4 group cursor-pointer hover:bg-[#F0F4F7] -mx-2 px-2 rounded-md transition-colors duration-150"
+                  >
+                    {/* Play icon circle */}
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[#D1D9E0] group-hover:border-[#C9973E] flex items-center justify-center transition-colors duration-150">
+                      <Play size={11} className="text-[#17324D] group-hover:text-[#C9973E] ml-0.5 transition-colors duration-150" fill="currentColor" />
                     </div>
-                    <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
-                      {s.duration}
+                    {/* Text */}
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-[#17324D] font-semibold text-sm leading-snug group-hover:text-[#2F6F9F] transition-colors duration-150"
+                        style={{ fontFamily: "'Source Serif 4', serif" }}
+                      >
+                        {lang === "ko" ? s.titleKo : s.title}
+                      </p>
+                      <p className="text-[#C9973E] text-xs mt-0.5">{s.scripture}</p>
+                      <p className="text-[#242A30]/50 text-[11px] mt-0.5">{s.date}</p>
                     </div>
-                  </div>
-                  <div className="p-4 flex-1">
-                    <p className="text-[#C9973E] text-[10px] font-medium mb-1">{s.scripture}</p>
-                    <h3 className="text-[#17324D] font-semibold text-sm group-hover:text-[#2F6F9F] transition-colors" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                      {lang === "ko" ? s.titleKo : s.title}
-                    </h3>
-                    <p className="text-[#242A30]/45 text-[11px] mt-1">{s.speaker} · {s.date}</p>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                ))}
+              </div>
+
+              {/* Scripture quote block */}
+              <div className="border-l-4 border-[#C9973E] pl-4 py-3 bg-[#FBF8F3] rounded-r-lg">
+                <p className="text-[#242A30]/75 text-sm italic leading-relaxed">
+                  {lang === "ko"
+                    ? "\"믿음은 들음에서 나며 들음은 그리스도의 말씀으로 말미암았느니라\""
+                    : "\"So faith comes from hearing, and hearing through the word of Christ.\""}
+                </p>
+                <p className="text-[#C9973E] text-xs font-semibold mt-2">
+                  {lang === "ko" ? "— 로마서 10:17" : "— Romans 10:17"}
+                </p>
+              </div>
             </div>
+
           </div>
         </div>
       </section>
