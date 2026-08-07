@@ -3,12 +3,17 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   deleteMediaFile,
+  deleteDailyMeditation,
+  getDailyMeditationByDate,
   insertContactMessage,
+  insertDailyMeditation,
   insertMediaFile,
   listContactMessages,
+  listDailyMeditations,
   listMediaFiles,
   listNewsletterSubscribers,
   subscribeToNewsletter,
+  updateDailyMeditation,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { notifyOwner } from "./_core/notification";
@@ -195,6 +200,63 @@ export const appRouter = router({
 
     /** Church staff inbox. */
     list: adminProcedure.query(() => listContactMessages()),
+  }),
+
+  // Daily Bible Meditations
+  meditation: router({
+    today: publicProcedure
+      .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
+      .query(({ input }) => getDailyMeditationByDate(input.date)),
+
+    list: publicProcedure
+      .input(
+        z.object({
+          limit: z.number().int().positive().max(100).default(30),
+          offset: z.number().int().nonnegative().default(0),
+        }),
+      )
+      .query(({ input }) => listDailyMeditations(input.limit, input.offset)),
+
+    create: adminProcedure
+      .input(
+        z.object({
+          meditationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          scriptureReference: z.string().min(1).max(255),
+          scriptureText: z.string().min(1),
+          title: z.string().min(1).max(255),
+          content: z.string().min(1),
+        }),
+      )
+      .mutation(({ input, ctx }) => {
+        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
+        return insertDailyMeditation({
+          ...input,
+          authorId: ctx.user.id,
+        });
+      }),
+
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number().int().positive(),
+          meditationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+          scriptureReference: z.string().min(1).max(255).optional(),
+          scriptureText: z.string().min(1).optional(),
+          title: z.string().min(1).max(255).optional(),
+          content: z.string().min(1).optional(),
+        }),
+      )
+      .mutation(({ input }) => {
+        const { id, ...data } = input;
+        return updateDailyMeditation(id, data);
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(({ input }) => {
+        deleteDailyMeditation(input.id);
+        return { success: true } as const;
+      }),
   }),
 });
 

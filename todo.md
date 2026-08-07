@@ -31,3 +31,13 @@
 - [x] Admin-only Inbox link in Navbar (desktop + mobile), visible only when user.role === "admin"
 - [x] Email/push notification to church staff on each contact form submission via notifyOwner(); graceful degradation if notification service is down
 - [x] Vitest: 20 tests passing (3 new notification tests: alert details, throw fallback, false-return fallback)
+
+## Daily Bible 묵상 게시판 (새로운 기능)
+
+- [ ] 데이터베이스 스키마: daily_meditations 테이블 (날짜, 본문말씀, 제목, 내용, 작성자, 좋아요 수 등)
+- [ ] Daily Bible 페이지 (Meditation.tsx) 생성 — 오늘의 묵상 + 지난 묵상 아카이브
+- [ ] 묵상 작성/수정/삭제 기능 (관리자만 가능)
+- [ ] 묵상 댓글 기능 (회원만 작성 가능)
+- [ ] 좋아요 기능 (회원만 가능)
+- [ ] 네비게이션 메뉴에 "묵상" / "Daily Bible" 링크 추가
+- [ ] 테스트 및 화면 검증

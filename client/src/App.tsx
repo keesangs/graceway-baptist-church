@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Sermons from "./pages/Sermons";
 import Worship from "./pages/Worship";
+import Meditation from "./pages/Meditation";
 import Ministries from "./pages/Ministries";
 import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/sermons" component={Sermons} />
       <Route path="/worship" component={Worship} />
+      <Route path="/meditation" component={Meditation} />
       <Route path="/ministries" component={Ministries} />
       <Route path="/connect" component={Connect} />
       <Route path="/media" component={MediaLibrary} />

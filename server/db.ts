@@ -1,12 +1,17 @@
-import { desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   contactMessages,
+  dailyMeditations,
   InsertContactMessage,
+  InsertDailyMeditation,
   InsertMediaFile,
+  InsertMeditationComment,
   InsertNewsletterSubscriber,
   InsertUser,
   mediaFiles,
+  meditationComments,
+  meditationLikes,
   newsletterSubscribers,
   users,
 } from "../drizzle/schema";
@@ -172,4 +177,117 @@ export async function listContactMessages() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
+}
+
+// Daily Meditation queries
+export async function insertDailyMeditation(data: InsertDailyMeditation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(dailyMeditations).values(data);
+  return result;
+}
+
+export async function getDailyMeditationByDate(meditationDate: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(dailyMeditations)
+    .where(eq(dailyMeditations.meditationDate, meditationDate));
+  return row || null;
+}
+
+export async function listDailyMeditations(limit = 30, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(dailyMeditations)
+    .orderBy(desc(dailyMeditations.meditationDate))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function updateDailyMeditation(id: number, data: Partial<InsertDailyMeditation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(dailyMeditations).set(data).where(eq(dailyMeditations.id, id));
+  return getDailyMeditationById(id);
+}
+
+export async function getDailyMeditationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(dailyMeditations).where(eq(dailyMeditations.id, id));
+  return row || null;
+}
+
+export async function deleteDailyMeditation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(dailyMeditations).where(eq(dailyMeditations.id, id));
+}
+
+// Meditation comment queries
+export async function insertMeditationComment(data: InsertMeditationComment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(meditationComments).values(data);
+  return result;
+}
+
+export async function listMeditationComments(meditationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(meditationComments)
+    .where(eq(meditationComments.meditationId, meditationId))
+    .orderBy(asc(meditationComments.createdAt));
+}
+
+export async function deleteMeditationComment(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(meditationComments).where(eq(meditationComments.id, id));
+}
+
+// Meditation like queries
+export async function toggleMeditationLike(meditationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Check if already liked
+  const [existing] = await db
+    .select()
+    .from(meditationLikes)
+    .where(and(eq(meditationLikes.meditationId, meditationId), eq(meditationLikes.userId, userId)));
+  
+  if (existing) {
+    // Unlike
+    await db.delete(meditationLikes).where(eq(meditationLikes.id, existing.id));
+    await db
+      .update(dailyMeditations)
+      .set({ likeCount: sql`${dailyMeditations.likeCount} - 1` })
+      .where(eq(dailyMeditations.id, meditationId));
+    return false; // unliked
+  } else {
+    // Like
+    await db.insert(meditationLikes).values({ meditationId, userId });
+    await db
+      .update(dailyMeditations)
+      .set({ likeCount: sql`${dailyMeditations.likeCount} + 1` })
+      .where(eq(dailyMeditations.id, meditationId));
+    return true; // liked
+  }
+}
+
+export async function getUserMeditationLike(meditationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(meditationLikes)
+    .where(and(eq(meditationLikes.meditationId, meditationId), eq(meditationLikes.userId, userId)));
+  return row || null;
 }

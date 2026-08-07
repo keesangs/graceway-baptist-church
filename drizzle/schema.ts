@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -83,3 +83,59 @@ export const contactMessages = mysqlTable("contact_messages", {
 
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = typeof contactMessages.$inferInsert;
+
+// Daily Bible meditations — daily devotional readings and reflections
+export const dailyMeditations = mysqlTable("daily_meditations", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Date of the meditation (YYYY-MM-DD format stored as string for consistency) */
+  meditationDate: varchar("meditationDate", { length: 10 }).notNull().unique(),
+  /** Scripture reference e.g. "John 3:16" */
+  scriptureReference: varchar("scriptureReference", { length: 255 }).notNull(),
+  /** Scripture text (full passage) */
+  scriptureText: text("scriptureText").notNull(),
+  /** Meditation title */
+  title: varchar("title", { length: 255 }).notNull(),
+  /** Meditation content/reflection */
+  content: text("content").notNull(),
+  /** Author/creator user id */
+  authorId: int("authorId").notNull(),
+  /** Like count for this meditation */
+  likeCount: int("likeCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DailyMeditation = typeof dailyMeditations.$inferSelect;
+export type InsertDailyMeditation = typeof dailyMeditations.$inferInsert;
+
+// Meditation comments — user reflections and responses to daily meditations
+export const meditationComments = mysqlTable("meditation_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to daily_meditations */
+  meditationId: int("meditationId").notNull(),
+  /** Comment author user id */
+  authorId: int("authorId").notNull(),
+  /** Comment text */
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MeditationComment = typeof meditationComments.$inferSelect;
+export type InsertMeditationComment = typeof meditationComments.$inferInsert;
+
+// Meditation likes — track which users liked which meditations
+export const meditationLikes = mysqlTable("meditation_likes", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key to daily_meditations */
+  meditationId: int("meditationId").notNull(),
+  /** User who liked the meditation */
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  /** Ensure each user can only like a meditation once */
+  unique: uniqueIndex("unique_meditation_like").on(table.meditationId, table.userId),
+}));
+
+export type MeditationLike = typeof meditationLikes.$inferSelect;
+export type InsertMeditationLike = typeof meditationLikes.$inferInsert;
