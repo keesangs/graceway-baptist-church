@@ -245,9 +245,21 @@ export default function Meditation() {
                 </p>
               </div>
 
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm max-w-none mb-8">
                 <p className="text-[#17324D] leading-relaxed whitespace-pre-wrap">
                   {todayMeditation.content}
+                </p>
+              </div>
+
+              {/* Today's Prayer */}
+              <div className="border-t border-[#E5E7EB] pt-8">
+                <h4 className="text-[#17324D] font-semibold mb-4">
+                  {lang === "ko" ? "오늘의 기도" : "Today's Prayer"}
+                </h4>
+                <p className="text-[#17324D] leading-relaxed whitespace-pre-wrap text-sm">
+                  {lang === "ko"
+                    ? "하나님, 그리스도의 십자가 공로로 언제든 하나님 보좌 앞에 나아갈 수 있게 하신 은혜가 얼마나 놀라운지요. 세상을 좇고 제 뜻을 고집하다 무너진 삶의 자리에 하나님 뜻이 이루어지길 간구합니다. 에덴의 기쁨을 회복하고, 하나님의 영광을 위해 살아가도록 저를 이끌어 주소서."
+                    : "Lord, what a wonderful grace that through Christ's cross, we can always approach Your throne. I pray that Your will be done in the places where my life has crumbled from pursuing the world and my own desires. Restore the joy of Eden and lead me to live for Your glory."}
                 </p>
               </div>
             </div>

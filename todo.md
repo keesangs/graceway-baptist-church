@@ -41,3 +41,13 @@
 - [ ] 좋아요 기능 (회원만 가능)
 - [ ] 네비게이션 메뉴에 "묵상" / "Daily Bible" 링크 추가
 - [ ] 테스트 및 화면 검증
+
+## Daily Bible 묵상 게시판 구현 현황
+
+- [x] 데이터베이스 스키마: daily_meditations, meditation_comments, meditation_likes 테이블 생성
+- [x] Daily Bible 페이지 (Meditation.tsx) 생성 — 오늘의 묵상 + 지난 묵상 아카이브
+- [x] 묵상 작성/수정/삭제 기능 (관리자만 가능) — tRPC meditation router
+- [x] 네비게이션 메뉴에 "묵상" / "Daily Bible" 링크 추가
+- [x] 기본 기능 테스트 및 화면 검증 완료
+- [ ] 묵상 댓글 기능 (회원만 작성 가능) — 추후 구현
+- [ ] 좋아요 기능 (회원만 가능) — 추후 구현
