@@ -52,6 +52,7 @@ export default function Meditation() {
 
   // Form state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedMeditation, setSelectedMeditation] = useState<any>(null);
   const [formData, setFormData] = useState({
     meditationDate: today,
     scriptureReference: "",
@@ -303,7 +304,8 @@ export default function Meditation() {
               {meditations.map((meditation) => (
                 <div
                   key={meditation.id}
-                  className="bg-white rounded-lg p-6 border border-[#E5E7EB] hover:shadow-lg transition-shadow"
+                  onClick={() => setSelectedMeditation(meditation)}
+                  className="bg-white rounded-lg p-6 border border-[#E5E7EB] hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <p className="text-[#C9973E] text-xs font-semibold mb-2">
                     {meditation.meditationDate}
@@ -329,6 +331,39 @@ export default function Meditation() {
           )}
         </div>
       </section>
+
+      {/* Meditation Detail Modal */}
+      {selectedMeditation && (
+        <Dialog open={!!selectedMeditation} onOpenChange={(open) => !open && setSelectedMeditation(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#17324D]">
+                {selectedMeditation.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-[#C9973E] text-sm font-semibold mb-2">
+                  {selectedMeditation.meditationDate}
+                </p>
+                <p className="text-[#C9973E] text-sm font-semibold mb-4">
+                  {selectedMeditation.scriptureReference}
+                </p>
+              </div>
+              <div className="p-4 bg-[#F9F5F0] border-l-4 border-[#C9973E] rounded">
+                <p className="text-[#17324D] leading-relaxed whitespace-pre-wrap text-sm">
+                  {selectedMeditation.scriptureText}
+                </p>
+              </div>
+              <div className="prose prose-sm max-w-none">
+                <p className="text-[#17324D] leading-relaxed whitespace-pre-wrap">
+                  {selectedMeditation.content}
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
