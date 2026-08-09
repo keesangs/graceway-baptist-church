@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Copy, Check, Heart } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 interface Verse {
   number: string;
@@ -235,7 +237,8 @@ export default function Meditation() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
+      <Navbar />
       {/* Header */}
       <div className="bg-[#17324D] text-white py-4 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
@@ -294,7 +297,7 @@ export default function Meditation() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Bible Passage & Shared Meditations */}
           <div className="lg:col-span-2 space-y-8">
@@ -544,6 +547,8 @@ export default function Meditation() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
