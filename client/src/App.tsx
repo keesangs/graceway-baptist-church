@@ -13,7 +13,8 @@ import Meditation from "./pages/Meditation";
 import Ministries from "./pages/Ministries";
 import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
-import AdminInbox from "./pages/AdminInbox";
+import AdminInbox from "@/pages/AdminInbox";
+import AdminDailyBible from "@/pages/AdminDailyBible";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/connect" component={Connect} />
       <Route path="/media" component={MediaLibrary} />
       <Route path="/admin" component={AdminInbox} />
+      <Route path="/admin/daily-bible" component={AdminDailyBible} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
