@@ -19,6 +19,7 @@ export default function AdminDailyBible() {
   const [formData, setFormData] = useState({
     meditationDate: new Date().toISOString().split("T")[0],
     scriptureReference: "",
+    scriptureText: "",
     title: "",
     content: "",
   });
@@ -45,6 +46,7 @@ export default function AdminDailyBible() {
       setFormData({
         meditationDate: new Date().toISOString().split("T")[0],
         scriptureReference: "",
+        scriptureText: "",
         title: "",
         content: "",
       });
@@ -64,6 +66,7 @@ export default function AdminDailyBible() {
       setFormData({
         meditationDate: new Date().toISOString().split("T")[0],
         scriptureReference: "",
+        scriptureText: "",
         title: "",
         content: "",
       });
@@ -96,7 +99,7 @@ export default function AdminDailyBible() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.meditationDate || !formData.scriptureReference || !formData.title || !formData.content) {
+    if (!formData.meditationDate || !formData.scriptureReference || !formData.scriptureText || !formData.title || !formData.content) {
       setMessage({ type: "error", text: lang === "ko" ? "모든 필드를 입력해주세요." : "Please fill in all fields." });
       return;
     }
@@ -110,6 +113,7 @@ export default function AdminDailyBible() {
           id: editingId,
           meditationDate: formData.meditationDate,
           scriptureReference: formData.scriptureReference,
+          scriptureText: formData.scriptureText,
           title: formData.title,
           content: formData.content,
         });
@@ -118,6 +122,7 @@ export default function AdminDailyBible() {
         await createMutation.mutateAsync({
           meditationDate: formData.meditationDate,
           scriptureReference: formData.scriptureReference,
+          scriptureText: formData.scriptureText,
           title: formData.title,
           content: formData.content,
         });
@@ -132,6 +137,7 @@ export default function AdminDailyBible() {
     setFormData({
       meditationDate: meditation.meditationDate,
       scriptureReference: meditation.scriptureReference,
+      scriptureText: meditation.scriptureText,
       title: meditation.title,
       content: meditation.content,
     });
@@ -142,6 +148,7 @@ export default function AdminDailyBible() {
     setFormData({
       meditationDate: new Date().toISOString().split("T")[0],
       scriptureReference: "",
+      scriptureText: "",
       title: "",
       content: "",
     });
@@ -211,11 +218,20 @@ export default function AdminDailyBible() {
                 onChange={handleInputChange}
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
-                {lang === "ko"
-                  ? "성경 구절을 입력하면 본문이 자동으로 조회됩니다."
-                  : "Enter the scripture reference and the text will be fetched automatically."}
-              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+                {lang === "ko" ? "성경 본문" : "Scripture Text"}
+              </label>
+              <Textarea
+                name="scriptureText"
+                placeholder={lang === "ko" ? "성경 본문을 입력하세요..." : "Enter scripture text..."}
+                value={formData.scriptureText}
+                onChange={handleInputChange}
+                rows={6}
+                required
+              />
             </div>
 
             <div>
