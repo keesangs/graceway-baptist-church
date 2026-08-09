@@ -1,9 +1,11 @@
 /**
- * Bible API integration using faith.tools Free Use Bible API
- * Fetches scripture text for a given reference (e.g., "John 3:16")
+ * Bible API integration using YouVersion API
+ * Fetches scripture text for a given reference (e.g., "John 3:16", "에스겔 37:15-28")
  */
 
-const BIBLE_API_BASE = "https://bible-api.com";
+import { ENV } from "./_core/env";
+
+const YOUVERSION_API_BASE = "https://www.youversion.com/api/bible";
 
 export interface BibleVerse {
   reference: string;
@@ -12,49 +14,56 @@ export interface BibleVerse {
 }
 
 /**
- * Fetch scripture text from the Bible API
- * @param reference - Scripture reference (e.g., "John 3:16", "시편 119:105-112")
+ * Fetch scripture text from YouVersion API
+ * @param reference - Scripture reference (e.g., "John 3:16", "에스겔 37:15-28")
  * @returns Promise<BibleVerse> with the scripture text
  */
 export async function fetchBibleVerse(reference: string): Promise<BibleVerse> {
   try {
-    // Normalize the reference for the API
-    const normalizedRef = reference.trim();
-    
-    // Try fetching from the free Bible API
-    const response = await fetch(
-      `${BIBLE_API_BASE}/?query=${encodeURIComponent(normalizedRef)}&translation=kbv`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Bible API error: ${response.statusText}`);
+    if (!ENV.youversionApiKey) {
+      throw new Error("YOUVERSION_API_KEY environment variable not set");
     }
 
-    const data = await response.json() as {
-      reference?: string;
-      verses?: Array<{ text: string }>;
-      text?: string;
+    const normalizedRef = reference.trim();
+
+    // YouVersion API endpoint for searching verses
+    const searchUrl = new URL(`${YOUVERSION_API_BASE}/search`);
+    searchUrl.searchParams.set("q", normalizedRef);
+    searchUrl.searchParams.set("limit", "1");
+
+    const searchResponse = await fetch(searchUrl.toString(), {
+      headers: {
+        "X-API-Key": ENV.youversionApiKey,
+        "Accept": "application/json",
+      },
+    });
+
+    if (!searchResponse.ok) {
+      throw new Error(`HTTP ${searchResponse.status}: ${searchResponse.statusText}`);
+    }
+
+    const searchData = await searchResponse.json() as {
+      data?: Array<{
+        id: string;
+        reference: string;
+        text: string;
+        translation?: string;
+      }>;
     };
 
-    // Extract verse text
-    let verseText = "";
-    if (data.verses && Array.isArray(data.verses)) {
-      verseText = data.verses.map((v) => v.text).join("\n");
-    } else if (data.text) {
-      verseText = data.text;
+    if (!searchData.data || searchData.data.length === 0) {
+      throw new Error("No verses found");
     }
 
-    if (!verseText) {
-      throw new Error(`No verses found for reference: ${reference}`);
-    }
+    const verse = searchData.data[0];
 
     return {
-      reference: data.reference || normalizedRef,
-      text: verseText,
-      translation: "개역개정",
+      reference: verse.reference || normalizedRef,
+      text: verse.text || "",
+      translation: verse.translation || "개역개정",
     };
   } catch (error) {
-    console.error("Bible API fetch error:", error);
+    console.error("YouVersion Bible API fetch error:", error);
     throw new Error(
       `Failed to fetch scripture for "${reference}": ${error instanceof Error ? error.message : "Unknown error"}`
     );
