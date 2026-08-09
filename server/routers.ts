@@ -20,6 +20,7 @@ import { notifyOwner } from "./_core/notification";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
+import { fetchBibleVerse } from "./bibleApi";
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
 const TOPIC_LABELS = {
@@ -222,15 +223,31 @@ export const appRouter = router({
         z.object({
           meditationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
           scriptureReference: z.string().min(1).max(255),
-          scriptureText: z.string().min(1),
           title: z.string().min(1).max(255),
           content: z.string().min(1),
         }),
       )
-      .mutation(({ input, ctx }) => {
+      .mutation(async ({ input, ctx }) => {
         if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
+        
+        // Fetch scripture text from Bible API
+        let scriptureText = "";
+        try {
+          const verse = await fetchBibleVerse(input.scriptureReference);
+          scriptureText = verse.text;
+        } catch (error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Failed to fetch scripture: ${error instanceof Error ? error.message : "Unknown error"}`,
+          });
+        }
+        
         return insertDailyMeditation({
-          ...input,
+          meditationDate: input.meditationDate,
+          scriptureReference: input.scriptureReference,
+          scriptureText,
+          title: input.title,
+          content: input.content,
           authorId: ctx.user.id,
         });
       }),
