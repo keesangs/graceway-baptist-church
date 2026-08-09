@@ -106,7 +106,7 @@ export default function Meditation() {
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8 mt-20">
         {/* 날짜 네비게이션 */}
         <div className="mb-8 border-b border-gray-200 pb-6">
           <div className="flex items-center justify-between">
