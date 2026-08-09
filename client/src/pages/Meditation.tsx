@@ -305,7 +305,7 @@ export default function Meditation() {
             <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
               <div className="mb-6">
                 <p className="text-[#C9973E] text-sm font-semibold mb-2">
-                  {lang === "ko" ? "경절정" : "Scripture"}
+                  {lang === "ko" ? "개역개정" : "Scripture"}
                 </p>
                 <h3 className="text-2xl font-bold text-[#17324D] mb-1">
                   {currentData.title}
