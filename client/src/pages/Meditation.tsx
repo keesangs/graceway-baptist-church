@@ -236,19 +236,19 @@ export default function Meditation() {
             {/* 왼쪽: 성경 본문 (2/3) */}
             <div className="lg:col-span-2">
               <Card className="p-8">
-                <div className="mb-6">
-                  <p className="text-sm text-amber-600 font-semibold mb-2">개역개정</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="mb-3">
+                  <p className="text-sm text-amber-600 font-semibold mb-1">개역개정</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">
                     {currentMeditation.scriptureReference}
                   </h3>
-                  <p className="text-gray-600 mb-4">{currentMeditation.title}</p>
+                  <p className="text-gray-600 mb-3">{currentMeditation.title}</p>
                 </div>
 
-                <div className="space-y-3 mb-8">
+                <div className="space-y-1 mb-8">
                   {scriptures.map((item, idx) => (
                     <div
                       key={idx}
-                      className="group flex items-start gap-3 p-3 rounded hover:bg-gray-50 transition"
+                      className="group flex items-start gap-3 p-2 rounded hover:bg-gray-50 transition"
                       onMouseEnter={() => {}}
                     >
                       {item.verse && (
