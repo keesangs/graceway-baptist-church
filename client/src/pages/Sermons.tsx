@@ -15,6 +15,16 @@ const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
+    titleEn: "The Holy Spirit Comes",
+    titleKo: "성령이 임하시다",
+    scripture: "사도행전 2:1–13",
+    date: "August 9, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "42 min",
+    series: "Sunday Sermon",
+    videoId: "qlKRFWwcHQo",
+  },
+  {
     titleEn: "What It Means to Follow God",
     titleKo: "하나님을 따라간다는 것",
     scripture: "사도행전 1:12–26",
