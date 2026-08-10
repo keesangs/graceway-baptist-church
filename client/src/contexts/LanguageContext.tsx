@@ -1,4 +1,4 @@
-/**
+/*
  * LanguageContext — Graceway Baptist Church
  * Provides KO/EN language toggle across all pages
  */
@@ -98,6 +98,30 @@ const translations: Record<string, Record<Lang, string>> = {
     en: "We respect your privacy. Unsubscribe at any time.",
     ko: "개인정보를 소중히 여깁니다. 언제든지 구독 취소 가능합니다.",
   },
+
+  // Home — Mission, Vision, Core Values
+  "home.mission": { en: "Mission Statement", ko: "교회의 사명" },
+  "home.missionStatement": {
+    en: "Built by the Word, Worshiping in Life, Sent into the World",
+    ko: "말씀으로 세워지고, 삶으로 예배하며, 세상으로 보냄 받는 공동체",
+  },
+  "home.missionDesc": {
+    en: "We are a community built firmly on God's Word, offering our entire lives as complete worship to God, and joyfully sent back into the world to embody the heart of Jesus Christ.",
+    ko: "우리는 하나님의 말씀으로 든든히 세워져, 일상의 모든 삶을 온전한 예배로 드리고, 예수 그리스도의 마음을 품어 다시 세상 속으로 기쁘게 보내심을 받는 공동체입니다.",
+  },
+  "home.vision": { en: "Vision", ko: "비전" },
+  "home.visionStatement": {
+    en: "Back to the Word, Back to the World",
+    ko: "다시 말씀으로, 다시 세상으로",
+  },
+  "home.coreValues": { en: "Core Values", ko: "핵심 가치" },
+  "home.value1": { en: "The Word of God", ko: "하나님의 말씀" },
+  "home.value2": { en: "Worship", ko: "예배" },
+  "home.value3": { en: "Christ-Centered", ko: "예수님 중심" },
+  "home.value4": { en: "Church Community", ko: "교회 공동체" },
+  "home.value5": { en: "Evangelism & Mission", ko: "전도/미션" },
+  "home.value6": { en: "Discipleship", ko: "제자도" },
+  "home.value7": { en: "Love", ko: "사랑" },
 
   // Footer
   "footer.tagline": { en: '"For by grace you have been saved through faith."', ko: '"너희는 그 은혜에 의하여 믿음으로 말미암아 구원을 받았으니"' },

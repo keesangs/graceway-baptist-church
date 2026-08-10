@@ -378,6 +378,63 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── MISSION & VISION ── */}
+      <section className="py-32 bg-gradient-to-b from-[#17324D] to-[#0f1f33] text-white relative overflow-hidden">
+        {/* Background accent */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#C9973E]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#C9973E]/5 rounded-full blur-3xl" />
+        
+        <div className="container relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left: Mission */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-[#C9973E]/20 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-[#C9973E] rounded-full" />
+                </div>
+                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.mission")}</p>
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                {t("home.missionStatement")}
+              </h2>
+              <p className="text-white/80 leading-relaxed text-lg">{t("home.missionDesc")}</p>
+              <div className="pt-4 border-t border-white/20" />
+            </div>
+
+            {/* Right: Vision & Values */}
+            <div className="space-y-8">
+              {/* Vision */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-8 hover:bg-white/10 transition-all duration-300">
+                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{t("home.vision")}</p>
+                <h3 className="text-3xl font-bold mb-4" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                  {t("home.visionStatement")}
+                </h3>
+              </div>
+
+              {/* Core Values Grid */}
+              <div>
+                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-4">{t("home.coreValues")}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { key: "home.value1", icon: "📖" },
+                    { key: "home.value2", icon: "🙏" },
+                    { key: "home.value3", icon: "✝️" },
+                    { key: "home.value4", icon: "👥" },
+                    { key: "home.value5", icon: "🌍" },
+                    { key: "home.value6", icon: "🎓" },
+                    { key: "home.value7", icon: "❤️" },
+                  ].map((value, idx) => (
+                    <div key={idx} className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-[#C9973E]/10 transition-all duration-300">
+                      <p className="text-sm font-semibold text-white">{value.icon} {t(value.key)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── RECENT SERMONS ── */}
       <section className="py-24 bg-[#F4F6F7]">
         <div
