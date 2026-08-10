@@ -1,6 +1,6 @@
 # Graceway Baptist Church — Project TODO
 
-## Completed
+## Completed Core Features
 - [x] Initial website scaffold (Home, About, Sermons, Ministries, Connect pages)
 - [x] KO/EN language toggle via LanguageContext
 - [x] Real church info: Sunday 1:30 PM, Wednesday 8:00 PM, 2791 Driscoll Rd Fremont CA, +1 510-529-5636
@@ -9,45 +9,44 @@
 - [x] Footer & Navbar logo unified to new G+cross symbol
 - [x] Full-stack upgrade (web-db-user): tRPC + Drizzle ORM + MySQL + Manus Auth
 - [x] media_files DB table (schema + migration applied)
-- [x] server/db.ts: insertMediaFile, listMediaFiles, deleteMediaFile helpers
-- [x] server/routers.ts: media.list (public), media.upload (protected), media.delete (admin)
 - [x] S3 file storage integration via storagePut
 - [x] MediaLibrary page (/media): upload UI, category filter, file list, delete (admin only)
-- [x] Navbar: Media link added (KO: 미디어 / EN: Media)
 - [x] Leadership profile photos: real photos for Pastor Hunsuk Lee and ShinYoung Kim
 - [x] Leadership profile photos: subtle hover zoom effect (scale 110%, 500ms ease-out)
 - [x] Hero section: 은혜의 강물 looping muted video background (S3-hosted, 1.4MB, poster frame, navy overlay stack)
 - [x] Connect page: real interactive Google Map with geocoded marker + InfoWindow
-- [x] Fixed Map.tsx proxy loader: fetch+Blob URL (script tags send no Origin header, which the proxy requires)
-- [x] newsletter_subscribers + contact_messages DB tables (schema + migration applied)
-- [x] Newsletter signup wired to backend: newsletter.subscribe (public, idempotent by email), newsletter.list (admin)
+- [x] Fixed Map.tsx proxy loader: fetch+Blob URL
+- [x] Newsletter signup wired to backend: newsletter.subscribe (public), newsletter.list (admin)
 - [x] Connect contact form wired to backend: contact.submit (public), contact.list (admin)
-- [x] Server-side trim before email format validation (autofill/mobile trailing-space bug caught by tests)
-- [x] Vitest: 17 tests passing (auth.logout, media, newsletter, contact) — now 19 after adding notification tests
+- [x] Server-side trim before email format validation
+- [x] Admin inbox UI at /admin: Messages + Subscribers tabs with Export CSV
+- [x] Email/push notification to church staff on contact form submission via notifyOwner()
+- [x] Vitest: 20 tests passing (auth, media, newsletter, contact, notifications)
 
-## Pending
-- [x] Sermon cards: all 9 real sermon titles and scripture references applied (Home latest 3 + Sermons page all 9); data supplied by church via chat
-- [x] Admin inbox UI at /admin: Messages tab (contact_messages) + Subscribers tab (newsletter_subscribers), Export CSV, Refresh; admin-only access gate in both frontend and backend
-- [x] Admin-only Inbox link in Navbar (desktop + mobile), visible only when user.role === "admin"
-- [x] Email/push notification to church staff on each contact form submission via notifyOwner(); graceful degradation if notification service is down
-- [x] Vitest: 20 tests passing (3 new notification tests: alert details, throw fallback, false-return fallback)
+## Daily Bible Meditation System — Completed
+- [x] Database schema: daily_meditations table (date, scripture, passage, title, content)
+- [x] Meditation.tsx page: date navigation, scripture viewer, QT questions, calendar view
+- [x] AdminDailyBible.tsx: admin page for adding/editing/deleting meditations
+- [x] tRPC meditation router: list, today, create, update, delete (admin-only)
+- [x] Navbar: "묵상" / "Daily Bible" link added
+- [x] localStorage integration for QT answer persistence
+- [x] Meditation page optimization: calendar view, spacing adjustments, typo fixes
 
-## Daily Bible 묵상 게시판 (새로운 기능)
+## Latest Updates — August 2026
+- [x] Worship.tsx page: 9 Sunday worship songs with YouTube integration
+- [x] Sermons & Worship pages: latest videos updated (August 9, 2026)
+- [x] Home.tsx: Mission & Vision section with core values grid (navy gradient, gold accents)
+- [x] About.tsx: Pastor Hunsuk Lee detailed bio, education (UC Berkeley, Gateway Seminary), ministry experience
+- [x] Hero title responsive font sizing: clamp(2rem, 10vw, 64px) for mobile/desktop optimization
 
-- [ ] 데이터베이스 스키마: daily_meditations 테이블 (날짜, 본문말씀, 제목, 내용, 작성자, 좋아요 수 등)
-- [ ] Daily Bible 페이지 (Meditation.tsx) 생성 — 오늘의 묵상 + 지난 묵상 아카이브
-- [ ] 묵상 작성/수정/삭제 기능 (관리자만 가능)
-- [ ] 묵상 댓글 기능 (회원만 작성 가능)
-- [ ] 좋아요 기능 (회원만 가능)
-- [ ] 네비게이션 메뉴에 "묵상" / "Daily Bible" 링크 추가
-- [ ] 테스트 및 화면 검증
-
-## Daily Bible 묵상 게시판 구현 현황
-
-- [x] 데이터베이스 스키마: daily_meditations, meditation_comments, meditation_likes 테이블 생성
-- [x] Daily Bible 페이지 (Meditation.tsx) 생성 — 오늘의 묵상 + 지난 묵상 아카이브
-- [x] 묵상 작성/수정/삭제 기능 (관리자만 가능) — tRPC meditation router
-- [x] 네비게이션 메뉴에 "묵상" / "Daily Bible" 링크 추가
-- [x] 기본 기능 테스트 및 화면 검증 완료
-- [ ] 묵상 댓글 기능 (회원만 작성 가능) — 추후 구현
-- [ ] 좋아요 기능 (회원만 가능) — 추후 구현
+## Future Enhancements — Not Yet Implemented
+- [ ] Meditation comments feature (members only)
+- [ ] Meditation likes feature (members only)
+- [ ] Bible API integration for automatic scripture retrieval
+- [ ] Email subscription for new meditations
+- [ ] Sermon series categorization
+- [ ] Worship team member profiles
+- [ ] Event calendar system
+- [ ] Prayer request submission form
+- [ ] Member directory (private)
+- [ ] Online giving integration (Stripe)
