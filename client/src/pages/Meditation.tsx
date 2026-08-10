@@ -157,10 +157,10 @@ export default function Meditation() {
           </Button>
 
           <div className="text-center flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
               {formatDate(currentDate)}
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-gray-600">
               {lang === "ko" ? `연중 ${getDayOfYear(currentDate)}일` : `Day ${getDayOfYear(currentDate)} of 365`}
             </p>
             <Button
