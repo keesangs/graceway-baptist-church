@@ -18,7 +18,7 @@ export default function Meditation() {
 
   // tRPC 쿼리 — 모든 묵상 데이터 로드
   const { data: allMeditations = [], isLoading } = trpc.meditation.list.useQuery(
-    { limit: 365, offset: 0 },
+    { limit: 100, offset: 0 },
     { staleTime: 1000 * 60 * 5 } // 5분 캐시
   );
 
