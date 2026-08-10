@@ -1,75 +1,80 @@
-import { useState, useEffect } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Copy, Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Meditation() {
   const { lang } = useLang();
-  const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [qtAnswers, setQtAnswers] = useState({ q1: "", q2: "", q3: "" });
   const [copiedVerse, setCopiedVerse] = useState<string | null>(null);
-  const [qtAnswers, setQtAnswers] = useState<{ q1: string; q2: string; q3: string }>({
-    q1: "",
-    q2: "",
-    q3: "",
-  });
 
   // tRPC 쿼리
-  const { data: currentEntry, isLoading } = trpc.meditation.today.useQuery({
-    date: currentDate,
-  });
-
-  const { data: allMeditations } = trpc.meditation.list.useQuery({
-    limit: 100,
+  const { data: allMeditations = [] } = trpc.meditation.list.useQuery({
+    limit: 365,
     offset: 0,
   });
 
-  // QT 답변 로드 및 저장
+  const currentMeditation = allMeditations.find((m) => m.meditationDate === currentDate);
+
+  // localStorage에서 QT 답변 로드
   useEffect(() => {
-    const savedAnswers = localStorage.getItem(`qt_${currentDate}`);
-    if (savedAnswers) {
-      setQtAnswers(JSON.parse(savedAnswers));
+    const saved = localStorage.getItem(`qt_${currentDate}`);
+    if (saved) {
+      setQtAnswers(JSON.parse(saved));
     } else {
       setQtAnswers({ q1: "", q2: "", q3: "" });
     }
   }, [currentDate]);
 
-  const handleQtChange = (key: "q1" | "q2" | "q3", value: string) => {
-    const newAnswers = { ...qtAnswers, [key]: value };
-    setQtAnswers(newAnswers);
-    localStorage.setItem(`qt_${currentDate}`, JSON.stringify(newAnswers));
+  // QT 답변 저장
+  const handleQtChange = (key: string, value: string) => {
+    const updated = { ...qtAnswers, [key]: value };
+    setQtAnswers(updated);
+    localStorage.setItem(`qt_${currentDate}`, JSON.stringify(updated));
   };
 
-  const copyVerse = (verse: string) => {
-    navigator.clipboard.writeText(verse);
-    setCopiedVerse(verse);
-    setTimeout(() => setCopiedVerse(null), 2000);
-  };
-
+  // 날짜 네비게이션
   const handlePrevDay = () => {
-    const prevDate = new Date(currentDate);
-    prevDate.setDate(prevDate.getDate() - 1);
-    setCurrentDate(prevDate.toISOString().split("T")[0]);
+    const date = new Date(currentDate);
+    date.setDate(date.getDate() - 1);
+    setCurrentDate(date.toISOString().split("T")[0]);
   };
 
   const handleNextDay = () => {
-    const nextDate = new Date(currentDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-    setCurrentDate(nextDate.toISOString().split("T")[0]);
+    const date = new Date(currentDate);
+    date.setDate(date.getDate() + 1);
+    const today = new Date().toISOString().split("T")[0];
+    if (date.toISOString().split("T")[0] <= today) {
+      setCurrentDate(date.toISOString().split("T")[0]);
+    }
   };
 
-  // 이전/다음 버튼 활성화 여부
-  const prevEnabled = allMeditations?.some((e) => new Date(e.meditationDate) < new Date(currentDate));
-  const nextEnabled = allMeditations?.some((e) => new Date(e.meditationDate) > new Date(currentDate));
+  const prevEnabled = allMeditations.some((m) => m.meditationDate < currentDate);
+  const nextEnabled = allMeditations.some((m) => m.meditationDate > currentDate);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + "T00:00:00");
     if (lang === "ko") {
-      return date.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+      });
     }
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    });
   };
 
   const getDayOfYear = (dateStr: string) => {
@@ -78,6 +83,41 @@ export default function Meditation() {
     const diff = date.getTime() - start.getTime();
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
+  };
+
+  const parseScripture = (text: string) => {
+    const lines = text.split("\n");
+    return lines.map((line, idx) => {
+      const match = line.match(/^(\d+):(\d+)\s+(.*)/);
+      if (match) {
+        const [, chapter, verse, content] = match;
+        return (
+          <div key={idx} className="mb-2 group">
+            <span className="text-[#C9973E] font-semibold">{chapter}:{verse}</span>
+            <span className="ml-2 text-gray-800">{content}</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${chapter}:${verse} ${content}`);
+                setCopiedVerse(`${chapter}:${verse}`);
+                setTimeout(() => setCopiedVerse(null), 2000);
+              }}
+              className="ml-2 opacity-0 group-hover:opacity-100 transition inline-flex items-center gap-1 text-sm text-[#C9973E] hover:text-[#17324D]"
+            >
+              {copiedVerse === `${chapter}:${verse}` ? (
+                <Check size={14} />
+              ) : (
+                <Copy size={14} />
+              )}
+            </button>
+          </div>
+        );
+      }
+      return (
+        <p key={idx} className="mb-2 text-gray-800">
+          {line}
+        </p>
+      );
+    });
   };
 
   return (
@@ -97,11 +137,9 @@ export default function Meditation() {
             </button>
 
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-[#17324D]">
-                {formatDate(currentDate)}
-              </h1>
+              <h1 className="text-3xl font-bold text-[#17324D]">{formatDate(currentDate)}</h1>
               <p className="text-gray-600">
-                {lang === "ko" ? "Day" : "Day"} {getDayOfYear(currentDate)} of 365
+                {lang === "ko" ? "연중" : "Day"} {getDayOfYear(currentDate)} of 365
               </p>
             </div>
 
@@ -115,137 +153,145 @@ export default function Meditation() {
           </div>
         </div>
 
-        {/* 메인 콘텐츠 */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            {lang === "ko" ? "로딩 중..." : "Loading..."}
-          </div>
-        ) : !currentEntry ? (
-          <div className="text-center py-12 text-gray-500">
-            {lang === "ko"
-              ? "이 날짜의 묵상 데이터가 없습니다."
-              : "No meditation data for this date."}
-          </div>
-        ) : (
+        {currentMeditation ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 왼쪽: 성경 본문 (2/3) */}
             <div className="lg:col-span-2">
-              {/* 성경 헤더 */}
-              <div className="mb-6">
-                <p className="text-[#C9973E] font-semibold mb-2">
-                  {lang === "ko" ? "개역개정" : "Korean Bible"}
-                </p>
-                <h2 className="text-2xl font-bold text-[#17324D] mb-1">
-                  {currentEntry.title}
-                </h2>
-                <p className="text-gray-600">{currentEntry.scriptureReference}</p>
-              </div>
-
-              {/* 성경 본문 */}
-              <div className="space-y-4 bg-[#F9F7F4] p-6 rounded-lg mb-8">
-                {currentEntry.scriptureText.split("\n").filter((v) => v.trim()).map((verse, idx) => {
-                  const match = verse.trim().match(/^(\d+:\d+)\s+(.*)/);
-                  if (!match) return <p key={idx} className="text-gray-800">{verse}</p>;
-
-                  const [, verseNum, verseText] = match;
-                  return (
-                    <div key={idx} className="group flex gap-3 hover:bg-white p-2 rounded transition">
-                      <span className="text-[#C9973E] font-bold min-w-fit">
-                        {verseNum}
-                      </span>
-                      <p className="text-gray-800 flex-1">{verseText}</p>
-                      <button
-                        onClick={() => copyVerse(verse)}
-                        className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-[#C9973E]"
-                      >
-                        {copiedVerse === verse ? (
-                          <Check size={18} className="text-green-600" />
-                        ) : (
-                          <Copy size={18} />
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+              <Card className="p-6 mb-8">
+                <div className="mb-4">
+                  <p className="text-sm text-[#C9973E] font-semibold">
+                    {lang === "ko" ? "개역개정" : "Korean Standard Version"}
+                  </p>
+                  <h2 className="text-2xl font-bold text-[#17324D] mb-2">
+                    {currentMeditation.scriptureReference}
+                  </h2>
+                </div>
+                <div className="prose prose-sm max-w-none">
+                  {parseScripture(currentMeditation.scriptureText)}
+                </div>
+              </Card>
 
               {/* 묵상 나눔 */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <Card className="p-6">
                 <h3 className="text-lg font-bold text-[#17324D] mb-4">
                   {lang === "ko" ? "묵상 나눔" : "Shared Reflections"}
                 </h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded text-center text-gray-500">
-                    {lang === "ko"
-                      ? "아직 공유된 묵상이 없습니다."
-                      : "No shared reflections yet."}
+                <p className="text-gray-500">
+                  {lang === "ko" ? "아직 공유된 묵상이 없습니다." : "No shared reflections yet."}
+                </p>
+              </Card>
+
+              {/* 캘린더 뷰 */}
+              <Card className="p-6 mt-8">
+                <h3 className="text-lg font-bold text-[#17324D] mb-4">
+                  {lang === "ko" ? "지난 묵상 보기" : "Browse Past Meditations"}
+                </h3>
+                {allMeditations.length > 0 ? (
+                  <div className="grid grid-cols-7 gap-2">
+                    {/* 요일 헤더 */}
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                      <div
+                        key={day}
+                        className="text-center font-semibold text-gray-600 text-sm py-2"
+                      >
+                        {lang === "ko"
+                          ? day === "Sun"
+                            ? "일"
+                            : day === "Mon"
+                              ? "월"
+                              : day === "Tue"
+                                ? "화"
+                                : day === "Wed"
+                                  ? "수"
+                                  : day === "Thu"
+                                    ? "목"
+                                    : day === "Fri"
+                                      ? "금"
+                                      : "토"
+                          : day}
+                      </div>
+                    ))}
+                    {/* 캘린더 날짜 */}
+                    {allMeditations.map((meditation) => {
+                      const date = new Date(meditation.meditationDate + "T00:00:00");
+                      const isCurrentDate = meditation.meditationDate === currentDate;
+
+                      return (
+                        <button
+                          key={meditation.id}
+                          onClick={() => setCurrentDate(meditation.meditationDate)}
+                          className={`p-2 rounded text-sm font-semibold transition ${
+                            isCurrentDate
+                              ? "bg-[#17324D] text-white"
+                              : "bg-[#C9973E] text-white hover:bg-[#b8873a]"
+                          }`}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
-              </div>
+                ) : (
+                  <p className="text-gray-500">
+                    {lang === "ko" ? "아직 묵상이 없습니다." : "No meditations yet."}
+                  </p>
+                )}
+              </Card>
             </div>
 
             {/* 오른쪽: QT 질문 (1/3, sticky) */}
             <div className="lg:col-span-1">
               <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-24 space-y-6">
                 <h3 className="text-lg font-bold text-[#17324D]">
-                  {lang === "ko" ? "목상 질문" : "QT Questions"}
+                  {lang === "ko" ? "묵상 질문" : "QT Questions"}
                 </h3>
 
                 <div>
                   <label className="block text-sm font-semibold text-[#17324D] mb-2">
-                    {lang === "ko"
-                      ? "1. 하나님은 어떤 분?"
-                      : "1. Who is God?"}
+                    {lang === "ko" ? "1. 하나님은 어떤 분?" : "1. Who is God?"}
                   </label>
-                  <textarea
+                  <Textarea
                     value={qtAnswers.q1}
                     onChange={(e) => handleQtChange("q1", e.target.value)}
-                    placeholder={lang === "ko" ? "묵상을 입력하세요..." : "Enter your reflection..."}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#C9973E]"
+                    placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
                     rows={4}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {qtAnswers.q1.length}/500
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{qtAnswers.q1.length}/500</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-[#17324D] mb-2">
-                    {lang === "ko"
-                      ? "2. 내게 주는 교훈은?"
-                      : "2. What is the lesson?"}
+                    {lang === "ko" ? "2. 나에게 주는 교훈은?" : "2. What is the lesson for me?"}
                   </label>
-                  <textarea
+                  <Textarea
                     value={qtAnswers.q2}
                     onChange={(e) => handleQtChange("q2", e.target.value)}
-                    placeholder={lang === "ko" ? "묵상을 입력하세요..." : "Enter your reflection..."}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#C9973E]"
+                    placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
                     rows={4}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {qtAnswers.q2.length}/500
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{qtAnswers.q2.length}/500</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-[#17324D] mb-2">
-                    {lang === "ko"
-                      ? "3. 오늘 나에게 주시는 성경 구절"
-                      : "3. Today's verse for me"}
+                    {lang === "ko" ? "3. 오늘 나에게 주시는 성경 구절" : "3. Today's verse for me"}
                   </label>
-                  <textarea
+                  <Textarea
                     value={qtAnswers.q3}
                     onChange={(e) => handleQtChange("q3", e.target.value)}
-                    placeholder={lang === "ko" ? "묵상을 입력하세요..." : "Enter your reflection..."}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#C9973E]"
+                    placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
                     rows={4}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {qtAnswers.q3.length}/500
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{qtAnswers.q3.length}/500</p>
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              {lang === "ko" ? "이 날짜의 묵상이 없습니다." : "No meditation for this date."}
+            </p>
           </div>
         )}
       </div>
