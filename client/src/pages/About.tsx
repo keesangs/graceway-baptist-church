@@ -23,10 +23,15 @@ const beliefs = [
 const MYEONGJE_IMG = "https://media.licdn.com/dms/image/v2/C5603AQGC40_2yaKGdg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1632380620884?e=2147483647&v=beta&t=znvTv-YbEaN2UHNqMDqW8Y0N5PYsy0UoDMxJ6ctj6rw";
 
 const staff = [
-  { name: "Pastor Hunsuk Lee", role: "Lead Pastor", img: PASTOR_IMG },
+  { 
+    name: "Pastor Hunsuk Lee", 
+    role: "Lead Pastor", 
+    img: PASTOR_IMG, 
+    bio: "I believe the true pastor of our church is Jesus Christ. I prioritize Jesus in every decision and direction. I hope to be a sheep following the Good Shepherd with other sheep in our congregation.",
+    education: "Master of Architecture (UC Berkeley) | Master of Divinity (Gateway Seminary)",
+    ministry: "Bridgeway Baptist Church, Palo Alto (Associate Pastor) | Graceway Baptist Church, Fremont (Lead Pastor)"
+  },
   { name: "Pastor MyeongJe Cho", role: "Pastoral Staff", img: MYEONGJE_IMG },
-  { name: "Pastor Hunsuk Lee", role: "Worship Leader", img: PASTOR_IMG },
-  { name: "ShinYoung Kim", role: "Children's Ministry", img: "/manus-storage/shinyoung_kim_bc08e063.jpg" },
 ];
 
 export default function About() {
@@ -128,19 +133,38 @@ export default function About() {
             </h2>
             <div className="gold-rule w-16 mx-auto mt-4" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {staff.map((s, i) => (
-              <div key={i} className="text-center group">
-                <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-4 border-2 border-[#C9973E]/30 group-hover:border-[#C9973E] transition-colors duration-300">
-                  <img src={s.img} alt={s.name} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
+              <div key={i} className="group">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-2 border-[#C9973E]/30 group-hover:border-[#C9973E] transition-colors duration-300">
+                    <img src={s.img} alt={s.name} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
+                  </div>
+                  <h3
+                    className="text-white font-semibold text-lg"
+                    style={{ fontFamily: "'Source Serif 4', serif" }}
+                  >
+                    {s.name}
+                  </h3>
+                  <p className="text-[#C9973E] text-xs tracking-wide mt-1">{s.role}</p>
                 </div>
-                <h3
-                  className="text-white font-semibold"
-                  style={{ fontFamily: "'Source Serif 4', serif" }}
-                >
-                  {s.name}
-                </h3>
-                <p className="text-[#C9973E] text-xs tracking-wide mt-1">{s.role}</p>
+                {s.bio && (
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-4">
+                    <p className="text-white/80 text-sm leading-relaxed italic">\"{s.bio}\"</p>
+                    {s.education && (
+                      <div>
+                        <p className="text-[#C9973E] text-xs tracking-wide uppercase font-semibold mb-2">Education</p>
+                        <p className="text-white/70 text-sm">{s.education}</p>
+                      </div>
+                    )}
+                    {s.ministry && (
+                      <div>
+                        <p className="text-[#C9973E] text-xs tracking-wide uppercase font-semibold mb-2">Ministry Experience</p>
+                        <p className="text-white/70 text-sm">{s.ministry}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
