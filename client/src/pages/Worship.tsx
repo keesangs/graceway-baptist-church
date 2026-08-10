@@ -16,7 +16,7 @@ const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 const worships = [
   {
     titleEn: "Sunday Worship",
-    titleKo: "2026. 08.09 주일예배 찭양",
+    titleKo: "2026. 08.09 주일예배 찬양",
     date: "August 9, 2026",
     duration: "16 min",
     series: "Sunday Worship",
@@ -24,7 +24,7 @@ const worships = [
   },
   {
     titleEn: "Sunday Worship",
-    titleKo: "2026. 08.02 주일예배 찭양",
+    titleKo: "2026. 08.02 주일예배 찬양",
     date: "August 2, 2026",
     duration: "15 min",
     series: "Sunday Worship",
