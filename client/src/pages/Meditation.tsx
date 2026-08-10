@@ -137,7 +137,7 @@ export default function Meditation() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 pt-20">
         {/* 헤더 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
