@@ -139,7 +139,7 @@ export default function Meditation() {
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 pt-20">
         {/* 헤더 */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-12">
           <p className="text-gray-600">
             {lang === "ko" ? "매일 말씀과 함께 묵상하는 시간" : "Meditate on God's Word daily"}
           </p>
