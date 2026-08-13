@@ -40,7 +40,7 @@
 - [x] Hero title responsive font sizing: clamp(2rem, 10vw, 64px) for mobile/desktop optimization
 
 ## Future Enhancements — Not Yet Implemented
-- [ ] Meditation comments feature (members only)
+- [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
 - [ ] Meditation likes feature (members only)
 - [ ] Bible API integration for automatic scripture retrieval
 - [ ] Email subscription for new meditations
@@ -50,3 +50,4 @@
 - [ ] Prayer request submission form
 - [ ] Member directory (private)
 - [ ] Online giving integration (Stripe)
+- [x] Meditation comments: 로그인한 사용자의 댓글 작성·조회·본인 댓글 삭제 및 묵상 페이지 댓글 UI 추가

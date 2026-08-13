@@ -2,14 +2,19 @@ import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
+  deleteMeditationComment,
   deleteMediaFile,
   deleteDailyMeditation,
+  getDailyMeditationById,
   getDailyMeditationByDate,
+  getMeditationCommentById,
   insertContactMessage,
   insertDailyMeditation,
+  insertMeditationComment,
   insertMediaFile,
   listContactMessages,
   listDailyMeditations,
+  listMeditationComments,
   listMediaFiles,
   listNewsletterSubscribers,
   subscribeToNewsletter,
@@ -263,6 +268,52 @@ export const appRouter = router({
         deleteDailyMeditation(input.id);
         return { success: true } as const;
       }),
+
+    comments: router({
+      /** Anyone can read the conversation attached to a published meditation. */
+      list: publicProcedure
+        .input(z.object({ meditationId: z.number().int().positive() }))
+        .query(({ input }) => listMeditationComments(input.meditationId)),
+
+      /** A signed-in member can share one short reflection per submission. */
+      create: protectedProcedure
+        .input(
+          z.object({
+            meditationId: z.number().int().positive(),
+            content: z.string().trim().min(1).max(1200),
+          }),
+        )
+        .mutation(async ({ input, ctx }) => {
+          const meditation = await getDailyMeditationById(input.meditationId);
+          if (!meditation) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
+          }
+
+          await insertMeditationComment({
+            meditationId: input.meditationId,
+            authorId: ctx.user.id,
+            content: input.content,
+          });
+
+          return { success: true } as const;
+        }),
+
+      /** A member may remove their own comment; church administrators may moderate any comment. */
+      delete: protectedProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(async ({ input, ctx }) => {
+          const comment = await getMeditationCommentById(input.id);
+          if (!comment) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" });
+          }
+          if (comment.authorId !== ctx.user.id && ctx.user.role !== "admin") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "You may only delete your own comment" });
+          }
+
+          await deleteMeditationComment(input.id);
+          return { success: true } as const;
+        }),
+    }),
   }),
 });
 

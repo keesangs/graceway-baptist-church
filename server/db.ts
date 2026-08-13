@@ -240,10 +240,29 @@ export async function listMeditationComments(meditationId: number) {
   const db = await getDb();
   if (!db) return [];
   return db
-    .select()
+    .select({
+      id: meditationComments.id,
+      meditationId: meditationComments.meditationId,
+      authorId: meditationComments.authorId,
+      content: meditationComments.content,
+      createdAt: meditationComments.createdAt,
+      updatedAt: meditationComments.updatedAt,
+      authorName: users.name,
+    })
     .from(meditationComments)
+    .innerJoin(users, eq(meditationComments.authorId, users.id))
     .where(eq(meditationComments.meditationId, meditationId))
     .orderBy(asc(meditationComments.createdAt));
+}
+
+export async function getMeditationCommentById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(meditationComments)
+    .where(eq(meditationComments.id, id));
+  return row || null;
 }
 
 export async function deleteMeditationComment(id: number) {

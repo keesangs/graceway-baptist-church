@@ -3,18 +3,23 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Copy, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Check, Loader2, LogIn, MessageCircle, Send, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { startLogin } from "@/const";
 
 export default function Meditation() {
   const { lang } = useLang();
+  const { user, isAuthenticated } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split("T")[0]);
   const [qtAnswers, setQtAnswers] = useState({ q1: "", q2: "", q3: "" });
   const [copiedVerse, setCopiedVerse] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [hasResolvedInitialDate, setHasResolvedInitialDate] = useState(false);
+  const utils = trpc.useUtils();
 
   // tRPC 쿼리 — 모든 묵상 데이터 로드
   const { data: allMeditations = [], isLoading } = trpc.meditation.list.useQuery(
@@ -23,6 +28,37 @@ export default function Meditation() {
   );
 
   const currentMeditation = allMeditations.find((m) => m.meditationDate === currentDate);
+  const { data: comments = [], isLoading: commentsLoading } = trpc.meditation.comments.list.useQuery(
+    { meditationId: currentMeditation?.id ?? 0 },
+    { enabled: Boolean(currentMeditation?.id), staleTime: 1000 * 30 },
+  );
+
+  const createComment = trpc.meditation.comments.create.useMutation({
+    onSuccess: async () => {
+      setCommentDraft("");
+      if (currentMeditation?.id) {
+        await utils.meditation.comments.list.invalidate({ meditationId: currentMeditation.id });
+      }
+    },
+  });
+
+  const deleteComment = trpc.meditation.comments.delete.useMutation({
+    onSuccess: async () => {
+      if (currentMeditation?.id) {
+        await utils.meditation.comments.list.invalidate({ meditationId: currentMeditation.id });
+      }
+    },
+  });
+
+  // If a devotion has not yet been published for the current day, start the
+  // visitor at the newest available meditation instead of an empty page.
+  useEffect(() => {
+    if (isLoading || hasResolvedInitialDate || allMeditations.length === 0) return;
+    if (!allMeditations.some((meditation) => meditation.meditationDate === currentDate)) {
+      setCurrentDate(allMeditations[0].meditationDate);
+    }
+    setHasResolvedInitialDate(true);
+  }, [allMeditations, currentDate, hasResolvedInitialDate, isLoading]);
 
   // localStorage에서 QT 답변 로드
   useEffect(() => {
@@ -59,6 +95,15 @@ export default function Meditation() {
     navigator.clipboard.writeText(verse);
     setCopiedVerse(verse);
     setTimeout(() => setCopiedVerse(null), 2000);
+  };
+
+  const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!currentMeditation || !commentDraft.trim() || createComment.isPending) return;
+    createComment.mutate({
+      meditationId: currentMeditation.id,
+      content: commentDraft,
+    });
   };
 
   // 성경 본문 파싱
@@ -268,17 +313,107 @@ export default function Meditation() {
                   ))}
                 </div>
 
-                {/* 묵상 나눔 섹션 */}
-                <div className="border-t pt-6">
-                  <h4 className="font-semibold text-gray-900 mb-4">
-                    {lang === "ko" ? "묵상 나눔" : "Shared Meditations"}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {lang === "ko"
-                      ? "다른 성도들의 묵상을 나눌 수 있습니다. (준비 중)"
-                      : "Share meditations with other members. (Coming soon)"}
-                  </p>
-                </div>
+                {/* 묵상 나눔 댓글 */}
+                <section className="border-t pt-6" aria-labelledby="meditation-comments-title">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-[#C9973E]" aria-hidden="true" />
+                      <h4 id="meditation-comments-title" className="font-semibold text-gray-900">
+                        {lang === "ko" ? "묵상 나눔" : "Meditation Sharing"}
+                      </h4>
+                    </div>
+                    <span className="text-xs font-medium text-gray-500">
+                      {comments.length} {lang === "ko" ? "개의 나눔" : "shared"}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 mb-6" aria-live="polite">
+                    {commentsLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {lang === "ko" ? "나눔을 불러오는 중..." : "Loading reflections..."}
+                      </div>
+                    ) : comments.length === 0 ? (
+                      <div className="rounded-lg bg-[#F4F6F7] p-5 text-sm text-gray-600">
+                        {lang === "ko"
+                          ? "아직 나눔이 없습니다. 말씀을 통해 받은 은혜를 첫 번째로 나누어 주세요."
+                          : "No reflections have been shared yet. Be the first to share what you received from the Word."}
+                      </div>
+                    ) : (
+                      comments.map((comment) => {
+                        const mayDelete = user && (user.id === comment.authorId || user.role === "admin");
+                        return (
+                          <article key={comment.id} className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div>
+                                <p className="font-semibold text-sm text-[#17324D]">
+                                  {comment.authorName || (lang === "ko" ? "이름 없는 성도" : "Church member")}
+                                </p>
+                                <time className="text-xs text-gray-500" dateTime={new Date(comment.createdAt).toISOString()}>
+                                  {new Date(comment.createdAt).toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </time>
+                              </div>
+                              {mayDelete && (
+                                <button
+                                  type="button"
+                                  aria-label={lang === "ko" ? "나눔 삭제" : "Delete reflection"}
+                                  onClick={() => deleteComment.mutate({ id: comment.id })}
+                                  disabled={deleteComment.isPending}
+                                  className="rounded p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{comment.content}</p>
+                          </article>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {isAuthenticated ? (
+                    <form onSubmit={handleCommentSubmit} className="rounded-lg bg-[#F4F6F7] p-4">
+                      <label htmlFor="meditation-comment" className="block text-sm font-semibold text-[#17324D] mb-2">
+                        {lang === "ko" ? "말씀을 통해 받은 은혜를 나누어 주세요" : "Share your reflection from today's Word"}
+                      </label>
+                      <Textarea
+                        id="meditation-comment"
+                        value={commentDraft}
+                        onChange={(event) => setCommentDraft(event.target.value)}
+                        placeholder={lang === "ko" ? "서로를 세우는 마음으로 나눔을 남겨 주세요." : "Leave a reflection that encourages our community."}
+                        maxLength={1200}
+                        className="min-h-28 resize-y bg-white"
+                      />
+                      <div className="mt-3 flex items-center justify-between gap-4">
+                        <p className="text-xs text-gray-500">{commentDraft.length}/1200</p>
+                        <Button type="submit" size="sm" disabled={!commentDraft.trim() || createComment.isPending} className="bg-[#17324D] hover:bg-[#244A70]">
+                          {createComment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          {lang === "ko" ? "나눔 등록" : "Share"}
+                        </Button>
+                      </div>
+                      {createComment.isError && (
+                        <p role="alert" className="mt-3 text-sm text-red-600">
+                          {lang === "ko" ? "나눔을 등록하지 못했습니다. 잠시 후 다시 시도해 주세요." : "Your reflection could not be posted. Please try again."}
+                        </p>
+                      )}
+                    </form>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#C9973E]/25 bg-[#C9973E]/5 p-4">
+                      <p className="text-sm text-[#17324D]">
+                        {lang === "ko" ? "로그인하면 말씀 묵상을 나누고 서로를 격려할 수 있습니다." : "Sign in to share a reflection and encourage one another."}
+                      </p>
+                      <Button type="button" size="sm" variant="outline" onClick={() => startLogin()} className="shrink-0 border-[#C9973E]/50 text-[#17324D] hover:bg-[#C9973E]/10">
+                        <LogIn className="w-4 h-4" />
+                        {lang === "ko" ? "로그인" : "Sign in"}
+                      </Button>
+                    </div>
+                  )}
+                </section>
               </Card>
             </div>
 
