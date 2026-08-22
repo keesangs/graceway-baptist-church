@@ -57,3 +57,4 @@
 - [x] Korean/English translation review: 첨부 번역 검토 문서를 기준으로 Home·About·Sermons·Connect·Meditation·Footer의 양언어 문구와 잔존 언어를 점검·개선
 - [x] Daily Bible bilingual content: 관리자 입력에서 한국어·영어 제목/성경구절/본문/묵상을 별도로 저장하고 언어 토글에 맞춰 표시
 - [x] Home mission/vision/values redesign: 내용은 유지하고 랜딩 페이지에 어울리는 현대적인 에디토리얼 레이아웃과 시각 계층으로 재구성
+- [x] About/Ministries abstract visuals: 인물이 보이는 배경·사역 이미지를 제거하고 Graceway 브랜드에 맞는 인물 없는 추상 이미지로 교체

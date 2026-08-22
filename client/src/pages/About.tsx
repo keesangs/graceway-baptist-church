@@ -8,8 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
 
-const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
-const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
+const ABOUT_ABSTRACT_IMG = "/manus-storage/graceway_about_abstract_45d6795b.jpg";
 const PASTOR_IMG = "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp";
 
 const beliefs = [
@@ -50,7 +49,7 @@ export default function About() {
       {/* Page Hero */}
       <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src={COMMUNITY_IMG} alt="" className="w-full h-full object-cover" />
+          <img src={ABOUT_ABSTRACT_IMG} alt="" className="w-full h-full object-cover" />
         </div>
         <div className="absolute inset-0 bg-[#17324D]/80" />
         <div className="relative container text-center">
@@ -98,7 +97,7 @@ export default function About() {
               </p>
             </div>
             <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-              <img src={COMMUNITY_IMG} alt="Graceway Community" className="w-full h-full object-cover" />
+              <img src={ABOUT_ABSTRACT_IMG} alt="Abstract expression of Graceway's path of grace" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>

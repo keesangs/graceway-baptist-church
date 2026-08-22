@@ -8,9 +8,9 @@ import { ArrowRight, BookOpen, Users, Heart, Music, GraduationCap, Zap, Globe, C
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
-const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
-const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
+const MINISTRY_WORD_ABSTRACT = "/manus-storage/graceway_ministry_word_abstract_13bb7682.jpg";
+const MINISTRY_COMMUNITY_ABSTRACT = "/manus-storage/graceway_ministry_community_abstract_625e9dfc.jpg";
+const MINISTRY_MISSION_ABSTRACT = "/manus-storage/graceway_ministry_mission_abstract_d616e786.jpg";
 
 const featuredMinistry = {
   icon: BookOpen,
@@ -19,7 +19,7 @@ const featuredMinistry = {
   quote: "Your word is a lamp to my feet and a light to my path.",
   quoteRef: "— Psalm 119:105",
   desc: "Join us every Wednesday evening for an in-depth exploration of Scripture. Our Bible study groups are designed for all levels — whether you're new to the Bible or have been studying for years, you'll find a place to grow in God's Word together.",
-  img: SERMON_IMG,
+  img: MINISTRY_WORD_ABSTRACT,
 };
 
 const ministryRows = [
@@ -28,7 +28,7 @@ const ministryRows = [
     title: "Small Groups",
     subtitle: "Various Days & Locations",
     desc: "Life is better in community. Our small groups meet throughout the week in homes across the city, providing a space for deeper connection, prayer, and mutual encouragement in everyday life.",
-    img: COMMUNITY_IMG,
+    img: MINISTRY_COMMUNITY_ABSTRACT,
     reverse: false,
     color: "#2F6F9F",
   },
@@ -37,7 +37,7 @@ const ministryRows = [
     title: "College Campus Ministry",
     subtitle: "Weekdays · Nearby College Campuses",
     desc: "We are passionate about reaching the next generation on campus. Our college ministry connects with students at nearby universities and community colleges throughout the week — building friendships, studying Scripture, and living out the gospel together in the places where students spend their days.",
-    img: COMMUNITY_IMG,
+    img: MINISTRY_MISSION_ABSTRACT,
     reverse: true,
     color: "#C9973E",
   },
@@ -46,7 +46,7 @@ const ministryRows = [
     title: "Youth Ministry",
     subtitle: "Fridays · 6:30 PM",
     desc: "Our youth ministry is a place where middle and high school students can belong, grow, and be challenged to live out their faith. Friday nights are filled with worship, teaching, and authentic community.",
-    img: COMMUNITY_IMG,
+    img: MINISTRY_MISSION_ABSTRACT,
     reverse: false,
     color: "#17324D",
   },
@@ -67,7 +67,7 @@ export default function Ministries() {
       {/* Page Hero */}
       <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src={COMMUNITY_IMG} alt="" className="w-full h-full object-cover" />
+          <img src={MINISTRY_MISSION_ABSTRACT} alt="" className="w-full h-full object-cover" />
         </div>
         <div className="absolute inset-0 bg-[#17324D]/80" />
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent opacity-60" />
