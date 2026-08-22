@@ -138,9 +138,9 @@ const translations: Record<string, Record<Lang, string>> = {
   "footer.community": { en: "Community", ko: "공동체" },
 
   // About page
-  "about.whoWeAre": { en: "Who We Are", ko: "우리는 누구인가" },
+  "about.whoWeAre": { en: "A Community of Grace, Faith, the Word, and Love", ko: "은혜 | 믿음 | 말씀 | 사랑 공동체" },
   "about.title": { en: "About Graceway", ko: "그레이스웨이 소개" },
-  "about.subtitle": { en: "A community rooted in grace, growing in faith, and reaching out in love.", ko: "은혜에 뿌리를 두고, 믿음 안에서 성장하며, 사랑으로 손을 내미는 공동체." },
+  "about.subtitle": { en: "A community rooted in grace, growing in faith through the Word, and reaching out in love.", ko: "은혜에 뿌리를 두고, 말씀으로 믿음 안에서 성장하며, 사랑으로 손을 내미는 공동체." },
   "about.ourStory": { en: "Our Story", ko: "우리 이야기" },
   "about.storyHeadline": { en: "Founded on Grace, Built on Community", ko: "은혜 위에 세워지고, 공동체로 이루어진 교회" },
   "about.doctrine": { en: "Doctrine", ko: "교리" },

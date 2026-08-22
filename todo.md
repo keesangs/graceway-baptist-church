@@ -66,3 +66,4 @@
 - [x] Sermons featured label: 최신 말씀을 최근 설교 말씀으로 변경
 - [x] Home mission verse: 사명 섹션에 로마서 12장 1절 전문을 추가
 - [x] Home mission verse layout: 데스크톱에서도 로마서 12장 1절 인용문을 사명 설명 바로 아래에 배치
+- [x] About community copy: 은혜·믿음·말씀·사랑 공동체 문구와 소개 문장 업데이트
