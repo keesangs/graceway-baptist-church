@@ -381,57 +381,89 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── MISSION & VISION ── */}
-      <section className="py-32 bg-gradient-to-b from-[#17324D] to-[#0f1f33] text-white relative overflow-hidden">
-        {/* Background accent */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#C9973E]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#C9973E]/5 rounded-full blur-3xl" />
-        
-        <div className="container relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left: Mission */}
-            <div className="space-y-6">
+      {/* ── MISSION, VISION & VALUES — Editorial ── */}
+      <section className="relative overflow-hidden bg-[#F4F6F7] py-24 lg:py-32">
+        <div className="pointer-events-none absolute -top-32 -right-28 h-[28rem] w-[28rem] rounded-full border border-[#C9973E]/15" />
+        <div className="pointer-events-none absolute -top-16 -right-12 h-[19rem] w-[19rem] rounded-full border border-[#C9973E]/10" />
+
+        <div className="container relative">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#C9973E]/20 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-[#C9973E] rounded-full" />
-                </div>
-                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.mission")}</p>
+                <span className="h-px w-10 bg-[#C9973E]" />
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9973E]">
+                  {lang === "ko" ? "우리가 지향하는 길" : "What guides us"}
+                </p>
               </div>
-              <h2 className="text-4xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                {t("home.missionStatement")}
-              </h2>
-              <p className="text-white/80 leading-relaxed text-lg">{t("home.missionDesc")}</p>
-              <div className="pt-4 border-t border-white/20" />
+              <p className="mt-5 text-sm leading-relaxed text-[#242A30]/60">
+                {lang === "ko"
+                  ? "말씀과 예배, 그리고 세상을 향한 사랑으로 오늘을 살아갑니다."
+                  : "We live today through the Word, worship, and love for the world."}
+              </p>
             </div>
 
-            {/* Right: Vision & Values */}
-            <div className="space-y-8">
-              {/* Vision */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-8 hover:bg-white/10 transition-all duration-300">
-                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{t("home.vision")}</p>
-                <h3 className="text-3xl font-bold mb-4" style={{ fontFamily: "'Source Serif 4', serif" }}>
+            <div className="lg:col-span-8 lg:border-l lg:border-[#17324D]/15 lg:pl-16">
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#2F6F9F]">01 / {t("home.mission")}</p>
+              <h2
+                className="max-w-4xl text-[#17324D]"
+                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2.15rem, 4.5vw, 4.25rem)", fontWeight: 700, lineHeight: 1.12 }}
+              >
+                {t("home.missionStatement")}
+              </h2>
+              <div className="mt-8 grid grid-cols-1 gap-6 border-t border-[#17324D]/15 pt-7 md:grid-cols-12">
+                <p className="md:col-span-9 text-base leading-8 text-[#242A30]/72 md:text-lg">
+                  {t("home.missionDesc")}
+                </p>
+                <div className="md:col-span-3 md:border-l md:border-[#C9973E]/45 md:pl-5">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#C9973E]">Romans 12:1</p>
+                  <p className="mt-2 text-sm italic leading-relaxed text-[#17324D]/70">
+                    {lang === "ko" ? "삶으로 드리는 영적 예배" : "A living, spiritual act of worship"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16 grid grid-cols-1 overflow-hidden border border-[#17324D]/10 bg-white shadow-[0_22px_55px_rgba(23,50,77,0.08)] lg:grid-cols-12">
+            <div className="relative overflow-hidden bg-[#17324D] px-8 py-10 text-white sm:px-10 lg:col-span-5 lg:px-12 lg:py-14">
+              <div className="absolute -right-7 -top-14 select-none text-[14rem] leading-none text-[#C9973E]/10" style={{ fontFamily: "'Source Serif 4', serif" }}>G</div>
+              <div className="relative">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9973E]">02 / {t("home.vision")}</p>
+                <h3 className="mt-5 max-w-md text-3xl leading-tight sm:text-4xl" style={{ fontFamily: "'Source Serif 4', serif", fontWeight: 700 }}>
                   {t("home.visionStatement")}
                 </h3>
+                <span className="mt-8 block h-px w-12 bg-[#C9973E]" />
               </div>
+            </div>
 
-              {/* Core Values Grid */}
-              <div>
-                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-4">{t("home.coreValues")}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { key: "home.value1", icon: "📖" },
-                    { key: "home.value2", icon: "🙏" },
-                    { key: "home.value3", icon: "✝️" },
-                    { key: "home.value4", icon: "👥" },
-                    { key: "home.value5", icon: "🌍" },
-                    { key: "home.value6", icon: "🎓" },
-                    { key: "home.value7", icon: "❤️" },
-                  ].map((value, idx) => (
-                    <div key={idx} className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-[#C9973E]/10 transition-all duration-300">
-                      <p className="text-sm font-semibold text-white">{value.icon} {t(value.key)}</p>
-                    </div>
-                  ))}
+            <div className="px-8 py-10 sm:px-10 lg:col-span-7 lg:px-12 lg:py-14">
+              <div className="flex items-end justify-between gap-5 border-b border-[#17324D]/10 pb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2F6F9F]">03 / {t("home.coreValues")}</p>
+                  <p className="mt-2 text-sm text-[#242A30]/60">
+                    {lang === "ko" ? "우리의 선택과 사역을 이끄는 일곱 가지 약속" : "Seven commitments that shape our life and ministry"}
+                  </p>
                 </div>
+                <span className="hidden text-4xl leading-none text-[#C9973E]/50 sm:block" style={{ fontFamily: "'Source Serif 4', serif" }}>07</span>
+              </div>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2">
+                {[
+                  "home.value1",
+                  "home.value2",
+                  "home.value3",
+                  "home.value4",
+                  "home.value5",
+                  "home.value6",
+                  "home.value7",
+                ].map((key, idx) => (
+                  <div
+                    key={key}
+                    className="group flex items-center gap-4 border-b border-[#17324D]/10 py-4 transition-colors hover:bg-[#F4F6F7] sm:px-3"
+                  >
+                    <span className="w-6 text-xs font-semibold tracking-wider text-[#C9973E]">{String(idx + 1).padStart(2, "0")}</span>
+                    <p className="text-sm font-semibold text-[#17324D] transition-colors group-hover:text-[#2F6F9F]">{t(key)}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
