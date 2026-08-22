@@ -27,6 +27,12 @@ const SECTION_HEADING_STYLE = {
   lineHeight: 1.16,
 };
 
+const STORY_HEADING_STYLE = {
+  ...SECTION_HEADING_STYLE,
+  fontSize: "clamp(1.65rem, 2.5vw, 2.1rem)",
+  lineHeight: 1.2,
+};
+
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
@@ -359,16 +365,16 @@ export default function Home() {
           style={{ opacity: storyFade.visible ? 1 : 0, transform: storyFade.visible ? "translateY(0)" : "translateY(32px)" }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5 max-w-md text-left">
+            <div className="lg:col-span-5 text-left">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-8 bg-[#C9973E]" />
                 <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.ourStory")}</p>
               </div>
               <h2
                 className="text-[#17324D] mb-6"
-                style={SECTION_HEADING_STYLE}
+                style={STORY_HEADING_STYLE}
               >
-                {lang === "ko" ? <>은혜는 목적지가 아닙니다 —<br />그것이 바로 길입니다.</> : t("home.storyHeadline")}
+                {lang === "ko" ? <><span className="lg:whitespace-nowrap">은혜는 목적지가 아닙니다 —</span><br />그것이 바로 길입니다.</> : t("home.storyHeadline")}
               </h2>
               <div className="w-12 h-0.5 bg-[#C9973E] mb-6" />
               <p className="text-[#242A30]/70 leading-relaxed mb-4">{t("home.storyBody1")}</p>

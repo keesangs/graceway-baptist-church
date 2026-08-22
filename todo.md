@@ -70,3 +70,4 @@
 - [x] Home heading scale: 각 섹션 헤드라인(최근 설교 포함)의 반응형 폰트 크기를 일관된 스케일로 정리하고 우리 이야기 한국어 줄바꿈 개선
 - [x] Responsive landing typography skill: 헤드라인 스케일·모바일 검증·섹션 정렬·페이드인 개선 과정을 재사용 스킬로 패키징
 - [x] Home responsive polish: 모바일 줄바꿈·여백, 우리 이야기·가족 환영 정렬, 전체 섹션 페이드인 애니메이션 개선
+- [x] Home story heading: 첫 문장을 한 줄로 유지하도록 우리 이야기 헤드라인 전용 반응형 크기 조정
