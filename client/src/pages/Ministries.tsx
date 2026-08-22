@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 const MINISTRY_WORD_ABSTRACT = "/manus-storage/graceway_ministry_word_abstract_13bb7682.jpg";
 const MINISTRY_COMMUNITY_ABSTRACT = "/manus-storage/graceway_ministry_community_abstract_625e9dfc.jpg";
 const MINISTRY_MISSION_ABSTRACT = "/manus-storage/graceway_ministry_mission_abstract_d616e786.jpg";
+const MINISTRY_YOUTH_ABSTRACT = "/manus-storage/graceway_youth_abstract_3b6ac36a.jpg";
 
 const featuredMinistry = {
   icon: BookOpen,
@@ -46,7 +47,7 @@ const ministryRows = [
     title: "Youth Ministry",
     subtitle: "Fridays · 6:30 PM",
     desc: "Our youth ministry is a place where middle and high school students can belong, grow, and be challenged to live out their faith. Friday nights are filled with worship, teaching, and authentic community.",
-    img: MINISTRY_MISSION_ABSTRACT,
+    img: MINISTRY_YOUTH_ABSTRACT,
     reverse: false,
     color: "#17324D",
   },

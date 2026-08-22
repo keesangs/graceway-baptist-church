@@ -74,13 +74,13 @@ const translations: Record<string, Record<Lang, string>> = {
   "home.worshipTeamDesc": { en: "Join us in leading the congregation in praise.", ko: "회중을 찬양으로 인도하는 팀에 함께하세요." },
 
   // Home — Kids
-  "home.familiesWelcome": { en: "Families Welcome", ko: "가족 환영" },
-  "home.kidsTitle": { en: "Coming With Kids?", ko: "아이와 함께 오시나요?" },
+  "home.familiesWelcome": { en: "Welcome Home", ko: "환영합니다" },
+  "home.kidsTitle": { en: "Looking for a place to worship together?", ko: "함께 예배할 자리를 찾고 계신가요?" },
   "home.kidsBody": {
-    en: "We believe children are a gift from God and deserve a safe, nurturing environment to learn about His love. Our children's ministry provides age-appropriate teaching, worship, and community for children of all ages. During Sunday worship, children's classes are available from nursery through fifth grade. We'd love to meet your family!",
-    ko: "아이들은 하나님의 선물입니다. 우리는 모든 연령의 아이들이 안전하고 따뜻한 환경에서 하나님의 사랑을 배울 수 있도록 합니다. 주일 예배 중 영아부부터 초등 5학년까지 어린이 교실이 운영됩니다. 여러분의 가족을 만나기를 기대합니다!",
+    en: "Whether you come on your own, with family, or with friends, you are welcome here. Join us as we worship, grow in the Word, and find meaningful community together.",
+    ko: "혼자 오시든, 가족이나 친구와 함께 오시든, 그레이스웨이는 여러분을 기쁘게 맞이합니다. 함께 예배하고 말씀 안에서 자라며, 따뜻한 공동체를 만나 보세요.",
   },
-  "home.learnKids": { en: "Learn About Kids Ministry →", ko: "어린이 사역 알아보기 →" },
+  "home.learnKids": { en: "Explore Our Ministries", ko: "사역 살펴보기" },
 
   // Home — Events
   "home.upcomingEvents": { en: "Upcoming Events", ko: "다가오는 행사" },

@@ -16,9 +16,9 @@ import { trpc } from "@/lib/trpc";
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
 const HERO_VIDEO_POSTER = "/manus-storage/hero_river_poster_53c7cd5e.jpg";
-const COMMUNITY_IMG = "/manus-storage/community_worship_a9637ac3.jpg";
+const STORY_IMG = "/manus-storage/graceway_story_abstract_d586e6ae.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
-const KIDS_IMG = "/manus-storage/kids_ministry_a46a1f45.jpg";
+const WELCOME_IMG = "/manus-storage/graceway_welcome_home_abstract_b58c325d.jpg";
 
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
@@ -366,7 +366,7 @@ export default function Home() {
             </div>
             <div className="lg:col-span-7 relative">
               <div className="aspect-[16/10] rounded-sm overflow-hidden shadow-2xl">
-                <img src={COMMUNITY_IMG} alt="Graceway Community Worship" className="w-full h-full object-cover" />
+                <img src={STORY_IMG} alt="Graceway's shared story, expressed as an abstract path of grace" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-8 -left-4 lg:-left-8 bg-[#17324D] text-white p-5 rounded-sm shadow-xl max-w-[200px]">
                 <div className="w-6 h-px bg-[#C9973E] mb-3" />
@@ -629,7 +629,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── KIDS / FAMILIES ── */}
+      {/* ── WELCOME HOME ── */}
       <section className="py-28 bg-white" style={{ marginTop: "-2rem" }}>
         <div
           ref={kidsFade.ref}
@@ -639,13 +639,13 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 order-2 lg:order-1 relative">
               <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-                <img src={KIDS_IMG} alt="Children's Ministry" className="w-full h-full object-cover" />
+                <img src={WELCOME_IMG} alt="An abstract expression of welcome and belonging at Graceway" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -top-5 -right-5 bg-[#C9973E] text-white p-4 rounded-sm shadow-lg">
                 <p className="text-2xl font-bold" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                  {lang === "ko" ? "어린이" : "Kids"}
+                  {lang === "ko" ? "함께" : "Welcome"}
                 </p>
-                <p className="text-xs tracking-wider uppercase">{lang === "ko" ? "사역" : "Ministry"}</p>
+                <p className="text-xs tracking-wider uppercase">{lang === "ko" ? "예배" : "Home"}</p>
               </div>
               <div className="absolute -bottom-3 -left-3 w-16 h-16 border-b-2 border-l-2 border-[#17324D]/20" />
             </div>
