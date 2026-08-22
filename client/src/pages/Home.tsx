@@ -408,7 +408,19 @@ export default function Home() {
                 className="max-w-4xl text-[#17324D]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2.15rem, 4.5vw, 4.25rem)", fontWeight: 700, lineHeight: 1.12 }}
               >
-                {t("home.missionStatement")}
+                {lang === "ko" ? (
+                  <>
+                    말씀으로 세워지고,<br />
+                    삶으로 예배하며,<br />
+                    세상으로 보냄 받는 공동체
+                  </>
+                ) : (
+                  <>
+                    Built on the Word,<br />
+                    Worshiping through our lives,<br />
+                    Sent into the world
+                  </>
+                )}
               </h2>
               <div className="mt-8 grid grid-cols-1 gap-6 border-t border-[#17324D]/15 pt-7 md:grid-cols-12">
                 <p className="md:col-span-9 text-base leading-8 text-[#242A30]/72 md:text-lg">
