@@ -422,16 +422,16 @@ export default function Home() {
                   </>
                 )}
               </h2>
-              <div className="mt-8 grid grid-cols-1 gap-6 border-t border-[#17324D]/15 pt-7 md:grid-cols-12">
-                <p className="md:col-span-9 text-base leading-8 text-[#242A30]/72 md:text-lg">
+              <div className="mt-8 max-w-4xl border-t border-[#17324D]/15 pt-7">
+                <p className="text-base leading-8 text-[#242A30]/72 md:text-lg">
                   {t("home.missionDesc")}
                 </p>
-                <div className="md:col-span-3 md:border-l md:border-[#C9973E]/45 md:pl-5">
+                <div className="mt-6 border-l-2 border-[#C9973E] pl-5">
                   <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#C9973E]">Romans 12:1</p>
                   <p className="mt-2 text-sm italic leading-relaxed text-[#17324D]/70">
                     {lang === "ko" ? "삶으로 드리는 영적 예배" : "A living, spiritual act of worship"}
                   </p>
-                  <blockquote className="mt-3 border-t border-[#C9973E]/25 pt-3 text-xs leading-5 text-[#17324D]/65">
+                  <blockquote className="mt-3 max-w-3xl text-xs leading-5 text-[#17324D]/65">
                     {lang === "ko"
                       ? "“그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라.”"
                       : "“Therefore, in view of God’s mercies, offer your bodies as a living sacrifice, holy and pleasing to God—this is your true and proper worship.”"}

@@ -65,3 +65,4 @@
 - [x] Sunday sermon update: 2026년 8월 16일 설교 영상·제목·성경구절을 설교 및 홈 최신 설교에 반영
 - [x] Sermons featured label: 최신 말씀을 최근 설교 말씀으로 변경
 - [x] Home mission verse: 사명 섹션에 로마서 12장 1절 전문을 추가
+- [x] Home mission verse layout: 데스크톱에서도 로마서 12장 1절 인용문을 사명 설명 바로 아래에 배치
