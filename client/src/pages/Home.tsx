@@ -22,7 +22,7 @@ const WELCOME_IMG = "/manus-storage/graceway_welcome_home_abstract_b58c325d.jpg"
 
 const SECTION_HEADING_STYLE = {
   fontFamily: "'Source Serif 4', serif",
-  fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+  fontSize: "clamp(1.65rem, 2.5vw, 2.1rem)",
   fontWeight: 700,
   lineHeight: 1.16,
 };
