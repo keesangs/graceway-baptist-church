@@ -22,6 +22,10 @@ export default function AdminDailyBible() {
     scriptureText: "",
     title: "",
     content: "",
+    scriptureReferenceEn: "",
+    scriptureTextEn: "",
+    titleEn: "",
+    contentEn: "",
   });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -49,6 +53,10 @@ export default function AdminDailyBible() {
         scriptureText: "",
         title: "",
         content: "",
+        scriptureReferenceEn: "",
+        scriptureTextEn: "",
+        titleEn: "",
+        contentEn: "",
       });
       refetch();
       setTimeout(() => setMessage(null), 3000);
@@ -69,6 +77,10 @@ export default function AdminDailyBible() {
         scriptureText: "",
         title: "",
         content: "",
+        scriptureReferenceEn: "",
+        scriptureTextEn: "",
+        titleEn: "",
+        contentEn: "",
       });
       refetch();
       setTimeout(() => setMessage(null), 3000);
@@ -116,6 +128,10 @@ export default function AdminDailyBible() {
           scriptureText: formData.scriptureText,
           title: formData.title,
           content: formData.content,
+          scriptureReferenceEn: formData.scriptureReferenceEn || null,
+          scriptureTextEn: formData.scriptureTextEn || null,
+          titleEn: formData.titleEn || null,
+          contentEn: formData.contentEn || null,
         });
       } else {
         // 추가 모드
@@ -125,6 +141,10 @@ export default function AdminDailyBible() {
           scriptureText: formData.scriptureText,
           title: formData.title,
           content: formData.content,
+          scriptureReferenceEn: formData.scriptureReferenceEn || undefined,
+          scriptureTextEn: formData.scriptureTextEn || undefined,
+          titleEn: formData.titleEn || undefined,
+          contentEn: formData.contentEn || undefined,
         });
       }
     } finally {
@@ -140,6 +160,10 @@ export default function AdminDailyBible() {
       scriptureText: meditation.scriptureText,
       title: meditation.title,
       content: meditation.content,
+      scriptureReferenceEn: meditation.scriptureReferenceEn ?? "",
+      scriptureTextEn: meditation.scriptureTextEn ?? "",
+      titleEn: meditation.titleEn ?? "",
+      contentEn: meditation.contentEn ?? "",
     });
   };
 
@@ -151,6 +175,10 @@ export default function AdminDailyBible() {
       scriptureText: "",
       title: "",
       content: "",
+      scriptureReferenceEn: "",
+      scriptureTextEn: "",
+      titleEn: "",
+      contentEn: "",
     });
   };
 
@@ -262,6 +290,31 @@ export default function AdminDailyBible() {
               />
             </div>
 
+            <fieldset className="space-y-4 border-t border-[#17324D]/10 pt-6">
+              <legend className="pr-2 text-sm font-semibold text-[#17324D]">
+                English translation <span className="font-normal text-[#242A30]/50">(optional)</span>
+              </legend>
+              <p className="-mt-2 text-xs leading-relaxed text-[#242A30]/55">
+                Provide all four fields to present a fully localized English Daily Bible entry. If left blank, English readers will see a clear Korean-content notice.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-[#17324D] mb-2">Scripture reference</label>
+                <Input name="scriptureReferenceEn" placeholder="e.g., Ezekiel 44:15–31" value={formData.scriptureReferenceEn} onChange={handleInputChange} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#17324D] mb-2">Scripture text</label>
+                <Textarea name="scriptureTextEn" placeholder="Enter licensed English Scripture text..." value={formData.scriptureTextEn} onChange={handleInputChange} rows={6} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#17324D] mb-2">Meditation title</label>
+                <Input name="titleEn" placeholder="Enter an English meditation title" value={formData.titleEn} onChange={handleInputChange} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#17324D] mb-2">Meditation reflection</label>
+                <Textarea name="contentEn" placeholder="Enter the English meditation reflection..." value={formData.contentEn} onChange={handleInputChange} rows={6} />
+              </div>
+            </fieldset>
+
             <div className="flex gap-2">
               <Button
                 type="submit"
@@ -314,9 +367,9 @@ export default function AdminDailyBible() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <p className="text-sm text-gray-500">{meditation.meditationDate}</p>
-                      <h3 className="text-lg font-semibold text-[#17324D]">{meditation.title}</h3>
-                      <p className="text-sm text-[#C9973E]">{meditation.scriptureReference}</p>
-                      <p className="text-gray-700 mt-2 line-clamp-2">{meditation.content}</p>
+                      <h3 className="text-lg font-semibold text-[#17324D]">{lang === "en" && meditation.titleEn ? meditation.titleEn : meditation.title}</h3>
+                      <p className="text-sm text-[#C9973E]">{lang === "en" && meditation.scriptureReferenceEn ? meditation.scriptureReferenceEn : meditation.scriptureReference}</p>
+                      <p className="text-gray-700 mt-2 line-clamp-2">{lang === "en" && meditation.contentEn ? meditation.contentEn : meditation.content}</p>
                     </div>
                     <div className="flex gap-2 ml-4">
                       <Button

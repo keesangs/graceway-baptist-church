@@ -26,6 +26,7 @@ const sermons = [
     title: "What It Means to Follow God",
     titleKo: "하나님을 따라간다는 것",
     scripture: "사도행전 1:12–26",
+    scriptureEn: "Acts 1:12–26",
     date: "August 2, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "41 min",
@@ -35,6 +36,7 @@ const sermons = [
     title: "A New Era Begins with Small Obedience",
     titleKo: "작은 순종에서 시작되는 새로운 시대",
     scripture: "사도행전 1:1–8",
+    scriptureEn: "Acts 1:1–8",
     date: "July 26, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
@@ -44,6 +46,7 @@ const sermons = [
     title: "Do You Still Not Understand?",
     titleKo: "아직도 깨닫지 못하느냐",
     scripture: "마가복음 8:14–21",
+    scriptureEn: "Mark 8:14–21",
     date: "July 19, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "35 min",
@@ -252,7 +255,7 @@ export default function Home() {
                 transitionDelay: "340ms",
               }}
             >
-              {lang === "en" ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
+              {lang === "ko" ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
             </p>
 
             {/* Scripture */}
@@ -317,7 +320,7 @@ export default function Home() {
             {[
               { icon: Clock, labelEn: "Sunday Worship", labelKo: "주일 예배", value: "1:30 PM" },
               { icon: MapPin, labelEn: "Location", labelKo: "교회 주소", value: "2791 Driscoll Rd, Fremont CA" },
-              { icon: Clock, labelEn: "Wednesday Prayer", labelKo: "수요 기도회", value: "8:00 PM" },
+              { icon: Clock, labelEn: "Wednesday Prayer Meeting", labelKo: "수요 기도회", value: "8:00 PM" },
             ].map(({ icon: Icon, labelEn, labelKo, value }) => (
               <div key={labelEn} className="flex flex-col items-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-[#C9973E]/20 flex items-center justify-center">
@@ -466,7 +469,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-5 right-5">
-                  <p className="text-[#C9973E] text-xs font-medium mb-1">{sermons[0].scripture}</p>
+                  <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermons[0].scripture : sermons[0].scriptureEn}</p>
                   <h3 className="text-white font-bold text-xl" style={{ fontFamily: "'Source Serif 4', serif" }}>
                     {lang === "ko" ? sermons[0].titleKo : sermons[0].title}
                   </h3>
@@ -518,7 +521,7 @@ export default function Home() {
                       >
                         {lang === "ko" ? s.titleKo : s.title}
                       </p>
-                      <p className="text-[#C9973E] text-xs mt-0.5">{s.scripture}</p>
+                      <p className="text-[#C9973E] text-xs mt-0.5">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
                       <p className="text-[#242A30]/50 text-[11px] mt-0.5">{s.date}</p>
                     </div>
                   </a>

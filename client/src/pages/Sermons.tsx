@@ -18,6 +18,7 @@ const sermons = [
     titleEn: "The Holy Spirit Comes",
     titleKo: "성령이 임하시다",
     scripture: "사도행전 2:1–13",
+    scriptureEn: "Acts 2:1–13",
     date: "August 9, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "42 min",
@@ -28,6 +29,7 @@ const sermons = [
     titleEn: "What It Means to Follow God",
     titleKo: "하나님을 따라간다는 것",
     scripture: "사도행전 1:12–26",
+    scriptureEn: "Acts 1:12–26",
     date: "August 2, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "41 min",
@@ -38,6 +40,7 @@ const sermons = [
     titleEn: "A New Era Begins with Small Obedience",
     titleKo: "작은 순종에서 시작되는 새로운 시대",
     scripture: "사도행전 1:1–8",
+    scriptureEn: "Acts 1:1–8",
     date: "July 26, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
@@ -48,6 +51,7 @@ const sermons = [
     titleEn: "Do You Still Not Understand?",
     titleKo: "아직도 깨닫지 못하느냐",
     scripture: "마가복음 8:14–21",
+    scriptureEn: "Mark 8:14–21",
     date: "July 19, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "35 min",
@@ -58,6 +62,7 @@ const sermons = [
     titleEn: "When Your Gaze Changes, the Wilderness Becomes Holy Ground",
     titleKo: "시선이 바뀌면 광야가 거룩한 땅이 됩니다",
     scripture: "출애굽기 3:1–5",
+    scriptureEn: "Exodus 3:1–5",
     date: "July 12, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "38 min",
@@ -68,6 +73,7 @@ const sermons = [
     titleEn: "The Living Stone and the Cornerstone",
     titleKo: "산돌과 모퉁이돌",
     scripture: "베드로전서 2:4–8",
+    scriptureEn: "1 Peter 2:4–8",
     date: "July 5, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
@@ -78,6 +84,7 @@ const sermons = [
     titleEn: "A Small Hope Born from the Ruins",
     titleKo: "폐허 속에서 시작된 작은 소망",
     scripture: "사무엘상 3:1–10",
+    scriptureEn: "1 Samuel 3:1–10",
     date: "June 28, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "37 min",
@@ -88,6 +95,7 @@ const sermons = [
     titleEn: "Same Space, Different Dreams",
     titleKo: "같은 공간 다른 꿈",
     scripture: "마태복음 20:17–28",
+    scriptureEn: "Matthew 20:17–28",
     date: "June 21, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
@@ -98,6 +106,7 @@ const sermons = [
     titleEn: "Who Is God to Me?",
     titleKo: "나에게 하나님은 어떤 분인가",
     scripture: "잠언 16:9",
+    scriptureEn: "Proverbs 16:9",
     date: "June 14, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "39 min",
@@ -108,6 +117,7 @@ const sermons = [
     titleEn: "Standing on God's Side",
     titleKo: "하나님 편에 서는 것",
     scripture: "출애굽기 1:15–22",
+    scriptureEn: "Exodus 1:15–22",
     date: "June 7, 2026",
     speaker: "Pastor Hunsuk Lee",
     duration: "34 min",
@@ -134,7 +144,7 @@ export default function Sermons() {
     const title = lang === "ko" ? s.titleKo : s.titleEn;
     const matchSearch =
       title.toLowerCase().includes(search.toLowerCase()) ||
-      s.scripture.toLowerCase().includes(search.toLowerCase()) ||
+      (lang === "ko" ? s.scripture : s.scriptureEn).toLowerCase().includes(search.toLowerCase()) ||
       s.speaker.toLowerCase().includes(search.toLowerCase());
     return matchSeries && matchSearch;
   });
@@ -241,7 +251,7 @@ export default function Sermons() {
               </h2>
               <div className="flex items-center gap-2 mb-4">
                 <BookOpen size={14} className="text-[#C9973E]" />
-                <span className="text-[#2F6F9F] text-sm font-medium">{featured.scripture}</span>
+                <span className="text-[#2F6F9F] text-sm font-medium">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
               </div>
               <p className="text-[#242A30]/60 text-sm mb-6">{featured.speaker} · {featured.date}</p>
               <button
@@ -316,7 +326,7 @@ export default function Sermons() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <p className="text-[#C9973E] text-[10px] font-medium mb-1 tracking-wide">{s.scripture}</p>
+                  <p className="text-[#C9973E] text-[10px] font-medium mb-1 tracking-wide">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
                   <h3
                     className="text-[#17324D] font-semibold mb-1.5 group-hover:text-[#2F6F9F] transition-colors text-sm leading-snug"
                     style={{ fontFamily: "'Source Serif 4', serif" }}

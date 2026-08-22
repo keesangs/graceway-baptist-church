@@ -229,9 +229,13 @@ export const appRouter = router({
         z.object({
           meditationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
           scriptureReference: z.string().min(1).max(255),
+          scriptureReferenceEn: z.string().max(255).optional(),
           scriptureText: z.string().min(1),
+          scriptureTextEn: z.string().optional(),
           title: z.string().min(1).max(255),
+          titleEn: z.string().max(255).optional(),
           content: z.string().min(1),
+          contentEn: z.string().optional(),
         }),
       )
       .mutation(({ input, ctx }) => {
@@ -240,9 +244,13 @@ export const appRouter = router({
         return insertDailyMeditation({
           meditationDate: input.meditationDate,
           scriptureReference: input.scriptureReference,
+          scriptureReferenceEn: input.scriptureReferenceEn?.trim() || null,
           scriptureText: input.scriptureText,
+          scriptureTextEn: input.scriptureTextEn?.trim() || null,
           title: input.title,
+          titleEn: input.titleEn?.trim() || null,
           content: input.content,
+          contentEn: input.contentEn?.trim() || null,
           authorId: ctx.user.id,
         });
       }),
@@ -253,9 +261,13 @@ export const appRouter = router({
           id: z.number().int().positive(),
           meditationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
           scriptureReference: z.string().min(1).max(255).optional(),
+          scriptureReferenceEn: z.string().max(255).nullable().optional(),
           scriptureText: z.string().min(1).optional(),
+          scriptureTextEn: z.string().nullable().optional(),
           title: z.string().min(1).max(255).optional(),
+          titleEn: z.string().max(255).nullable().optional(),
           content: z.string().min(1).optional(),
+          contentEn: z.string().nullable().optional(),
         }),
       )
       .mutation(({ input }) => {

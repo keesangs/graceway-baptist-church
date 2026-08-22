@@ -188,6 +188,10 @@ export default function Meditation() {
   const today = new Date(currentDate);
   const year = today.getFullYear();
   const month = today.getMonth();
+  const calendarWeekdays =
+    lang === "ko"
+      ? ["일", "월", "화", "수", "목", "금", "토"]
+      : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const handleCalendarDateClick = (day: number) => {
     const newDate = new Date(year, month, day);
@@ -221,7 +225,23 @@ export default function Meditation() {
     return Math.floor(diff / oneDay);
   };
 
-  const scriptures = currentMeditation ? parseScripture(currentMeditation.scriptureText) : [];
+  const hasEnglishContent = Boolean(
+    currentMeditation?.scriptureReferenceEn &&
+      currentMeditation?.scriptureTextEn &&
+      currentMeditation?.titleEn &&
+      currentMeditation?.contentEn
+  );
+  const displayMeditation =
+    currentMeditation && lang === "en" && hasEnglishContent
+      ? {
+          ...currentMeditation,
+          scriptureReference: currentMeditation.scriptureReferenceEn!,
+          scriptureText: currentMeditation.scriptureTextEn!,
+          title: currentMeditation.titleEn!,
+          content: currentMeditation.contentEn!,
+        }
+      : currentMeditation;
+  const scriptures = displayMeditation ? parseScripture(displayMeditation.scriptureText) : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -277,7 +297,7 @@ export default function Meditation() {
         {showCalendar && (
           <Card className="mb-8 p-6">
             <div className="grid grid-cols-7 gap-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              {calendarWeekdays.map((day) => (
                 <div key={day} className="text-center font-semibold text-sm text-gray-600 py-2">
                   {day}
                 </div>
@@ -324,11 +344,18 @@ export default function Meditation() {
             <div className="lg:col-span-2">
               <Card className="p-8">
                 <div className="mb-3">
-                  <p className="text-sm text-amber-600 font-semibold mb-1">개역개정</p>
+                  <p className="text-sm text-amber-600 font-semibold mb-1">
+                    {lang === "ko" ? "개역개정" : hasEnglishContent ? "English translation" : "Revised Korean Version"}
+                  </p>
                   <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                    {currentMeditation.scriptureReference}
+                    {displayMeditation?.scriptureReference}
                   </h3>
-                  <p className="text-gray-600 mb-3">{currentMeditation.title}</p>
+                  <p className="text-gray-600 mb-3">{displayMeditation?.title}</p>
+                  {lang === "en" && !hasEnglishContent && (
+                    <p className="mb-3 rounded-md border border-[#C9973E]/25 bg-[#FBF8F3] px-3 py-2 text-xs leading-relaxed text-[#6A5734]">
+                      This entry is currently available in Korean only. Add all four English fields in Daily Bible Management to publish its English version.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1 mb-8">

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const getDailyMeditationById = vi.fn();
+const insertDailyMeditation = vi.fn();
 const insertMeditationComment = vi.fn();
 const listMeditationComments = vi.fn();
 const getMeditationCommentById = vi.fn();
@@ -16,7 +17,7 @@ vi.mock("./db", () => ({
   getDailyMeditationById: (...args: unknown[]) => getDailyMeditationById(...args),
   getMeditationCommentById: (...args: unknown[]) => getMeditationCommentById(...args),
   insertContactMessage: vi.fn(),
-  insertDailyMeditation: vi.fn(),
+  insertDailyMeditation: (...args: unknown[]) => insertDailyMeditation(...args),
   insertMeditationComment: (...args: unknown[]) => insertMeditationComment(...args),
   insertMediaFile: vi.fn(),
   listContactMessages: vi.fn(),
@@ -58,6 +59,35 @@ beforeEach(() => {
 });
 
 describe("meditation.comments", () => {
+  it("stores optional English Daily Bible fields for English-mode readers", async () => {
+    insertDailyMeditation.mockResolvedValue({ insertId: 17 });
+
+    await appRouter.createCaller(makeContext("admin", 9)).meditation.create({
+      meditationDate: "2026-08-22",
+      scriptureReference: "에스겔 44:15–31",
+      scriptureText: "한국어 성경 본문",
+      title: "거룩한 헌신",
+      content: "한국어 묵상 내용",
+      scriptureReferenceEn: "Ezekiel 44:15–31",
+      scriptureTextEn: "Licensed English Scripture text",
+      titleEn: "Holy Devotion",
+      contentEn: "English meditation reflection",
+    });
+
+    expect(insertDailyMeditation).toHaveBeenCalledWith({
+      meditationDate: "2026-08-22",
+      scriptureReference: "에스겔 44:15–31",
+      scriptureReferenceEn: "Ezekiel 44:15–31",
+      scriptureText: "한국어 성경 본문",
+      scriptureTextEn: "Licensed English Scripture text",
+      title: "거룩한 헌신",
+      titleEn: "Holy Devotion",
+      content: "한국어 묵상 내용",
+      contentEn: "English meditation reflection",
+      authorId: 9,
+    });
+  });
+
   it("allows visitors to read shared reflections", async () => {
     listMeditationComments.mockResolvedValue({
       items: [{ id: 7, meditationId: 3, authorName: "Grace Kim", content: "은혜를 나눕니다." }],

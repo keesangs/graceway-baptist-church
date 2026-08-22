@@ -4,8 +4,18 @@
  */
 import { Link } from "wouter";
 import { Facebook, Instagram, Youtube, Mail, MapPin, Clock } from "lucide-react";
+import { useLang } from "@/contexts/LanguageContext";
 
 export default function Footer() {
+  const { lang, t } = useLang();
+  const quickLinks = [
+    { href: "/", en: "Home", ko: "홈" },
+    { href: "/about", en: "About Us", ko: "교회 소개" },
+    { href: "/sermons", en: "Sermons", ko: "설교" },
+    { href: "/ministries", en: "Ministries", ko: "사역" },
+    { href: "/connect", en: "Connect", ko: "문의" },
+  ];
+
   return (
     <footer className="bg-[#17324D] text-white">
       {/* Gold top rule */}
@@ -31,33 +41,27 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-2">
-              그레이스웨이 침례교회
+              {lang === "ko" ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
             </p>
             <p className="text-white/60 text-sm leading-relaxed italic">
-              "For by grace you have been saved through faith."
+              {t("footer.tagline")}
             </p>
-            <p className="text-[#C9973E] text-xs mt-1">— Ephesians 2:8</p>
+            <p className="text-[#C9973E] text-xs mt-1">{t("footer.verse")}</p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              Quick Links
+              {t("footer.quickLinks")}
             </h4>
             <ul className="space-y-2">
-              {[
-                { href: "/", label: "Home" },
-                { href: "/about", label: "About Us" },
-                { href: "/sermons", label: "Sermons" },
-                { href: "/ministries", label: "Ministries" },
-                { href: "/connect", label: "Connect" },
-              ].map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-white/70 hover:text-[#C9973E] text-sm transition-colors duration-200"
                   >
-                    {link.label}
+                    {lang === "ko" ? link.ko : link.en}
                   </Link>
                 </li>
               ))}
@@ -67,27 +71,27 @@ export default function Footer() {
           {/* Service Info */}
           <div>
             <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              Service Times
+              {t("footer.serviceTimes")}
             </h4>
             <div className="space-y-3">
               <div className="flex items-start gap-2">
                 <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">주일 예배 / Sunday Worship</p>
+                  <p className="text-white text-sm font-medium">{t("footer.sundayWorship")}</p>
                   <p className="text-white/60 text-xs">1:30 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">수요 기도회 / Wednesday Prayer</p>
+                  <p className="text-white text-sm font-medium">{t("footer.wednesdayBible")}</p>
                   <p className="text-white/60 text-xs">8:00 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <MapPin size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">Location</p>
+                  <p className="text-white text-sm font-medium">{t("footer.location")}</p>
                   <p className="text-white/60 text-xs">2791 Driscoll Rd, Fremont, CA 94539</p>
                 </div>
               </div>
@@ -97,7 +101,7 @@ export default function Footer() {
           {/* Contact & Social */}
           <div>
             <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              Connect With Us
+              {t("footer.connectWithUs")}
             </h4>
             <div className="flex items-center gap-2 mb-4">
               <Mail size={14} className="text-[#C9973E]" />
@@ -129,7 +133,7 @@ export default function Footer() {
                 href="/connect"
                 className="inline-block px-5 py-2.5 bg-[#C9973E] text-white text-xs font-semibold tracking-widest uppercase rounded-sm hover:bg-[#b8862e] transition-colors duration-200"
               >
-                Plan a Visit
+                {t("nav.planVisit")}
               </Link>
             </div>
           </div>
@@ -140,10 +144,10 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-white/40 text-xs">
-            © {new Date().getFullYear()} Graceway Baptist Church · 그레이스웨이 침례교회
+            {t("footer.copyright").replace("2026", String(new Date().getFullYear()))}
           </p>
           <p className="text-white/40 text-xs">
-            Grace · Faith · Community
+            {t("footer.grace")} · {t("footer.faith")} · {t("footer.community")}
           </p>
         </div>
       </div>

@@ -25,7 +25,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "home.heroTitle1": { en: "Graceway", ko: "그레이스웨이" },
   "home.heroTitle2": { en: "Baptist Church", ko: "침례교회" },
   "home.heroSubtitle": {
-    en: "A community where grace meets everyday life. We strive to encourage one another to follow Jesus Christ and invite others to him.",
+    en: "A community where grace meets everyday life. We encourage one another to follow Jesus Christ and invite others to follow him.",
     ko: "은혜가 일상과 만나는 공동체입니다. 우리는 서로 예수 그리스도를 따르도록 격려하며, 더 많은 이들을 그분께로 초대합니다.",
   },
   "home.planVisit": { en: "Plan a Visit", ko: "방문 안내" },
@@ -33,7 +33,7 @@ const translations: Record<string, Record<Lang, string>> = {
 
   // Home — Service times
   "home.sundayWorship": { en: "Sunday Worship", ko: "주일 예배" },
-  "home.wednesdayBible": { en: "Wednesday Bible Study", ko: "수요 성경 공부" },
+  "home.wednesdayBible": { en: "Wednesday Prayer Meeting", ko: "수요 기도회" },
   "home.midweekStudy": { en: "Midweek Study", ko: "주중 성경 공부" },
 
   // Home — Story section
@@ -70,14 +70,14 @@ const translations: Record<string, Record<Lang, string>> = {
   "home.smallGroupsDesc": { en: "Connect in community through weekly life groups.", ko: "주간 소그룹을 통해 공동체와 연결됩니다." },
   "home.outreach": { en: "Outreach", ko: "지역 사역" },
   "home.outreachDesc": { en: "Serving our city with grace and compassion.", ko: "은혜와 사랑으로 우리 도시를 섬깁니다." },
-  "home.worshipTeam": { en: "Worship Team", ko: "찬양팀" },
+  "home.worshipTeam": { en: "Worship Ministry Team", ko: "찬양사역팀" },
   "home.worshipTeamDesc": { en: "Join us in leading the congregation in praise.", ko: "회중을 찬양으로 인도하는 팀에 함께하세요." },
 
   // Home — Kids
   "home.familiesWelcome": { en: "Families Welcome", ko: "가족 환영" },
   "home.kidsTitle": { en: "Coming With Kids?", ko: "아이와 함께 오시나요?" },
   "home.kidsBody": {
-    en: "We believe children are a gift from God and deserve a safe, nurturing environment to learn about His love. Our children's ministry provides age appropriate teaching, worship, and community for kids of all ages. During Sunday worship, children's classes are available for nursery through 5th grade. We'd love to meet your family!",
+    en: "We believe children are a gift from God and deserve a safe, nurturing environment to learn about His love. Our children's ministry provides age-appropriate teaching, worship, and community for children of all ages. During Sunday worship, children's classes are available from nursery through fifth grade. We'd love to meet your family!",
     ko: "아이들은 하나님의 선물입니다. 우리는 모든 연령의 아이들이 안전하고 따뜻한 환경에서 하나님의 사랑을 배울 수 있도록 합니다. 주일 예배 중 영아부부터 초등 5학년까지 어린이 교실이 운영됩니다. 여러분의 가족을 만나기를 기대합니다!",
   },
   "home.learnKids": { en: "Learn About Kids Ministry →", ko: "어린이 사역 알아보기 →" },
@@ -102,11 +102,11 @@ const translations: Record<string, Record<Lang, string>> = {
   // Home — Mission, Vision, Core Values
   "home.mission": { en: "Mission Statement", ko: "교회의 사명" },
   "home.missionStatement": {
-    en: "Built by the Word, Worshiping in Life, Sent into the World",
+    en: "Built on the Word, Worshiping through Our Lives, Sent into the World",
     ko: "말씀으로 세워지고, 삶으로 예배하며, 세상으로 보냄 받는 공동체",
   },
   "home.missionDesc": {
-    en: "We are a community built firmly on God's Word, offering our entire lives as complete worship to God, and joyfully sent back into the world to embody the heart of Jesus Christ.",
+    en: "Grounded firmly in God's Word, we offer every part of our lives as worship. With the heart of Jesus Christ, we are joyfully sent into the world to serve.",
     ko: "우리는 하나님의 말씀으로 든든히 세워져, 일상의 모든 삶을 온전한 예배로 드리고, 예수 그리스도의 마음을 품어 다시 세상 속으로 기쁘게 보내심을 받는 공동체입니다.",
   },
   "home.vision": { en: "Vision", ko: "비전" },
@@ -129,10 +129,10 @@ const translations: Record<string, Record<Lang, string>> = {
   "footer.quickLinks": { en: "Quick Links", ko: "바로가기" },
   "footer.serviceTimes": { en: "Service Times", ko: "예배 시간" },
   "footer.connectWithUs": { en: "Connect With Us", ko: "연락하기" },
-  "footer.sundayWorship": { en: "Sunday Worship", ko: "주일 예배" },
-  "footer.wednesdayBible": { en: "Wednesday Bible Study", ko: "수요 성경 공부" },
+  "footer.sundayWorship": { en: "Sunday Worship Service", ko: "주일 예배" },
+  "footer.wednesdayBible": { en: "Wednesday Prayer Meeting", ko: "수요 기도회" },
   "footer.location": { en: "Location", ko: "위치" },
-  "footer.copyright": { en: "© 2026 Graceway Baptist Church · 그레이스웨이 침례교회", ko: "© 2026 그레이스웨이 침례교회 · Graceway Baptist Church" },
+  "footer.copyright": { en: "© 2026 Graceway Baptist Church", ko: "© 2026 그레이스웨이 침례교회" },
   "footer.grace": { en: "Grace", ko: "은혜" },
   "footer.faith": { en: "Faith", ko: "믿음" },
   "footer.community": { en: "Community", ko: "공동체" },
@@ -140,7 +140,7 @@ const translations: Record<string, Record<Lang, string>> = {
   // About page
   "about.whoWeAre": { en: "Who We Are", ko: "우리는 누구인가" },
   "about.title": { en: "About Graceway", ko: "그레이스웨이 소개" },
-  "about.subtitle": { en: "A community rooted in grace, growing in faith, and reaching out in love.", ko: "은혜에 뿌리를 두고, 믿음 안에서 성장하며, 사랑으로 손을 내밀는 공동체." },
+  "about.subtitle": { en: "A community rooted in grace, growing in faith, and reaching out in love.", ko: "은혜에 뿌리를 두고, 믿음 안에서 성장하며, 사랑으로 손을 내미는 공동체." },
   "about.ourStory": { en: "Our Story", ko: "우리 이야기" },
   "about.storyHeadline": { en: "Founded on Grace, Built on Community", ko: "은혜 위에 세워지고, 공동체로 이루어진 교회" },
   "about.doctrine": { en: "Doctrine", ko: "교리" },
@@ -148,7 +148,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "about.leadership": { en: "Our Team", ko: "우리 팀" },
   "about.leadershipTitle": { en: "Leadership", ko: "리더십" },
   "about.joinUs": { en: "Join Us", ko: "함께하세요" },
-  "about.joinCTA": { en: "Every Sunday, a seat is waiting for you.", ko: "매 주일, 여러분을 위한 자리가 준비되어 있습니다." },
+  "about.joinCTA": { en: "There’s a place for you every Sunday.", ko: "매 주일, 여러분을 위한 자리가 준비되어 있습니다." },
   "about.joinDesc": { en: "We'd love to meet you. Come as you are — no perfect faith required.", ko: "있는 그대로 오세요 — 완벽한 믿음은 필요하지 않습니다." },
 
   // Sermons page
@@ -175,7 +175,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "connect.title": { en: "Connect With Us", ko: "연락하기" },
   "connect.subtitle": { en: "Whether you're visiting for the first time or looking to get more involved, we're here for you.", ko: "처음 방문하시든, 더 깊이 참여하고 싶으시든, 우리는 여러분을 위해 여기 있습니다." },
   "connect.planAVisit": { en: "Plan a Visit", ko: "방문 안내" },
-  "connect.everySunday": { en: "Every Sunday, a seat is waiting for you.", ko: "매 주일, 여러분을 위한 자리가 준비되어 있습니다." },
+  "connect.everySunday": { en: "There’s a place for you every Sunday.", ko: "매 주일, 여러분을 위한 자리가 준비되어 있습니다." },
   "connect.sendMessage": { en: "Send Us a Message", ko: "메시지 보내기" },
   "connect.firstTime": { en: "First Time?", ko: "처음 방문하시나요?" },
   "connect.whatToExpect": { en: "What to Expect", ko: "무엇을 기대할 수 있나요" },

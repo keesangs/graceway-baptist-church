@@ -91,12 +91,20 @@ export const dailyMeditations = mysqlTable("daily_meditations", {
   meditationDate: varchar("meditationDate", { length: 10 }).notNull().unique(),
   /** Scripture reference e.g. "John 3:16" */
   scriptureReference: varchar("scriptureReference", { length: 255 }).notNull(),
+  /** Optional English scripture reference, e.g. "John 3:16". */
+  scriptureReferenceEn: varchar("scriptureReferenceEn", { length: 255 }),
   /** Scripture text (full passage) */
   scriptureText: text("scriptureText").notNull(),
+  /** Optional licensed English Scripture text for English-mode readers. */
+  scriptureTextEn: text("scriptureTextEn"),
   /** Meditation title */
   title: varchar("title", { length: 255 }).notNull(),
+  /** Optional English meditation title. */
+  titleEn: varchar("titleEn", { length: 255 }),
   /** Meditation content/reflection */
   content: text("content").notNull(),
+  /** Optional English meditation reflection. */
+  contentEn: text("contentEn"),
   /** Author/creator user id */
   authorId: int("authorId").notNull(),
   /** Like count for this meditation */
