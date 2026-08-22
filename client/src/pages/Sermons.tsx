@@ -15,6 +15,17 @@ const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
+    titleEn: "Filled with the Holy Spirit",
+    titleKo: "성령으로 채우시다",
+    scripture: "사도행전 2:22–36",
+    scriptureEn: "Acts 2:22–36",
+    date: "August 16, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "New",
+    series: "Sunday Sermon",
+    videoId: "8NchEyAy3jE",
+  },
+  {
     titleEn: "The Holy Spirit Comes",
     titleKo: "성령이 임하시다",
     scripture: "사도행전 2:1–13",

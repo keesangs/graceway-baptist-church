@@ -62,3 +62,4 @@
 - [x] Home welcome refresh: 우리 이야기·가족 환영 영역을 어린이 사역 전제 없이 따뜻한 환대 메시지와 사역 페이지 연결 중심으로 개선
 - [x] Home welcome CTA: 사역 살펴보기 버튼 클릭 시 사역 페이지 첫 화면으로 이동
 - [x] Home mission heading: 사명 문구를 요청한 세 줄 구성으로 표시
+- [x] Sunday sermon update: 2026년 8월 16일 설교 영상·제목·성경구절을 설교 및 홈 최신 설교에 반영

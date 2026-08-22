@@ -23,6 +23,16 @@ const WELCOME_IMG = "/manus-storage/graceway_welcome_home_abstract_b58c325d.jpg"
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
+    title: "Filled with the Holy Spirit",
+    titleKo: "성령으로 채우시다",
+    scripture: "사도행전 2:22–36",
+    scriptureEn: "Acts 2:22–36",
+    date: "August 16, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "New",
+    videoId: "8NchEyAy3jE",
+  },
+  {
     title: "What It Means to Follow God",
     titleKo: "하나님을 따라간다는 것",
     scripture: "사도행전 1:12–26",
@@ -41,16 +51,6 @@ const sermons = [
     speaker: "Pastor Hunsuk Lee",
     duration: "40 min",
     videoId: "AGzMGv7vuhQ",
-  },
-  {
-    title: "Do You Still Not Understand?",
-    titleKo: "아직도 깨닫지 못하느냐",
-    scripture: "마가복음 8:14–21",
-    scriptureEn: "Mark 8:14–21",
-    date: "July 19, 2026",
-    speaker: "Pastor Hunsuk Lee",
-    duration: "35 min",
-    videoId: "VaZcVqJo7DE",
   },
 ];
 
