@@ -72,3 +72,4 @@
 - [x] Home responsive polish: 모바일 줄바꿈·여백, 우리 이야기·가족 환영 정렬, 전체 섹션 페이드인 애니메이션 개선
 - [x] Home story heading: 첫 문장을 한 줄로 유지하도록 우리 이야기 헤드라인 전용 반응형 크기 조정
 - [x] Home shared heading scale: 모든 공통 섹션 헤드라인을 우리 이야기와 조화되는 더 작은 반응형 스케일로 조정
+- [x] Global scroll-to-top: 모든 내부 페이지 이동 링크가 목적지 페이지 상단에서 열리도록 전역 라우팅 동작 적용

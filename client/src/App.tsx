@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -15,6 +16,18 @@ import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
 import AdminInbox from "@/pages/AdminInbox";
 import AdminDailyBible from "@/pages/AdminDailyBible";
+import { scrollPageToTop } from "@/lib/navigation";
+
+function ScrollToTopOnNavigation() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    scrollPageToTop();
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -42,6 +55,7 @@ function App() {
         <ThemeProvider defaultTheme="light">
           <TooltipProvider>
             <Toaster />
+            <ScrollToTopOnNavigation />
             <Router />
           </TooltipProvider>
         </ThemeProvider>
