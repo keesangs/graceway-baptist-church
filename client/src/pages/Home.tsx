@@ -431,6 +431,11 @@ export default function Home() {
                   <p className="mt-2 text-sm italic leading-relaxed text-[#17324D]/70">
                     {lang === "ko" ? "삶으로 드리는 영적 예배" : "A living, spiritual act of worship"}
                   </p>
+                  <blockquote className="mt-3 border-t border-[#C9973E]/25 pt-3 text-xs leading-5 text-[#17324D]/65">
+                    {lang === "ko"
+                      ? "“그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라.”"
+                      : "“Therefore, in view of God’s mercies, offer your bodies as a living sacrifice, holy and pleasing to God—this is your true and proper worship.”"}
+                  </blockquote>
                 </div>
               </div>
             </div>
