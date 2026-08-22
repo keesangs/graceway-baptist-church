@@ -51,3 +51,6 @@
 - [ ] Member directory (private)
 - [ ] Online giving integration (Stripe)
 - [x] Meditation comments: 로그인한 사용자의 댓글 작성·조회·본인 댓글 삭제 및 묵상 페이지 댓글 UI 추가
+- [x] Meditation comment pagination: 한 번에 10개씩 표시하고 더보기/이전 버튼으로 다음 댓글을 불러오기
+- [x] Meditation comment reactions: 로그인 사용자의 댓글 좋아요 토글 및 공감 수 표시
+- [x] Meditation replies: 댓글별 대댓글 작성·조회·본인 삭제 및 관리자 중재 기능

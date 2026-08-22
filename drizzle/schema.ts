@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -113,13 +113,19 @@ export const meditationComments = mysqlTable("meditation_comments", {
   id: int("id").autoincrement().primaryKey(),
   /** Foreign key to daily_meditations */
   meditationId: int("meditationId").notNull(),
+  /** Null for a top-level reflection; set when this is a reply to another comment. */
+  parentCommentId: int("parentCommentId"),
   /** Comment author user id */
   authorId: int("authorId").notNull(),
   /** Comment text */
   content: text("content").notNull(),
+  /** Cached reaction total for fast comment-list rendering. */
+  likeCount: int("likeCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  meditationThreadIdx: index("meditation_comment_thread_idx").on(table.meditationId, table.parentCommentId, table.createdAt),
+}));
 
 export type MeditationComment = typeof meditationComments.$inferSelect;
 export type InsertMeditationComment = typeof meditationComments.$inferInsert;
@@ -139,3 +145,17 @@ export const meditationLikes = mysqlTable("meditation_likes", {
 
 export type MeditationLike = typeof meditationLikes.$inferSelect;
 export type InsertMeditationLike = typeof meditationLikes.$inferInsert;
+
+// Meditation comment likes — one reaction per user for each comment.
+export const meditationCommentLikes = mysqlTable("meditation_comment_likes", {
+  id: int("id").autoincrement().primaryKey(),
+  commentId: int("commentId").notNull(),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  unique: uniqueIndex("unique_meditation_comment_like").on(table.commentId, table.userId),
+  commentIdx: index("meditation_comment_like_comment_idx").on(table.commentId),
+}));
+
+export type MeditationCommentLike = typeof meditationCommentLikes.$inferSelect;
+export type InsertMeditationCommentLike = typeof meditationCommentLikes.$inferInsert;

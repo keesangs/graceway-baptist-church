@@ -6,6 +6,7 @@ const insertMeditationComment = vi.fn();
 const listMeditationComments = vi.fn();
 const getMeditationCommentById = vi.fn();
 const deleteMeditationComment = vi.fn();
+const toggleMeditationCommentLike = vi.fn();
 
 vi.mock("./db", () => ({
   deleteMeditationComment: (...args: unknown[]) => deleteMeditationComment(...args),
@@ -24,6 +25,7 @@ vi.mock("./db", () => ({
   listMediaFiles: vi.fn(),
   listNewsletterSubscribers: vi.fn(),
   subscribeToNewsletter: vi.fn(),
+  toggleMeditationCommentLike: (...args: unknown[]) => toggleMeditationCommentLike(...args),
   updateDailyMeditation: vi.fn(),
 }));
 
@@ -57,14 +59,16 @@ beforeEach(() => {
 
 describe("meditation.comments", () => {
   it("allows visitors to read shared reflections", async () => {
-    listMeditationComments.mockResolvedValue([
-      { id: 7, meditationId: 3, authorName: "Grace Kim", content: "은혜를 나눕니다." },
-    ]);
+    listMeditationComments.mockResolvedValue({
+      items: [{ id: 7, meditationId: 3, authorName: "Grace Kim", content: "은혜를 나눕니다." }],
+      total: 12,
+      nextOffset: 10,
+    });
 
     const rows = await appRouter.createCaller(makeContext()).meditation.comments.list({ meditationId: 3 });
 
-    expect(rows).toHaveLength(1);
-    expect(listMeditationComments).toHaveBeenCalledWith(3);
+    expect(rows).toMatchObject({ total: 12, nextOffset: 10 });
+    expect(listMeditationComments).toHaveBeenCalledWith(3, undefined, 10, 0);
   });
 
   it("requires a logged-in member to write a reflection", async () => {
@@ -87,9 +91,39 @@ describe("meditation.comments", () => {
     expect(result).toEqual({ success: true });
     expect(insertMeditationComment).toHaveBeenCalledWith({
       meditationId: 3,
+      parentCommentId: null,
       authorId: 4,
       content: "말씀을 통해 큰 위로를 받았습니다.",
     });
+  });
+
+  it("stores a reply only under a top-level reflection in the same meditation", async () => {
+    getDailyMeditationById.mockResolvedValue({ id: 3, meditationDate: "2026-08-10" });
+    getMeditationCommentById.mockResolvedValue({ id: 7, meditationId: 3, parentCommentId: null });
+    insertMeditationComment.mockResolvedValue({ insertId: 8 });
+
+    await appRouter
+      .createCaller(makeContext("user", 4))
+      .meditation.comments.create({ meditationId: 3, parentCommentId: 7, content: "함께 은혜를 받았습니다." });
+
+    expect(insertMeditationComment).toHaveBeenCalledWith({
+      meditationId: 3,
+      parentCommentId: 7,
+      authorId: 4,
+      content: "함께 은혜를 받았습니다.",
+    });
+  });
+
+  it("rejects replies to a reply so threads remain one level deep", async () => {
+    getDailyMeditationById.mockResolvedValue({ id: 3, meditationDate: "2026-08-10" });
+    getMeditationCommentById.mockResolvedValue({ id: 8, meditationId: 3, parentCommentId: 7 });
+
+    await expect(
+      appRouter
+        .createCaller(makeContext("user", 4))
+        .meditation.comments.create({ meditationId: 3, parentCommentId: 8, content: "중첩 답글" }),
+    ).rejects.toThrow();
+    expect(insertMeditationComment).not.toHaveBeenCalled();
   });
 
   it("does not create a comment for a missing meditation", async () => {
@@ -119,5 +153,20 @@ describe("meditation.comments", () => {
 
     expect(result).toEqual({ success: true });
     expect(deleteMeditationComment).toHaveBeenCalledWith(7);
+  });
+
+  it("requires sign-in before a member can react to a reflection", async () => {
+    await expect(appRouter.createCaller(makeContext()).meditation.comments.toggleLike({ id: 7 })).rejects.toThrow();
+    expect(toggleMeditationCommentLike).not.toHaveBeenCalled();
+  });
+
+  it("toggles one member reaction on an existing reflection", async () => {
+    getMeditationCommentById.mockResolvedValue({ id: 7, authorId: 9 });
+    toggleMeditationCommentLike.mockResolvedValue(true);
+
+    const result = await appRouter.createCaller(makeContext("user", 4)).meditation.comments.toggleLike({ id: 7 });
+
+    expect(result).toEqual({ liked: true });
+    expect(toggleMeditationCommentLike).toHaveBeenCalledWith(7, 4);
   });
 });

@@ -18,6 +18,7 @@ import {
   listMediaFiles,
   listNewsletterSubscribers,
   subscribeToNewsletter,
+  toggleMeditationCommentLike,
   updateDailyMeditation,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -272,14 +273,21 @@ export const appRouter = router({
     comments: router({
       /** Anyone can read the conversation attached to a published meditation. */
       list: publicProcedure
-        .input(z.object({ meditationId: z.number().int().positive() }))
-        .query(({ input }) => listMeditationComments(input.meditationId)),
+        .input(
+          z.object({
+            meditationId: z.number().int().positive(),
+            limit: z.number().int().positive().max(25).default(10),
+            offset: z.number().int().nonnegative().default(0),
+          }),
+        )
+        .query(({ input, ctx }) => listMeditationComments(input.meditationId, ctx.user?.id, input.limit, input.offset)),
 
       /** A signed-in member can share one short reflection per submission. */
       create: protectedProcedure
         .input(
           z.object({
             meditationId: z.number().int().positive(),
+            parentCommentId: z.number().int().positive().optional(),
             content: z.string().trim().min(1).max(1200),
           }),
         )
@@ -289,8 +297,19 @@ export const appRouter = router({
             throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
           }
 
+          if (input.parentCommentId) {
+            const parent = await getMeditationCommentById(input.parentCommentId);
+            if (!parent || parent.meditationId !== input.meditationId) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "Reply target is invalid" });
+            }
+            if (parent.parentCommentId !== null) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "Replies may only be one level deep" });
+            }
+          }
+
           await insertMeditationComment({
             meditationId: input.meditationId,
+            parentCommentId: input.parentCommentId ?? null,
             authorId: ctx.user.id,
             content: input.content,
           });
@@ -312,6 +331,19 @@ export const appRouter = router({
 
           await deleteMeditationComment(input.id);
           return { success: true } as const;
+        }),
+
+      /** Toggle a member's single appreciation reaction on a comment or reply. */
+      toggleLike: protectedProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(async ({ input, ctx }) => {
+          const comment = await getMeditationCommentById(input.id);
+          if (!comment) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" });
+          }
+
+          const liked = await toggleMeditationCommentLike(input.id, ctx.user.id);
+          return { liked } as const;
         }),
     }),
   }),

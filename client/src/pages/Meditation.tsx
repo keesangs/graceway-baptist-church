@@ -3,7 +3,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Copy, Check, Loader2, LogIn, MessageCircle, Send, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useState, useEffect } from "react";
@@ -18,6 +18,9 @@ export default function Meditation() {
   const [copiedVerse, setCopiedVerse] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
+  const [commentOffset, setCommentOffset] = useState(0);
+  const [replyingToId, setReplyingToId] = useState<number | null>(null);
+  const [replyDraft, setReplyDraft] = useState("");
   const [hasResolvedInitialDate, setHasResolvedInitialDate] = useState(false);
   const utils = trpc.useUtils();
 
@@ -28,16 +31,21 @@ export default function Meditation() {
   );
 
   const currentMeditation = allMeditations.find((m) => m.meditationDate === currentDate);
-  const { data: comments = [], isLoading: commentsLoading } = trpc.meditation.comments.list.useQuery(
-    { meditationId: currentMeditation?.id ?? 0 },
+  const { data: commentPage, isLoading: commentsLoading, isFetching: commentsFetching } = trpc.meditation.comments.list.useQuery(
+    { meditationId: currentMeditation?.id ?? 0, limit: 10, offset: commentOffset },
     { enabled: Boolean(currentMeditation?.id), staleTime: 1000 * 30 },
   );
+  const comments = commentPage?.items ?? [];
+  const totalComments = commentPage?.total ?? 0;
+  const hasNextCommentPage = commentPage?.nextOffset !== null && commentPage?.nextOffset !== undefined;
 
   const createComment = trpc.meditation.comments.create.useMutation({
     onSuccess: async () => {
       setCommentDraft("");
+      setReplyDraft("");
+      setReplyingToId(null);
       if (currentMeditation?.id) {
-        await utils.meditation.comments.list.invalidate({ meditationId: currentMeditation.id });
+        await utils.meditation.comments.list.invalidate();
       }
     },
   });
@@ -45,8 +53,14 @@ export default function Meditation() {
   const deleteComment = trpc.meditation.comments.delete.useMutation({
     onSuccess: async () => {
       if (currentMeditation?.id) {
-        await utils.meditation.comments.list.invalidate({ meditationId: currentMeditation.id });
+        await utils.meditation.comments.list.invalidate();
       }
+    },
+  });
+
+  const toggleCommentLike = trpc.meditation.comments.toggleLike.useMutation({
+    onSuccess: async () => {
+      await utils.meditation.comments.list.invalidate();
     },
   });
 
@@ -59,6 +73,12 @@ export default function Meditation() {
     }
     setHasResolvedInitialDate(true);
   }, [allMeditations, currentDate, hasResolvedInitialDate, isLoading]);
+
+  useEffect(() => {
+    setCommentOffset(0);
+    setReplyingToId(null);
+    setReplyDraft("");
+  }, [currentMeditation?.id]);
 
   // localStorage에서 QT 답변 로드
   useEffect(() => {
@@ -105,6 +125,31 @@ export default function Meditation() {
       content: commentDraft,
     });
   };
+
+  const handleReplySubmit = (event: React.FormEvent<HTMLFormElement>, parentCommentId: number) => {
+    event.preventDefault();
+    if (!currentMeditation || !replyDraft.trim() || createComment.isPending) return;
+    createComment.mutate({
+      meditationId: currentMeditation.id,
+      parentCommentId,
+      content: replyDraft,
+    });
+  };
+
+  const handleToggleCommentLike = (commentId: number) => {
+    if (!isAuthenticated) {
+      startLogin();
+      return;
+    }
+    toggleCommentLike.mutate({ id: commentId });
+  };
+
+  const formatCommentDate = (value: Date | string) =>
+    new Date(value).toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
 
   // 성경 본문 파싱
   const parseScripture = (text: string) => {
@@ -323,7 +368,7 @@ export default function Meditation() {
                       </h4>
                     </div>
                     <span className="text-xs font-medium text-gray-500">
-                      {comments.length} {lang === "ko" ? "개의 나눔" : "shared"}
+                      {totalComments} {lang === "ko" ? "개의 나눔" : "shared"}
                     </span>
                   </div>
 
@@ -350,11 +395,7 @@ export default function Meditation() {
                                   {comment.authorName || (lang === "ko" ? "이름 없는 성도" : "Church member")}
                                 </p>
                                 <time className="text-xs text-gray-500" dateTime={new Date(comment.createdAt).toISOString()}>
-                                  {new Date(comment.createdAt).toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
+                                  {formatCommentDate(comment.createdAt)}
                                 </time>
                               </div>
                               {mayDelete && (
@@ -370,11 +411,146 @@ export default function Meditation() {
                               )}
                             </div>
                             <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{comment.content}</p>
+
+                            <div className="mt-3 flex items-center gap-4 text-xs font-medium">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleCommentLike(comment.id)}
+                                disabled={toggleCommentLike.isPending}
+                                aria-pressed={comment.hasLiked}
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 transition disabled:opacity-50 ${
+                                  comment.hasLiked
+                                    ? "bg-[#C9973E]/15 text-[#9B6817]"
+                                    : "text-gray-500 hover:bg-[#C9973E]/10 hover:text-[#9B6817]"
+                                }`}
+                              >
+                                <Heart className={`w-3.5 h-3.5 ${comment.hasLiked ? "fill-current" : ""}`} />
+                                {lang === "ko" ? "공감" : "Like"} {comment.likeCount > 0 ? comment.likeCount : ""}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!isAuthenticated) {
+                                    startLogin();
+                                    return;
+                                  }
+                                  setReplyingToId((activeId) => (activeId === comment.id ? null : comment.id));
+                                  setReplyDraft("");
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-gray-500 transition hover:bg-[#17324D]/5 hover:text-[#17324D]"
+                              >
+                                <Reply className="w-3.5 h-3.5" />
+                                {lang === "ko" ? "답글" : "Reply"}
+                              </button>
+                            </div>
+
+                            {comment.replies.length > 0 && (
+                              <div className="ml-2 sm:ml-6 mt-4 space-y-3 border-l-2 border-[#C9973E]/20 pl-4">
+                                {comment.replies.map((reply) => {
+                                  const mayDeleteReply = user && (user.id === reply.authorId || user.role === "admin");
+                                  return (
+                                    <article key={reply.id} className="rounded-md bg-[#F4F6F7] px-3.5 py-3">
+                                      <div className="flex items-start justify-between gap-3 mb-1.5">
+                                        <div>
+                                          <p className="font-semibold text-xs text-[#17324D]">
+                                            {reply.authorName || (lang === "ko" ? "이름 없는 성도" : "Church member")}
+                                          </p>
+                                          <time className="text-[11px] text-gray-500" dateTime={new Date(reply.createdAt).toISOString()}>
+                                            {formatCommentDate(reply.createdAt)}
+                                          </time>
+                                        </div>
+                                        {mayDeleteReply && (
+                                          <button
+                                            type="button"
+                                            aria-label={lang === "ko" ? "답글 삭제" : "Delete reply"}
+                                            onClick={() => deleteComment.mutate({ id: reply.id })}
+                                            disabled={deleteComment.isPending}
+                                            className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{reply.content}</p>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleCommentLike(reply.id)}
+                                        disabled={toggleCommentLike.isPending}
+                                        aria-pressed={reply.hasLiked}
+                                        className={`mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium transition disabled:opacity-50 ${
+                                          reply.hasLiked ? "bg-[#C9973E]/15 text-[#9B6817]" : "text-gray-500 hover:bg-[#C9973E]/10 hover:text-[#9B6817]"
+                                        }`}
+                                      >
+                                        <Heart className={`w-3 h-3 ${reply.hasLiked ? "fill-current" : ""}`} />
+                                        {lang === "ko" ? "공감" : "Like"} {reply.likeCount > 0 ? reply.likeCount : ""}
+                                      </button>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {replyingToId === comment.id && isAuthenticated && (
+                              <form onSubmit={(event) => handleReplySubmit(event, comment.id)} className="mt-4 ml-2 sm:ml-6 rounded-md bg-[#F4F6F7] p-3">
+                                <label htmlFor={`reply-${comment.id}`} className="sr-only">
+                                  {lang === "ko" ? "답글 작성" : "Write a reply"}
+                                </label>
+                                <Textarea
+                                  id={`reply-${comment.id}`}
+                                  value={replyDraft}
+                                  onChange={(event) => setReplyDraft(event.target.value)}
+                                  maxLength={1200}
+                                  placeholder={lang === "ko" ? "서로를 세우는 마음으로 답글을 남겨 주세요." : "Leave an encouraging reply."}
+                                  className="min-h-20 resize-y bg-white text-sm"
+                                  autoFocus
+                                />
+                                <div className="mt-2 flex items-center justify-between gap-3">
+                                  <p className="text-[11px] text-gray-500">{replyDraft.length}/1200</p>
+                                  <div className="flex gap-2">
+                                    <Button type="button" size="sm" variant="ghost" onClick={() => setReplyingToId(null)}>
+                                      {lang === "ko" ? "취소" : "Cancel"}
+                                    </Button>
+                                    <Button type="submit" size="sm" disabled={!replyDraft.trim() || createComment.isPending} className="bg-[#17324D] hover:bg-[#244A70]">
+                                      {createComment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                      {lang === "ko" ? "답글 등록" : "Reply"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </form>
+                            )}
                           </article>
                         );
                       })
                     )}
                   </div>
+
+                  {totalComments > 10 && (
+                    <div className="mb-6 flex items-center justify-center gap-2">
+                      {commentOffset > 0 && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setCommentOffset(Math.max(0, commentOffset - 10))}
+                          disabled={commentsFetching}
+                        >
+                          {lang === "ko" ? "이전 댓글" : "Previous"}
+                        </Button>
+                      )}
+                      {hasNextCommentPage && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setCommentOffset(commentPage?.nextOffset ?? commentOffset)}
+                          disabled={commentsFetching}
+                        >
+                          {commentsFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                          {lang === "ko" ? "댓글 더보기" : "Show more"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
                   {isAuthenticated ? (
                     <form onSubmit={handleCommentSubmit} className="rounded-lg bg-[#F4F6F7] p-4">

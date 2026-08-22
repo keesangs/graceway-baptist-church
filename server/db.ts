@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   contactMessages,
@@ -10,6 +10,7 @@ import {
   InsertNewsletterSubscriber,
   InsertUser,
   mediaFiles,
+  meditationCommentLikes,
   meditationComments,
   meditationLikes,
   newsletterSubscribers,
@@ -236,23 +237,87 @@ export async function insertMeditationComment(data: InsertMeditationComment) {
   return result;
 }
 
-export async function listMeditationComments(meditationId: number) {
+export async function listMeditationComments(
+  meditationId: number,
+  viewerUserId?: number,
+  limit = 10,
+  offset = 0,
+) {
   const db = await getDb();
-  if (!db) return [];
-  return db
+  if (!db) return { items: [], total: 0, nextOffset: null };
+
+  const [totalRow] = await db
+    .select({ total: count() })
+    .from(meditationComments)
+    .where(and(eq(meditationComments.meditationId, meditationId), isNull(meditationComments.parentCommentId)));
+
+  const rootComments = await db
     .select({
       id: meditationComments.id,
       meditationId: meditationComments.meditationId,
+      parentCommentId: meditationComments.parentCommentId,
       authorId: meditationComments.authorId,
       content: meditationComments.content,
+      likeCount: meditationComments.likeCount,
       createdAt: meditationComments.createdAt,
       updatedAt: meditationComments.updatedAt,
       authorName: users.name,
     })
     .from(meditationComments)
     .innerJoin(users, eq(meditationComments.authorId, users.id))
-    .where(eq(meditationComments.meditationId, meditationId))
-    .orderBy(asc(meditationComments.createdAt));
+    .where(and(eq(meditationComments.meditationId, meditationId), isNull(meditationComments.parentCommentId)))
+    .orderBy(desc(meditationComments.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const rootIds = rootComments.map((comment) => comment.id);
+  const replies = rootIds.length === 0
+    ? []
+    : await db
+        .select({
+          id: meditationComments.id,
+          meditationId: meditationComments.meditationId,
+          parentCommentId: meditationComments.parentCommentId,
+          authorId: meditationComments.authorId,
+          content: meditationComments.content,
+          likeCount: meditationComments.likeCount,
+          createdAt: meditationComments.createdAt,
+          updatedAt: meditationComments.updatedAt,
+          authorName: users.name,
+        })
+        .from(meditationComments)
+        .innerJoin(users, eq(meditationComments.authorId, users.id))
+        .where(inArray(meditationComments.parentCommentId, rootIds))
+        .orderBy(asc(meditationComments.createdAt));
+
+  const allCommentIds = [...rootIds, ...replies.map((reply) => reply.id)];
+  const likedCommentIds = new Set<number>();
+  if (viewerUserId && allCommentIds.length > 0) {
+    const likes = await db
+      .select({ commentId: meditationCommentLikes.commentId })
+      .from(meditationCommentLikes)
+      .where(and(eq(meditationCommentLikes.userId, viewerUserId), inArray(meditationCommentLikes.commentId, allCommentIds)));
+    likes.forEach((like) => likedCommentIds.add(like.commentId));
+  }
+
+  const repliesByParent = new Map<number, Array<(typeof replies)[number] & { hasLiked: boolean }>>();
+  replies.forEach((reply) => {
+    if (reply.parentCommentId === null) return;
+    const existing = repliesByParent.get(reply.parentCommentId) ?? [];
+    existing.push({ ...reply, hasLiked: likedCommentIds.has(reply.id) });
+    repliesByParent.set(reply.parentCommentId, existing);
+  });
+
+  const total = Number(totalRow?.total ?? 0);
+  return {
+    items: rootComments.map((comment) => ({
+      ...comment,
+      hasLiked: likedCommentIds.has(comment.id),
+      replies: repliesByParent.get(comment.id) ?? [],
+    })),
+    total,
+    nextOffset: offset + rootComments.length < total ? offset + rootComments.length : null,
+  };
 }
 
 export async function getMeditationCommentById(id: number) {
@@ -268,7 +333,39 @@ export async function getMeditationCommentById(id: number) {
 export async function deleteMeditationComment(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(meditationComments).where(eq(meditationComments.id, id));
+  const replies = await db
+    .select({ id: meditationComments.id })
+    .from(meditationComments)
+    .where(eq(meditationComments.parentCommentId, id));
+  const commentIds = [id, ...replies.map((reply) => reply.id)];
+  await db.delete(meditationCommentLikes).where(inArray(meditationCommentLikes.commentId, commentIds));
+  await db.delete(meditationComments).where(inArray(meditationComments.id, commentIds));
+}
+
+export async function toggleMeditationCommentLike(commentId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [existing] = await db
+    .select()
+    .from(meditationCommentLikes)
+    .where(and(eq(meditationCommentLikes.commentId, commentId), eq(meditationCommentLikes.userId, userId)));
+
+  if (existing) {
+    await db.delete(meditationCommentLikes).where(eq(meditationCommentLikes.id, existing.id));
+    await db
+      .update(meditationComments)
+      .set({ likeCount: sql`GREATEST(${meditationComments.likeCount} - 1, 0)` })
+      .where(eq(meditationComments.id, commentId));
+    return false;
+  }
+
+  await db.insert(meditationCommentLikes).values({ commentId, userId });
+  await db
+    .update(meditationComments)
+    .set({ likeCount: sql`${meditationComments.likeCount} + 1` })
+    .where(eq(meditationComments.id, commentId));
+  return true;
 }
 
 // Meditation like queries
