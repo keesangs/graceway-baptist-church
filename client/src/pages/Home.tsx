@@ -664,6 +664,7 @@ export default function Home() {
               <p className="text-[#242A30]/70 leading-relaxed mb-8">{t("home.kidsBody")}</p>
               <Link
                 href="/ministries"
+                onClick={() => window.scrollTo(0, 0)}
                 className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#17324D] text-white font-semibold text-sm tracking-wide rounded-sm hover:bg-[#1e4060] transition-all duration-200"
               >
                 {t("home.learnKids")} <ArrowRight size={15} />

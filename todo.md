@@ -60,3 +60,4 @@
 - [x] About/Ministries abstract visuals: 인물이 보이는 배경·사역 이미지를 제거하고 Graceway 브랜드에 맞는 인물 없는 추상 이미지로 교체
 - [x] Youth Ministry visual variation: College Campus Ministry와 구분되는 청소년 사역 전용 추상 비주얼로 교체
 - [x] Home welcome refresh: 우리 이야기·가족 환영 영역을 어린이 사역 전제 없이 따뜻한 환대 메시지와 사역 페이지 연결 중심으로 개선
+- [x] Home welcome CTA: 사역 살펴보기 버튼 클릭 시 사역 페이지 첫 화면으로 이동
