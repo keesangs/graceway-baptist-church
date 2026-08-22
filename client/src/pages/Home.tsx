@@ -20,6 +20,13 @@ const STORY_IMG = "/manus-storage/graceway_story_abstract_d586e6ae.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
 const WELCOME_IMG = "/manus-storage/graceway_welcome_home_abstract_b58c325d.jpg";
 
+const SECTION_HEADING_STYLE = {
+  fontFamily: "'Source Serif 4', serif",
+  fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
+  fontWeight: 700,
+  lineHeight: 1.16,
+};
+
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
   {
@@ -349,9 +356,9 @@ export default function Home() {
               </div>
               <h2
                 className="text-[#17324D] mb-6"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, lineHeight: 1.15 }}
+                style={SECTION_HEADING_STYLE}
               >
-                {t("home.storyHeadline")}
+                {lang === "ko" ? <>은혜는 목적지가 아닙니다 —<br />그것이 바로 길입니다.</> : t("home.storyHeadline")}
               </h2>
               <div className="w-12 h-0.5 bg-[#C9973E] mb-6" />
               <p className="text-[#242A30]/70 leading-relaxed mb-4">{t("home.storyBody1")}</p>
@@ -406,7 +413,7 @@ export default function Home() {
               <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-[#2F6F9F]">01 / {t("home.mission")}</p>
               <h2
                 className="max-w-4xl text-[#17324D]"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2.15rem, 4.5vw, 4.25rem)", fontWeight: 700, lineHeight: 1.12 }}
+                style={SECTION_HEADING_STYLE}
               >
                 {lang === "ko" ? (
                   <>
@@ -446,7 +453,7 @@ export default function Home() {
               <div className="absolute -right-7 -top-14 select-none text-[14rem] leading-none text-[#C9973E]/10" style={{ fontFamily: "'Source Serif 4', serif" }}>G</div>
               <div className="relative">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9973E]">02 / {t("home.vision")}</p>
-                <h3 className="mt-5 max-w-md text-3xl leading-tight sm:text-4xl" style={{ fontFamily: "'Source Serif 4', serif", fontWeight: 700 }}>
+                <h3 className="mt-5 max-w-md" style={SECTION_HEADING_STYLE}>
                   {t("home.visionStatement")}
                 </h3>
                 <span className="mt-8 block h-px w-12 bg-[#C9973E]" />
@@ -536,7 +543,7 @@ export default function Home() {
               <div className="flex items-center justify-between mb-4">
                 <h2
                   className="text-[#17324D] font-bold"
-                  style={{ fontFamily: "'Source Serif 4', serif", fontSize: "1.2rem" }}
+                  style={SECTION_HEADING_STYLE}
                 >
                   {lang === "ko" ? "최근 설교" : "Recent Sermons"}
                 </h2>
@@ -613,7 +620,7 @@ export default function Home() {
               </div>
               <h2
                 className="text-white mb-6"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, lineHeight: 1.2 }}
+                style={SECTION_HEADING_STYLE}
               >
                 {lang === "ko" ? "사역 &\n공동체" : "Ministries &\nCommunity"}
               </h2>
@@ -673,7 +680,7 @@ export default function Home() {
               </div>
               <h2
                 className="text-[#17324D] mb-6"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 700, lineHeight: 1.2 }}
+                style={SECTION_HEADING_STYLE}
               >
                 {t("home.kidsTitle")}
               </h2>
@@ -706,7 +713,7 @@ export default function Home() {
               </div>
               <h2
                 className="text-[#17324D]"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 700 }}
+                style={SECTION_HEADING_STYLE}
               >
                 {t("home.upcomingEvents")}
               </h2>
@@ -773,7 +780,7 @@ export default function Home() {
               </div>
               <h2
                 className="text-white mb-4"
-                style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.2rem)", fontWeight: 700 }}
+                style={SECTION_HEADING_STYLE}
               >
                 {t("home.newsletter")}
               </h2>

@@ -67,3 +67,4 @@
 - [x] Home mission verse: 사명 섹션에 로마서 12장 1절 전문을 추가
 - [x] Home mission verse layout: 데스크톱에서도 로마서 12장 1절 인용문을 사명 설명 바로 아래에 배치
 - [x] About community copy: 은혜·믿음·말씀·사랑 공동체 문구와 소개 문장 업데이트
+- [x] Home heading scale: 각 섹션 헤드라인(최근 설교 포함)의 반응형 폰트 크기를 일관된 스케일로 정리하고 우리 이야기 한국어 줄바꿈 개선
