@@ -75,6 +75,10 @@ function useFadeIn(threshold = 0.15) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(true);
+      return;
+    }
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold }
@@ -114,6 +118,8 @@ export default function Home() {
   }, []);
 
   const storyFade = useFadeIn();
+  const serviceFade = useFadeIn();
+  const missionFade = useFadeIn();
   const sermonFade = useFadeIn();
   const ministriesFade = useFadeIn();
   const kidsFade = useFadeIn();
@@ -322,7 +328,11 @@ export default function Home() {
 
       {/* ── SERVICE INFO BAR ── */}
       <section className="bg-[#17324D] -mt-8 relative z-10 py-10">
-        <div className="container">
+        <div
+          ref={serviceFade.ref}
+          className="container transition-all duration-700 ease-out motion-reduce:transition-none"
+          style={{ opacity: serviceFade.visible ? 1 : 0, transform: serviceFade.visible ? "translateY(0)" : "translateY(24px)" }}
+        >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {[
               { icon: Clock, labelEn: "Sunday Worship", labelKo: "주일 예배", value: "1:30 PM" },
@@ -349,7 +359,7 @@ export default function Home() {
           style={{ opacity: storyFade.visible ? 1 : 0, transform: storyFade.visible ? "translateY(0)" : "translateY(32px)" }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 max-w-md text-left">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-8 bg-[#C9973E]" />
                 <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.ourStory")}</p>
@@ -393,7 +403,11 @@ export default function Home() {
         <div className="pointer-events-none absolute -top-32 -right-28 h-[28rem] w-[28rem] rounded-full border border-[#C9973E]/15" />
         <div className="pointer-events-none absolute -top-16 -right-12 h-[19rem] w-[19rem] rounded-full border border-[#C9973E]/10" />
 
-        <div className="container relative">
+        <div
+          ref={missionFade.ref}
+          className="container relative transition-all duration-700 ease-out motion-reduce:transition-none"
+          style={{ opacity: missionFade.visible ? 1 : 0, transform: missionFade.visible ? "translateY(0)" : "translateY(24px)" }}
+        >
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-4">
               <div className="flex items-center gap-3">
@@ -673,7 +687,7 @@ export default function Home() {
               </div>
               <div className="absolute -bottom-3 -left-3 w-16 h-16 border-b-2 border-l-2 border-[#17324D]/20" />
             </div>
-            <div className="lg:col-span-5 order-1 lg:order-2">
+            <div className="lg:col-span-5 order-1 lg:order-2 max-w-md text-left">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-8 bg-[#C9973E]" />
                 <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.familiesWelcome")}</p>
