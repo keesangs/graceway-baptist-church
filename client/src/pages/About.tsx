@@ -7,8 +7,9 @@ import { ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
+import { pageImageAssets } from "@/lib/pageAssets";
 
-const ABOUT_ABSTRACT_IMG = "/manus-storage/graceway_about_abstract_45d6795b.jpg";
+const ABOUT_ABSTRACT_IMG = pageImageAssets.aboutPath;
 const PASTOR_IMG = "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp";
 
 const beliefs = [

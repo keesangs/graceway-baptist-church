@@ -74,3 +74,6 @@
 - [x] Home shared heading scale: 모든 공통 섹션 헤드라인을 우리 이야기와 조화되는 더 작은 반응형 스케일로 조정
 - [x] Global scroll-to-top: 모든 내부 페이지 이동 링크가 목적지 페이지 상단에서 열리도록 전역 라우팅 동작 적용
 - [x] Restore database schema: GitHub 복원 코드와 Daily Bible·묵상 댓글 데이터베이스 스키마를 동기화하여 묵상 목록이 정상 로드되도록 복구
+- [x] Restore missing image links: 랜딩 페이지와 About·Ministries 페이지의 누락 이미지 링크를 점검하고 안정적인 저장소 경로로 교체
+- [x] Verify restored images: Home·About·Ministries의 모든 본문 이미지가 브라우저에서 200 응답과 정상 렌더링을 보이는지 개별 검증
+- [x] Diversify restored editorial visuals: 중복된 임시 이미지를 각 페이지 섹션에 맞는 안정적인 프로젝트 자산으로 교체

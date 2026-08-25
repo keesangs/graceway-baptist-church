@@ -7,11 +7,12 @@ import { Link } from "wouter";
 import { ArrowRight, BookOpen, Users, Heart, Music, GraduationCap, Zap, Globe, Coffee } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { pageImageAssets } from "@/lib/pageAssets";
 
-const MINISTRY_WORD_ABSTRACT = "/manus-storage/graceway_ministry_word_abstract_13bb7682.jpg";
-const MINISTRY_COMMUNITY_ABSTRACT = "/manus-storage/graceway_ministry_community_abstract_625e9dfc.jpg";
-const MINISTRY_MISSION_ABSTRACT = "/manus-storage/graceway_ministry_mission_abstract_d616e786.jpg";
-const MINISTRY_YOUTH_ABSTRACT = "/manus-storage/graceway_youth_abstract_3b6ac36a.jpg";
+const MINISTRY_WORD_ABSTRACT = pageImageAssets.ministryWord;
+const MINISTRY_COMMUNITY_ABSTRACT = pageImageAssets.ministryCommunity;
+const MINISTRY_MISSION_ABSTRACT = pageImageAssets.aboutPath;
+const MINISTRY_YOUTH_ABSTRACT = pageImageAssets.ministryYouth;
 
 const featuredMinistry = {
   icon: BookOpen,

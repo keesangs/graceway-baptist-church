@@ -12,13 +12,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
+import { pageImageAssets } from "@/lib/pageAssets";
 
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
 const HERO_VIDEO_POSTER = "/manus-storage/hero_river_poster_53c7cd5e.jpg";
-const STORY_IMG = "/manus-storage/graceway_story_abstract_d586e6ae.jpg";
+const STORY_IMG = pageImageAssets.story;
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
-const WELCOME_IMG = "/manus-storage/graceway_welcome_home_abstract_b58c325d.jpg";
+const WELCOME_IMG = pageImageAssets.welcome;
 
 const SECTION_HEADING_STYLE = {
   fontFamily: "'Source Serif 4', serif",
