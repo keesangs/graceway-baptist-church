@@ -81,6 +81,13 @@ const translations: Record<string, Record<Lang, string>> = {
     ko: "혼자 오시든, 가족이나 친구와 함께 오시든, 그레이스웨이는 여러분을 기쁘게 맞이합니다. 함께 예배하고 말씀 안에서 자라며, 따뜻한 공동체를 만나 보세요.",
   },
   "home.learnKids": { en: "Explore Our Ministries", ko: "사역 살펴보기" },
+  "home.welcomeLabel": { en: "A Place to Begin", ko: "함께하는 시작" },
+  "home.welcomeTitle": { en: "You are welcome here, just as you are.", ko: "처음 오신 분도, 오래 함께한 분도 환영합니다." },
+  "home.welcomeBody": {
+    en: "Whether you come on your own, with family, or with friends, Graceway is a place to worship, grow in the Word, and find a community that walks with you.",
+    ko: "혼자, 가족과, 또는 친구와 함께 오셔도 좋습니다. 그레이스웨이에서 예배하고 말씀 안에서 자라며, 삶의 여정을 함께 걸어갈 공동체를 만나 보세요.",
+  },
+  "home.welcomeCta": { en: "Explore Ministries", ko: "사역 만나보기" },
 
   // Home — Events
   "home.upcomingEvents": { en: "Upcoming Events", ko: "다가오는 행사" },

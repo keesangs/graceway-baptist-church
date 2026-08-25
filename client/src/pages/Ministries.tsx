@@ -7,12 +7,7 @@ import { Link } from "wouter";
 import { ArrowRight, BookOpen, Users, Heart, Music, GraduationCap, Zap, Globe, Coffee } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { pageImageAssets } from "@/lib/pageAssets";
-
-const MINISTRY_WORD_ABSTRACT = pageImageAssets.ministryWord;
-const MINISTRY_COMMUNITY_ABSTRACT = pageImageAssets.ministryCommunity;
-const MINISTRY_MISSION_ABSTRACT = pageImageAssets.aboutPath;
-const MINISTRY_YOUTH_ABSTRACT = pageImageAssets.ministryYouth;
+import { BrandAbstractVisual, type BrandAbstractVisualKind } from "@/components/BrandAbstractVisual";
 
 const featuredMinistry = {
   icon: BookOpen,
@@ -21,7 +16,7 @@ const featuredMinistry = {
   quote: "Your word is a lamp to my feet and a light to my path.",
   quoteRef: "— Psalm 119:105",
   desc: "Join us every Wednesday evening for an in-depth exploration of Scripture. Our Bible study groups are designed for all levels — whether you're new to the Bible or have been studying for years, you'll find a place to grow in God's Word together.",
-  img: MINISTRY_WORD_ABSTRACT,
+  visual: "word" as BrandAbstractVisualKind,
 };
 
 const ministryRows = [
@@ -30,7 +25,7 @@ const ministryRows = [
     title: "Small Groups",
     subtitle: "Various Days & Locations",
     desc: "Life is better in community. Our small groups meet throughout the week in homes across the city, providing a space for deeper connection, prayer, and mutual encouragement in everyday life.",
-    img: MINISTRY_COMMUNITY_ABSTRACT,
+    visual: "community" as BrandAbstractVisualKind,
     reverse: false,
     color: "#2F6F9F",
   },
@@ -39,7 +34,7 @@ const ministryRows = [
     title: "College Campus Ministry",
     subtitle: "Weekdays · Nearby College Campuses",
     desc: "We are passionate about reaching the next generation on campus. Our college ministry connects with students at nearby universities and community colleges throughout the week — building friendships, studying Scripture, and living out the gospel together in the places where students spend their days.",
-    img: MINISTRY_MISSION_ABSTRACT,
+    visual: "sending" as BrandAbstractVisualKind,
     reverse: true,
     color: "#C9973E",
   },
@@ -48,7 +43,7 @@ const ministryRows = [
     title: "Youth Ministry",
     subtitle: "Fridays · 6:30 PM",
     desc: "Our youth ministry is a place where middle and high school students can belong, grow, and be challenged to live out their faith. Friday nights are filled with worship, teaching, and authentic community.",
-    img: MINISTRY_YOUTH_ABSTRACT,
+    visual: "youth" as BrandAbstractVisualKind,
     reverse: false,
     color: "#17324D",
   },
@@ -69,7 +64,7 @@ export default function Ministries() {
       {/* Page Hero */}
       <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src={MINISTRY_MISSION_ABSTRACT} alt="" className="w-full h-full object-cover" />
+          <BrandAbstractVisual kind="sending" />
         </div>
         <div className="absolute inset-0 bg-[#17324D]/80" />
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent opacity-60" />
@@ -95,7 +90,7 @@ export default function Ministries() {
       <section className="py-0 bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           <div className="relative min-h-[400px] overflow-hidden">
-            <img src={featuredMinistry.img} alt={featuredMinistry.title} className="w-full h-full object-cover absolute inset-0" />
+            <BrandAbstractVisual kind={featuredMinistry.visual} className="absolute inset-0 transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#17324D]/80 to-[#17324D]/30" />
             <div className="relative p-12 flex flex-col justify-end h-full min-h-[400px]">
               <div className="w-8 h-0.5 bg-[#C9973E] mb-4" />
@@ -136,7 +131,7 @@ export default function Ministries() {
             <div className={`grid grid-cols-1 lg:grid-cols-12 gap-12 items-center ${m.reverse ? "lg:flex-row-reverse" : ""}`}>
               <div className={`lg:col-span-6 ${m.reverse ? "lg:order-2" : "lg:order-1"}`}>
                 <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-xl group">
-                  <img src={m.img} alt={m.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <BrandAbstractVisual kind={m.visual} className="transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/40 to-transparent" />
                 </div>
               </div>

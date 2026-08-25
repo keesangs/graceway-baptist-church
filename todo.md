@@ -77,3 +77,6 @@
 - [x] Restore missing image links: 랜딩 페이지와 About·Ministries 페이지의 누락 이미지 링크를 점검하고 안정적인 저장소 경로로 교체
 - [x] Verify restored images: Home·About·Ministries의 모든 본문 이미지가 브라우저에서 200 응답과 정상 렌더링을 보이는지 개별 검증
 - [x] Diversify restored editorial visuals: 중복된 임시 이미지를 각 페이지 섹션에 맞는 안정적인 프로젝트 자산으로 교체
+- [x] About visual refresh: 소개 페이지의 배경·본문 이미지를 인물 없는 ‘은혜의 길’ 브랜드 추상 비주얼로 통일하고 리더십 목회자 사진은 유지
+- [x] Ministries visual refresh: 말씀·공동체·보냄 및 Youth Ministry 카드에 인물이 없는 Graceway 팔레트의 차별화된 추상 비주얼 적용
+- [x] Home welcome refresh: 우리 이야기 이미지를 브랜드 추상 비주얼로 교체하고 가족 환영 섹션을 포용적인 환대 문구와 사역 페이지 연결 중심으로 재구성

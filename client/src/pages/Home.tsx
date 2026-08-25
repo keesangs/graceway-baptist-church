@@ -10,16 +10,14 @@ import { Link } from "wouter";
 import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, Music, Check, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
-import { pageImageAssets } from "@/lib/pageAssets";
 
 const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
 const HERO_VIDEO_POSTER = "/manus-storage/hero_river_poster_53c7cd5e.jpg";
-const STORY_IMG = pageImageAssets.story;
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
-const WELCOME_IMG = pageImageAssets.welcome;
 
 const SECTION_HEADING_STYLE = {
   fontFamily: "'Source Serif 4', serif",
@@ -129,7 +127,7 @@ export default function Home() {
   const missionFade = useFadeIn();
   const sermonFade = useFadeIn();
   const ministriesFade = useFadeIn();
-  const kidsFade = useFadeIn();
+  const welcomeFade = useFadeIn();
   const eventsFade = useFadeIn();
   const newsletterFade = useFadeIn();
 
@@ -390,7 +388,7 @@ export default function Home() {
             </div>
             <div className="lg:col-span-7 relative">
               <div className="aspect-[16/10] rounded-sm overflow-hidden shadow-2xl">
-                <img src={STORY_IMG} alt="Graceway's shared story, expressed as an abstract path of grace" className="w-full h-full object-cover" />
+                <BrandAbstractVisual kind="path" />
               </div>
               <div className="absolute -bottom-8 -left-4 lg:-left-8 bg-[#17324D] text-white p-5 rounded-sm shadow-xl max-w-[200px]">
                 <div className="w-6 h-px bg-[#C9973E] mb-3" />
@@ -677,14 +675,14 @@ export default function Home() {
       {/* ── WELCOME HOME ── */}
       <section className="py-28 bg-white" style={{ marginTop: "-2rem" }}>
         <div
-          ref={kidsFade.ref}
+          ref={welcomeFade.ref}
           className="container transition-all duration-700 ease-out"
-          style={{ opacity: kidsFade.visible ? 1 : 0, transform: kidsFade.visible ? "translateY(0)" : "translateY(32px)" }}
+          style={{ opacity: welcomeFade.visible ? 1 : 0, transform: welcomeFade.visible ? "translateY(0)" : "translateY(32px)" }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 order-2 lg:order-1 relative">
               <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-                <img src={WELCOME_IMG} alt="An abstract expression of welcome and belonging at Graceway" className="w-full h-full object-cover" />
+                <BrandAbstractVisual kind="welcome" />
               </div>
               <div className="absolute -top-5 -right-5 bg-[#C9973E] text-white p-4 rounded-sm shadow-lg">
                 <p className="text-2xl font-bold" style={{ fontFamily: "'Source Serif 4', serif" }}>
@@ -697,22 +695,22 @@ export default function Home() {
             <div className="lg:col-span-5 order-1 lg:order-2 max-w-md text-left">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-8 bg-[#C9973E]" />
-                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.familiesWelcome")}</p>
+                <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">{t("home.welcomeLabel")}</p>
               </div>
               <h2
                 className="text-[#17324D] mb-6"
                 style={SECTION_HEADING_STYLE}
               >
-                {t("home.kidsTitle")}
+                {t("home.welcomeTitle")}
               </h2>
               <div className="w-12 h-0.5 bg-[#C9973E] mb-6" />
-              <p className="text-[#242A30]/70 leading-relaxed mb-8">{t("home.kidsBody")}</p>
+              <p className="text-[#242A30]/70 leading-relaxed mb-8">{t("home.welcomeBody")}</p>
               <Link
                 href="/ministries"
                 onClick={() => window.scrollTo(0, 0)}
                 className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#17324D] text-white font-semibold text-sm tracking-wide rounded-sm hover:bg-[#1e4060] transition-all duration-200"
               >
-                {t("home.learnKids")} <ArrowRight size={15} />
+                {t("home.welcomeCta")} <ArrowRight size={15} />
               </Link>
             </div>
           </div>
