@@ -73,3 +73,4 @@
 - [x] Home story heading: 첫 문장을 한 줄로 유지하도록 우리 이야기 헤드라인 전용 반응형 크기 조정
 - [x] Home shared heading scale: 모든 공통 섹션 헤드라인을 우리 이야기와 조화되는 더 작은 반응형 스케일로 조정
 - [x] Global scroll-to-top: 모든 내부 페이지 이동 링크가 목적지 페이지 상단에서 열리도록 전역 라우팅 동작 적용
+- [x] Restore database schema: GitHub 복원 코드와 Daily Bible·묵상 댓글 데이터베이스 스키마를 동기화하여 묵상 목록이 정상 로드되도록 복구
