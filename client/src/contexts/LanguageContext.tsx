@@ -119,7 +119,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "home.vision": { en: "Vision", ko: "비전" },
   "home.visionStatement": {
     en: "Back to the Word, Back to the World",
-    ko: "다시 말씀으로, 다시 세상으로",
+    ko: "다시 말씀으로,\n다시 세상으로...",
   },
   "home.coreValues": { en: "Core Values", ko: "핵심 가치" },
   "home.value1": { en: "The Word of God", ko: "하나님의 말씀" },

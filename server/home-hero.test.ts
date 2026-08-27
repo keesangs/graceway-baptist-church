@@ -11,4 +11,11 @@ describe("Home hero brand mark", () => {
     expect(homeSource).toContain('height: "clamp(22rem, 34vw, 38rem)"');
     expect(homeSource).toContain("right-[4%]");
   });
+
+  it("preserves the requested Korean vision line break in the editorial vision panel", () => {
+    const translations = readFileSync(resolve(process.cwd(), "client/src/contexts/LanguageContext.tsx"), "utf8");
+
+    expect(homeSource).toContain('className="mt-5 max-w-md whitespace-pre-line"');
+    expect(translations).toContain('ko: "다시 말씀으로,\\n다시 세상으로..."');
+  });
 });

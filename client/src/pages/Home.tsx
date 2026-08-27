@@ -453,7 +453,7 @@ export default function Home() {
               <div className="absolute -right-7 -top-14 select-none text-[14rem] leading-none text-[#C9973E]/10" style={{ fontFamily: "'Source Serif 4', serif" }}>G</div>
               <div className="relative">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9973E]">02 / {t("home.vision")}</p>
-                <h3 className="mt-5 max-w-md" style={SECTION_HEADING_STYLE}>
+                <h3 className="mt-5 max-w-md whitespace-pre-line" style={SECTION_HEADING_STYLE}>
                   {t("home.visionStatement")}
                 </h3>
                 <span className="mt-8 block h-px w-12 bg-[#C9973E]" />
