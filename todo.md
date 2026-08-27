@@ -94,3 +94,4 @@
 - [x] Route accessibility audit: 주요 공개·관리 경로의 클릭 가능한 버튼·폼·내비게이션에 프로그램적 이름과 키보드 포커스 처리가 있는지 회귀 테스트로 점검
 - [x] Interactive contrast audit: 네이비·골드 버튼과 슬레이트 포커스 링의 실제 전경·배경 색상 대비를 계산해 회귀 테스트로 검증
 - [x] Remaining route accessibility audit: Home·About·Sermons·Worship·Ministries·Admin Inbox의 상호작용 요소와 포커스 표시를 경로별 회귀 테스트로 검증
+- [x] Home hero symbol scale: 데스크톱 히어로 오른쪽 새 Graceway 심볼을 확대·재배치해 여백을 채우고 모바일 비율은 유지
