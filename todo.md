@@ -96,3 +96,4 @@
 - [x] Remaining route accessibility audit: Home·About·Sermons·Worship·Ministries·Admin Inbox의 상호작용 요소와 포커스 표시를 경로별 회귀 테스트로 검증
 - [x] Home hero symbol scale: 데스크톱 히어로 오른쪽 새 Graceway 심볼을 확대·재배치해 여백을 채우고 모바일 비율은 유지
 - [x] GitHub synchronization: 현재 코드 변경과 GitHub에 추적 가능한 이미지 자산을 원격 main 브랜치에 동기화하고 반영 상태 확인
+- [x] Sticky shrinking navigation: 새 Graceway 로고가 항상 보이도록 상단 내비게이션을 고정하고 스크롤 시 컴팩트한 높이·로고 크기로 전환

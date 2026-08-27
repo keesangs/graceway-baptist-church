@@ -20,6 +20,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -51,12 +52,21 @@ export default function Navbar() {
           : "bg-[#163B59]/38 backdrop-blur-[2px]"
       }`}
     >
-      <div className="container mx-auto flex h-[4.5rem] items-center justify-between md:h-[5.25rem]">
-        <Link href="/" className="group block w-[10.6rem] transition-transform duration-200 hover:scale-[1.018] sm:w-[13.5rem]">
+      <div
+        className={`container mx-auto flex items-center justify-between transition-[height] duration-300 ease-out ${
+          scrolled ? "h-[3.75rem] md:h-[4.25rem]" : "h-[4.5rem] md:h-[5.25rem]"
+        }`}
+      >
+        <Link
+          href="/"
+          className={`group block transition-[width,transform] duration-300 ease-out hover:scale-[1.018] ${
+            scrolled ? "w-[8.8rem] sm:w-[11rem]" : "w-[10.6rem] sm:w-[13.5rem]"
+          }`}
+        >
           <BrandLogo variant="on-dark" priority />
         </Link>
 
-        <nav className="hidden items-center gap-5 md:flex lg:gap-6" aria-label="Primary navigation">
+        <nav className={`hidden items-center transition-[gap] duration-300 md:flex ${scrolled ? "gap-4 lg:gap-5" : "gap-5 lg:gap-6"}`} aria-label="Primary navigation">
           {navLinks.map((link) => {
             const active = location === link.href;
             return (
