@@ -8,6 +8,7 @@ import { ArrowRight, BookOpen, Users, Heart, Music, GraduationCap, Zap, Globe, C
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual, type BrandAbstractVisualKind } from "@/components/BrandAbstractVisual";
+import { BrandPageHero } from "@/components/BrandPageHero";
 
 const featuredMinistry = {
   icon: BookOpen,
@@ -61,30 +62,12 @@ export default function Ministries() {
     <div className="min-h-screen bg-[#F4F6F7]">
       <Navbar />
 
-      {/* Page Hero */}
-      <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <BrandAbstractVisual kind="sending" />
-        </div>
-        <div className="absolute inset-0 bg-[#17324D]/80" />
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent opacity-60" />
-        <div className="relative container">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px w-8 bg-[#C9973E]" />
-            <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">Get Involved</p>
-          </div>
-          <h1
-            className="text-white mb-4 max-w-xl"
-            style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
-          >
-            Ministries
-          </h1>
-          <div className="w-12 h-0.5 bg-[#C9973E] mb-4" />
-          <p className="text-white/70 max-w-lg text-base leading-relaxed">
-            There's a place for everyone at Graceway. Find where you belong and how you can serve.
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow="Get Involved"
+        title="Ministries"
+        description="There’s a place for everyone at Graceway. Find where you belong and how you can serve."
+        visual="sending"
+      />
 
       {/* Featured Ministry — Full-width editorial */}
       <section className="py-0 bg-white">

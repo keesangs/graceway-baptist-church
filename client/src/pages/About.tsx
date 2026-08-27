@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
 const PASTOR_IMG = "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp";
 
@@ -45,26 +46,7 @@ export default function About() {
     <div className="min-h-screen bg-[#F4F6F7]">
       <Navbar />
 
-      {/* Page Hero */}
-      <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <BrandAbstractVisual kind="path" />
-        </div>
-        <div className="absolute inset-0 bg-[#17324D]/80" />
-        <div className="relative container text-center">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{t("about.whoWeAre")}</p>
-          <h1
-            className="text-white mb-4"
-            style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
-          >
-            {t("about.title")}
-          </h1>
-          <div className="gold-rule w-16 mx-auto mb-4" />
-          <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-            {t("about.subtitle")}
-          </p>
-        </div>
-      </section>
+      <BrandPageHero eyebrow={t("about.whoWeAre")} title={t("about.title")} description={t("about.subtitle")} visual="path" />
 
       {/* Our Story */}
       <section className="py-24 bg-white">

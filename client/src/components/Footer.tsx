@@ -1,10 +1,8 @@
-/**
- * Footer — Graceway Baptist Church
- * Design: Grace Navy background, gold accents, bilingual (EN/KR)
- */
+/** Footer — shared bilingual church information and official brand lockup. */
 import { Link } from "wouter";
 import { Facebook, Instagram, Youtube, Mail, MapPin, Clock } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export default function Footer() {
   const { lang, t } = useLang();
@@ -17,50 +15,28 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#17324D] text-white">
-      {/* Gold top rule */}
-      <div className="h-px bg-gradient-to-r from-transparent via-[#C9973E] to-transparent" />
+    <footer className="bg-[#163B59] text-white">
+      <div className="h-px bg-gradient-to-r from-transparent via-[#B9955E] to-transparent" />
 
-      <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Brand */}
+      <div className="container py-14 md:py-16">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
-                alt="Graceway Baptist Church"
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <div className="font-bold text-white tracking-wide" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                  GRACEWAY
-                </div>
-                <div className="text-[#C9973E] text-[0.6rem] tracking-[0.18em] uppercase">
-                  Baptist Church
-                </div>
-              </div>
+            <div className="mb-5 w-[13.5rem]">
+              <BrandLogo variant="on-dark" />
             </div>
-            <p className="text-white/60 text-sm leading-relaxed mb-2">
+            <p className="mb-2 text-sm leading-relaxed text-white/60">
               {lang === "ko" ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
             </p>
-            <p className="text-white/60 text-sm leading-relaxed italic">
-              {t("footer.tagline")}
-            </p>
-            <p className="text-[#C9973E] text-xs mt-1">{t("footer.verse")}</p>
+            <p className="text-sm italic leading-relaxed text-white/60">{t("footer.tagline")}</p>
+            <p className="mt-1 text-xs text-[#D9B87A]">{t("footer.verse")}</p>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              {t("footer.quickLinks")}
-            </h4>
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#D9B87A]">{t("footer.quickLinks")}</h4>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-[#C9973E] text-sm transition-colors duration-200"
-                  >
+                  <Link href={link.href} className="text-sm text-white/70 transition-colors duration-200 hover:text-[#D9B87A]">
                     {lang === "ko" ? link.ko : link.en}
                   </Link>
                 </li>
@@ -68,47 +44,38 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Service Info */}
           <div>
-            <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              {t("footer.serviceTimes")}
-            </h4>
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#D9B87A]">{t("footer.serviceTimes")}</h4>
             <div className="space-y-3">
               <div className="flex items-start gap-2">
-                <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
+                <Clock size={14} className="mt-0.5 shrink-0 text-[#D9B87A]" />
                 <div>
-                  <p className="text-white text-sm font-medium">{t("footer.sundayWorship")}</p>
-                  <p className="text-white/60 text-xs">1:30 PM</p>
+                  <p className="text-sm font-medium text-white">{t("footer.sundayWorship")}</p>
+                  <p className="text-xs text-white/60">1:30 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Clock size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
+                <Clock size={14} className="mt-0.5 shrink-0 text-[#D9B87A]" />
                 <div>
-                  <p className="text-white text-sm font-medium">{t("footer.wednesdayBible")}</p>
-                  <p className="text-white/60 text-xs">8:00 PM</p>
+                  <p className="text-sm font-medium text-white">{t("footer.wednesdayBible")}</p>
+                  <p className="text-xs text-white/60">8:00 PM</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={14} className="text-[#C9973E] mt-0.5 shrink-0" />
+                <MapPin size={14} className="mt-0.5 shrink-0 text-[#D9B87A]" />
                 <div>
-                  <p className="text-white text-sm font-medium">{t("footer.location")}</p>
-                  <p className="text-white/60 text-xs">2791 Driscoll Rd, Fremont, CA 94539</p>
+                  <p className="text-sm font-medium text-white">{t("footer.location")}</p>
+                  <p className="text-xs text-white/60">2791 Driscoll Rd, Fremont, CA 94539</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Contact & Social */}
           <div>
-            <h4 className="text-[#C9973E] text-xs tracking-[0.2em] uppercase font-semibold mb-4">
-              {t("footer.connectWithUs")}
-            </h4>
-            <div className="flex items-center gap-2 mb-4">
-              <Mail size={14} className="text-[#C9973E]" />
-              <a
-                href="mailto:info@graceway-baptist.org"
-                className="text-white/70 hover:text-white text-sm transition-colors"
-              >
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#D9B87A]">{t("footer.connectWithUs")}</h4>
+            <div className="mb-4 flex items-center gap-2">
+              <Mail size={14} className="text-[#D9B87A]" />
+              <a href="mailto:info@graceway-baptist.org" className="text-sm text-white/70 transition-colors hover:text-white">
                 info@graceway-baptist.org
               </a>
             </div>
@@ -122,17 +89,14 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#C9973E] hover:border-[#C9973E] transition-all duration-200"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/60 transition-all duration-200 hover:border-[#D9B87A] hover:text-[#D9B87A]"
                 >
                   <Icon size={16} />
                 </a>
               ))}
             </div>
             <div className="mt-6">
-              <Link
-                href="/connect"
-                className="inline-block px-5 py-2.5 bg-[#C9973E] text-white text-xs font-semibold tracking-widest uppercase rounded-sm hover:bg-[#b8862e] transition-colors duration-200"
-              >
+              <Link href="/connect" className="inline-block rounded-sm bg-[#B9955E] px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-[#0B2C43] transition-colors duration-200 hover:bg-[#C8A977]">
                 {t("nav.planVisit")}
               </Link>
             </div>
@@ -140,15 +104,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-white/40 text-xs">
-            {t("footer.copyright").replace("2026", String(new Date().getFullYear()))}
-          </p>
-          <p className="text-white/40 text-xs">
-            {t("footer.grace")} · {t("footer.faith")} · {t("footer.community")}
-          </p>
+        <div className="container flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
+          <p className="text-xs text-white/40">{t("footer.copyright").replace("2026", String(new Date().getFullYear()))}</p>
+          <p className="text-xs text-white/40">{t("footer.grace")} · {t("footer.faith")} · {t("footer.community")}</p>
         </div>
       </div>
     </footer>

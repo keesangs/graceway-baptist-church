@@ -7,10 +7,10 @@ import { useState } from "react";
 import { Play, Clock, BookOpen, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
 
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
-const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
@@ -195,33 +195,17 @@ export default function Sermons() {
         </div>
       )}
 
-      {/* Page Hero */}
-      <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img src={HERO_BG} alt="" className="w-full h-full object-cover" />
-        </div>
-        <div className="absolute inset-0 bg-[#17324D]/80" />
-        <div className="relative container text-center">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">
-            {t("sermons.messages")}
-          </p>
-          <h1
-            className="text-white mb-4"
-            style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
-          >
-            {lang === "ko" ? "주일예배 설교" : t("sermons.title")}
-          </h1>
-          <div className="w-16 h-0.5 bg-[#C9973E] mx-auto mb-4" />
-          <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-            {t("sermons.subtitle")}
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow={t("sermons.messages")}
+        title={lang === "ko" ? "주일예배 설교" : t("sermons.title")}
+        description={t("sermons.subtitle")}
+        visual="word"
+      />
 
       {/* Featured Sermon */}
-      <section className="py-16 bg-white">
+      <section className="bg-[#FFFEFB] py-16">
         <div className="container">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-6">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-[#B07834]">
             {t("sermons.latestMessage")}
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -236,8 +220,8 @@ export default function Sermons() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
               />
-              <div className="absolute inset-0 bg-[#17324D]/50 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-[#C9973E] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/52">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#B9955E] shadow-lg transition-transform duration-300 group-hover:scale-110">
                   <Play size={22} className="text-white ml-1" />
                 </div>
               </div>
@@ -251,23 +235,23 @@ export default function Sermons() {
             </button>
 
             <div>
-              <span className="inline-block text-xs px-3 py-1 bg-[#17324D]/10 text-[#17324D] rounded-sm font-medium tracking-wide mb-4">
+              <span className="mb-4 inline-block rounded-sm bg-[#E7EEF1] px-3 py-1 text-xs font-medium tracking-wide text-[#163B59]">
                 {featured.series}
               </span>
               <h2
-                className="text-[#17324D] mb-3"
+                className="mb-3 text-[#163B59]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 700, lineHeight: 1.2 }}
               >
                 {lang === "ko" ? featured.titleKo : featured.titleEn}
               </h2>
               <div className="flex items-center gap-2 mb-4">
-                <BookOpen size={14} className="text-[#C9973E]" />
-                <span className="text-[#2F6F9F] text-sm font-medium">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
+                <BookOpen size={14} className="text-[#B07834]" />
+                <span className="text-sm font-medium text-[#607A91]">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
               </div>
               <p className="text-[#242A30]/60 text-sm mb-6">{featured.speaker} · {featured.date}</p>
               <button
                 onClick={() => setPlayingId(featured.videoId)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#17324D] text-white text-sm font-semibold rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#245170] active:scale-[0.97]"
               >
                 <Play size={14} /> {t("sermons.watchNow")}
               </button>
@@ -277,7 +261,7 @@ export default function Sermons() {
       </section>
 
       {/* Sermon Archive */}
-      <section className="py-16 bg-[#F4F6F7]">
+      <section className="bg-[#EEF3F5] py-16">
         <div className="container">
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -286,9 +270,10 @@ export default function Sermons() {
               <input
                 type="text"
                 placeholder={t("sermons.searchPlaceholder")}
+                aria-label={t("sermons.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#242A30]/15 text-sm rounded-sm focus:outline-none focus:border-[#2F6F9F] transition-colors"
+                className="w-full rounded-md border border-[#C8D4D9] bg-[#FFFEFB] py-2.5 pl-9 pr-4 text-sm transition-colors focus:border-[#607A91] focus:outline-none"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -298,8 +283,8 @@ export default function Sermons() {
                   onClick={() => setActiveSeries(s)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-all duration-200 ${
                     activeSeries === s
-                      ? "bg-[#17324D] text-white"
-                      : "bg-white text-[#242A30]/60 hover:text-[#17324D] border border-[#242A30]/15"
+                      ? "bg-[#163B59] text-white"
+                      : "border border-[#C8D4D9] bg-[#FFFEFB] text-[#607A91] hover:text-[#163B59]"
                   }`}
                 >
                   {s === "All" ? t("sermons.all") : s}
@@ -314,7 +299,8 @@ export default function Sermons() {
               <button
                 key={i}
                 onClick={() => setPlayingId(s.videoId)}
-                className="bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer text-left w-full"
+                className="group w-full cursor-pointer overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
+                aria-label={lang === "ko" ? `${s.titleKo} 설교 재생` : `Play sermon: ${s.titleEn}`}
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
@@ -323,8 +309,8 @@ export default function Sermons() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
                   />
-                  <div className="absolute inset-0 bg-[#17324D]/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-10 h-10 rounded-full bg-[#C9973E] flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B9955E]">
                       <Play size={14} className="text-white ml-0.5" />
                     </div>
                   </div>
@@ -337,9 +323,9 @@ export default function Sermons() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <p className="text-[#C9973E] text-[10px] font-medium mb-1 tracking-wide">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
+                  <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
                   <h3
-                    className="text-[#17324D] font-semibold mb-1.5 group-hover:text-[#2F6F9F] transition-colors text-sm leading-snug"
+                    className="mb-1.5 text-sm font-semibold leading-snug text-[#163B59] transition-colors group-hover:text-[#607A91]"
                     style={{ fontFamily: "'Source Serif 4', serif" }}
                   >
                     {lang === "ko" ? s.titleKo : s.titleEn}

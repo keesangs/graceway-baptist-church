@@ -139,7 +139,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F4F6F7]">
+    <div className="min-h-screen bg-[#FCFAF6]">
       <Navbar />
 
       {/* ── HERO ── */}
@@ -168,55 +168,36 @@ export default function Home() {
         />
 
         {/* Navy overlay stack — text side stays dark and crisp, right side lets the water breathe */}
-        <div className="absolute inset-0 bg-[#17324D]/35" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#17324D]/95 via-[#17324D]/62 to-[#17324D]/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/72 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[#163B59]/38" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#163B59]/96 via-[#163B59]/66 to-[#163B59]/14" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#163B59]/76 via-transparent to-transparent" />
 
         {/* Vertical gold accent line */}
         <div
-          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent transition-opacity duration-1000"
+          className="absolute bottom-0 left-0 top-0 w-1 bg-gradient-to-b from-transparent via-[#B9955E] to-transparent transition-opacity duration-1000"
           style={{ opacity: heroVisible ? 0.6 : 0 }}
         />
 
-        {/* Watermark G — fades in with slight upward drift */}
+        {/* Official Graceway mark — a quiet, large-scale sacred motif on desktop. */}
         <div
-          className="absolute right-8 top-1/2 -translate-y-1/2 select-none pointer-events-none transition-all duration-[1400ms] ease-out"
+          className="pointer-events-none absolute right-[8%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out md:block"
           style={{
-            opacity: heroVisible ? 0.18 : 0,
-            transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-44%) scale(0.95)",
-            fontFamily: "'Source Serif 4', serif",
-            fontSize: "clamp(14rem, 30vw, 28rem)",
-            fontWeight: 700,
-            color: "#C9973E",
-            lineHeight: 1,
-            transitionDelay: "400ms",
-          }}
-        >
-          G
-        </div>
-
-        {/* Gt emblem watermark — mirrors the hero_bg_navy emblem that the video covers.
-             Positioned right-side, vertically centered, large and ghosted so it
-             reads as texture rather than a hard logo. Desktop only. */}
-        <div
-          className="absolute right-0 top-1/2 select-none pointer-events-none transition-all duration-[1600ms] ease-out hidden md:block"
-          style={{
-            opacity: heroVisible ? 0.07 : 0,
-            transform: heroVisible ? "translateY(-42%) scale(1)" : "translateY(-38%) scale(0.96)",
+            opacity: heroVisible ? 0.17 : 0,
+            transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-45%) scale(0.96)",
             transitionDelay: "500ms",
-            width: "clamp(18rem, 30vw, 36rem)",
-            height: "clamp(18rem, 30vw, 36rem)",
+            width: "clamp(12rem, 19vw, 20rem)",
+            height: "clamp(14rem, 22vw, 24rem)",
           }}
         >
           <img
-            src="/manus-storage/graceway_navbar_icon_v2_6a6e5e3f.png"
+            src="/manus-storage/graceway-logo-icon_344928c5.png"
             alt=""
             aria-hidden="true"
             style={{
               width: "100%",
               height: "100%",
               objectFit: "contain",
-              filter: "brightness(2.2) saturate(0) invert(0) drop-shadow(0 0 0 transparent)",
+              filter: "brightness(0) invert(1)",
             }}
           />
         </div>
@@ -232,8 +213,8 @@ export default function Home() {
                 transitionDelay: "100ms",
               }}
             >
-              <div className="h-px w-8 bg-[#C9973E]" />
-              <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">
+              <div className="h-px w-8 bg-[#B9955E]" />
+              <p className="text-[#D9B87A] text-xs tracking-[0.3em] uppercase font-semibold">
                 {t("home.welcomeTo")}
               </p>
             </div>
@@ -254,12 +235,12 @@ export default function Home() {
               {lang === "ko" ? (
                 <>
                   {t("home.heroTitle1")}<br />
-                  <span className="text-[#C9973E]">{t("home.heroTitle2")}</span>
+                  <span className="text-[#D9B87A]">{t("home.heroTitle2")}</span>
                 </>
               ) : (
                 <>
                   {t("home.heroTitle1")}<br />
-                  <span className="text-[#C9973E]">Baptist</span> Church
+                  <span className="text-[#D9B87A]">Baptist</span> Church
                 </>
               )}
             </h1>
@@ -285,7 +266,7 @@ export default function Home() {
                 transitionDelay: "400ms",
               }}
             >
-              <div className="h-px w-12 bg-[#C9973E]/60" />
+              <div className="h-px w-12 bg-[#B9955E]/60" />
               <p className="text-white/70 text-sm italic" style={{ fontFamily: "'Source Serif 4', serif" }}>
                 {lang === "ko"
                   ? '"너희는 그 은혜에 의하여 믿음으로 말미암아 구원을 받았으니" — 엡 2:8'
@@ -316,7 +297,7 @@ export default function Home() {
             >
               <Link
                 href="/connect"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#C9973E] text-white font-semibold text-sm tracking-wide rounded-sm hover:bg-[#b8862e] transition-all duration-200 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-sm bg-[#B9955E] px-7 py-3.5 text-sm font-semibold tracking-wide text-[#0B2C43] transition-all duration-200 hover:bg-[#C8A977] active:scale-[0.97]"
               >
                 {t("home.planVisit")} <ArrowRight size={16} />
               </Link>
@@ -332,7 +313,7 @@ export default function Home() {
       </section>
 
       {/* ── SERVICE INFO BAR ── */}
-      <section className="bg-[#17324D] -mt-8 relative z-10 py-10">
+      <section className="relative z-10 -mt-8 bg-[#163B59] py-10">
         <div
           ref={serviceFade.ref}
           className="container transition-all duration-700 ease-out motion-reduce:transition-none"
@@ -345,8 +326,8 @@ export default function Home() {
               { icon: Clock, labelEn: "Wednesday Prayer Meeting", labelKo: "수요 기도회", value: "8:00 PM" },
             ].map(({ icon: Icon, labelEn, labelKo, value }) => (
               <div key={labelEn} className="flex flex-col items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-[#C9973E]/20 flex items-center justify-center">
-                  <Icon size={18} className="text-[#C9973E]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B9955E]/20">
+                  <Icon size={18} className="text-[#D9B87A]" />
                 </div>
                 <p className="text-white/50 text-xs tracking-widest uppercase">{lang === "ko" ? labelKo : labelEn}</p>
                 <p className="text-white font-semibold text-sm">{value}</p>
@@ -830,12 +811,13 @@ export default function Home() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={subscribeMutation.isPending}
                       placeholder={t("home.emailPlaceholder")}
+                      aria-label={t("home.emailPlaceholder")}
                       className="flex-1 px-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm rounded-sm focus:outline-none focus:border-[#C9973E] transition-colors disabled:opacity-50"
                     />
                     <button
                       type="submit"
                       disabled={subscribeMutation.isPending}
-                      className="px-6 py-3 bg-[#C9973E] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#b8862e] transition-colors active:scale-[0.97] whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                      className="px-6 py-3 bg-[#C9973E] text-[#0B2C43] text-sm font-semibold tracking-wide rounded-sm hover:bg-[#b8862e] transition-colors active:scale-[0.97] whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                     >
                       {subscribeMutation.isPending && <Loader2 size={15} className="animate-spin" />}
                       {t("home.signUp")}

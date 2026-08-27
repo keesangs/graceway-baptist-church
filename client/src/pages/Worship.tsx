@@ -7,10 +7,10 @@ import { useState } from "react";
 import { Play, Clock, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
 
 const WORSHIP_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
-const HERO_BG = "/manus-storage/hero_bg_67c2aa9c.jpg";
 
 // Sunday worship videos from YouTube @keesangs channel
 const worships = [
@@ -151,35 +151,17 @@ export default function Worship() {
         </div>
       )}
 
-      {/* Page Hero */}
-      <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img src={HERO_BG} alt="" className="w-full h-full object-cover" />
-        </div>
-        <div className="absolute inset-0 bg-[#17324D]/80" />
-        <div className="relative container text-center">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">
-            {lang === "ko" ? "찬양" : "Worship"}
-          </p>
-          <h1
-            className="text-white mb-4"
-            style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
-          >
-            {lang === "ko" ? "주일예배 찬양" : "Sunday Worship"}
-          </h1>
-          <div className="w-16 h-0.5 bg-[#C9973E] mx-auto mb-4" />
-          <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-            {lang === "ko"
-              ? "주일 예배 시간에 함께 드린 찬양 영상입니다."
-              : "Worship videos from our Sunday services."}
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow={lang === "ko" ? "찬양" : "Worship"}
+        title={lang === "ko" ? "주일예배 찬양" : "Sunday Worship"}
+        description={lang === "ko" ? "주일 예배 시간에 함께 드린 찬양 영상입니다." : "Worship videos from our Sunday services."}
+        visual="community"
+      />
 
       {/* Featured Worship */}
-      <section className="py-16 bg-white">
+      <section className="bg-[#FFFEFB] py-16">
         <div className="container">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-6">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-[#B07834]">
             {lang === "ko" ? "최근 주일예배 찬양" : "Latest Worship"}
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -196,9 +178,9 @@ export default function Worship() {
                   (e.target as HTMLImageElement).src = WORSHIP_IMG;
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#163B59]/72 via-transparent to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-16 h-16 rounded-full bg-[#C9973E] flex items-center justify-center shadow-lg">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#B9955E] shadow-lg">
                   <Play size={24} className="text-white ml-1" fill="white" />
                 </div>
               </div>
@@ -210,14 +192,14 @@ export default function Worship() {
             {/* Info */}
             <div>
               <h2
-                className="text-[#17324D] mb-3"
+                className="mb-3 text-[#163B59]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.5rem, 3vw, 2.2rem)", fontWeight: 700, lineHeight: 1.2 }}
               >
                 {lang === "ko" ? featured.titleKo : featured.titleEn}
               </h2>
               <div className="flex items-center gap-4 text-[#242A30]/60 text-sm mb-6">
                 <div className="flex items-center gap-1">
-                  <Clock size={14} className="text-[#C9973E]" />
+                  <Clock size={14} className="text-[#B07834]" />
                   {featured.duration}
                 </div>
               </div>
@@ -228,7 +210,7 @@ export default function Worship() {
               </p>
               <button
                 onClick={() => setPlayingId(featured.videoId)}
-                className="inline-flex items-center gap-2 bg-[#C9973E] text-white px-6 py-2.5 rounded-sm font-semibold text-sm hover:bg-[#B8854F] transition-colors"
+                className="inline-flex items-center gap-2 rounded-sm bg-[#B9955E] px-6 py-2.5 text-sm font-semibold text-[#0B2C43] transition-colors hover:bg-[#C8A977]"
               >
                 <Play size={16} className="ml-0.5" fill="white" />
                 {lang === "ko" ? "재생" : "Play"}
@@ -239,12 +221,12 @@ export default function Worship() {
       </section>
 
       {/* Worship Archive */}
-      <section className="py-20 bg-[#F4F6F7]">
+      <section className="bg-[#EEF3F5] py-20">
         <div className="container">
           {/* Filter + Search */}
           <div className="mb-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-4">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#B07834]">
                 {lang === "ko" ? "지난 주일예배 찬양" : "Worship Archive"}
               </p>
               <h2
@@ -260,9 +242,10 @@ export default function Worship() {
               <input
                 type="text"
                 placeholder={lang === "ko" ? "검색..." : "Search..."}
+                aria-label={lang === "ko" ? "찬양 검색" : "Search worship"}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#E8ECF0] rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#C9973E]/50"
+                className="w-full rounded-md border border-[#C8D4D9] bg-[#FFFEFB] py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#607A91]/50"
               />
             </div>
           </div>
@@ -274,7 +257,8 @@ export default function Worship() {
                 <button
                   key={i}
                   onClick={() => setPlayingId(w.videoId)}
-                  className="group text-left rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 bg-white cursor-pointer"
+                  className="group cursor-pointer overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
+                  aria-label={lang === "ko" ? `${w.titleKo} 찬양 재생` : `Play worship: ${w.titleEn}`}
                 >
                   <div className="relative aspect-video overflow-hidden">
                     <img
@@ -285,8 +269,8 @@ export default function Worship() {
                         (e.target as HTMLImageElement).src = WORSHIP_IMG;
                       }}
                     />
-                    <div className="absolute inset-0 bg-[#17324D]/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-12 h-12 rounded-full bg-[#C9973E] flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B9955E]">
                         <Play size={16} className="text-white ml-0.5" fill="white" />
                       </div>
                     </div>
@@ -295,7 +279,7 @@ export default function Worship() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-[#17324D] font-semibold text-sm group-hover:text-[#2F6F9F] transition-colors" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                    <h3 className="text-sm font-semibold text-[#163B59] transition-colors group-hover:text-[#607A91]" style={{ fontFamily: "'Source Serif 4', serif" }}>
                       {lang === "ko" ? w.titleKo : w.titleEn}
                     </h3>
                     <p className="text-[#242A30]/45 text-[11px] mt-2">{w.date}</p>

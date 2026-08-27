@@ -5,8 +5,8 @@
 
 /* ============================================================
    GRACEWAY BAPTIST CHURCH — Design System
-   Philosophy: Modern Reverence — editorial meets sacred warmth
-   Primary: Grace Navy #17324D | Accent: Warm Gold #C9973E
+   Philosophy: Coastal Grace — composed, welcoming, and quietly contemporary
+   Primary: Grace Navy #163B59 | Accent: Muted Gold #B9955E
    ============================================================ */
 
 @theme inline {
@@ -43,33 +43,33 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Graceway Brand Colors */
-  --color-grace-navy: oklch(0.26 0.055 240);
-  --color-way-blue: oklch(0.47 0.085 240);
-  --color-warm-gold: oklch(0.67 0.12 65);
-  --color-cloud: oklch(0.97 0.005 240);
-  --color-charcoal: oklch(0.22 0.01 240);
+  --color-grace-navy: oklch(0.30 0.06 240);
+  --color-way-blue: oklch(0.53 0.045 240);
+  --color-warm-gold: oklch(0.68 0.07 75);
+  --color-cloud: oklch(0.98 0.008 95);
+  --color-charcoal: oklch(0.27 0.02 240);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   /* Graceway Brand Palette */
-  --grace-navy: #17324D;
-  --way-blue: #2F6F9F;
-  --warm-gold: #C9973E;
-  --cloud: #F4F6F7;
-  --charcoal: #242A30;
+  --grace-navy: #163B59;
+  --way-blue: #4F697E;
+  --warm-gold: #B9955E;
+  --cloud: #FCFAF6;
+  --charcoal: #2E3A46;
 
   /* Semantic tokens */
-  --primary: oklch(0.26 0.055 240);       /* Grace Navy */
+  --primary: oklch(0.30 0.06 240);        /* Grace Navy */
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.47 0.085 240);     /* Way Blue */
+  --secondary: oklch(0.53 0.045 240);     /* Way Blue */
   --secondary-foreground: oklch(0.98 0 0);
-  --accent: oklch(0.67 0.12 65);          /* Warm Gold */
+  --accent: oklch(0.68 0.07 75);          /* Warm Gold */
   --accent-foreground: oklch(0.15 0.02 65);
 
-  --background: oklch(0.97 0.005 240);    /* Cloud */
-  --foreground: oklch(0.22 0.01 240);     /* Charcoal */
+  --background: oklch(0.98 0.008 95);     /* Ivory Cloud */
+  --foreground: oklch(0.27 0.02 240);     /* Charcoal */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.22 0.01 240);
   --popover: oklch(1 0 0);
@@ -82,11 +82,11 @@
   --input: oklch(0.88 0.008 240);
   --ring: oklch(0.47 0.085 240);
 
-  --sidebar: oklch(0.26 0.055 240);
+  --sidebar: oklch(0.30 0.06 240);
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.67 0.12 65);
+  --sidebar-primary: oklch(0.68 0.07 75);
   --sidebar-primary-foreground: oklch(0.15 0.02 65);
-  --sidebar-accent: oklch(0.32 0.055 240);
+  --sidebar-accent: oklch(0.36 0.055 240);
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.35 0.04 240);
   --sidebar-ring: oklch(0.67 0.12 65);
@@ -99,10 +99,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    letter-spacing: -0.012em;
   }
   h1, h2, h3, h4 {
     font-family: 'Source Serif 4', 'Noto Serif KR', serif;
+    letter-spacing: -0.032em;
   }
+  ::selection { background: #D8C39A; color: #163B59; }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -140,18 +143,28 @@
   }
 
   /* Graceway brand utilities */
-  .grace-navy { background-color: #17324D; }
-  .text-grace-navy { color: #17324D; }
-  .text-warm-gold { color: #C9973E; }
-  .text-way-blue { color: #2F6F9F; }
-  .bg-cloud { background-color: #F4F6F7; }
+  .grace-navy { background-color: #163B59; }
+  .text-grace-navy { color: #163B59; }
+  .text-warm-gold { color: #B9955E; }
+  .text-way-blue { color: #4F697E; }
+  .bg-cloud { background-color: #FCFAF6; }
+
+  /* The existing arbitrary utility remains in a few shared page components.
+     Keep its rendered foreground at AA contrast against the ivory surface. */
+  [class~="text-[#607A91]"] { color: #4F697E !important; }
+
+  :where(a, button, input, textarea, select, [role="button"]):focus-visible {
+    outline: 2px solid #0B2C43;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px #D9B87A;
+  }
   .gold-rule {
     height: 1px;
-    background: linear-gradient(90deg, transparent, #C9973E, transparent);
+    background: linear-gradient(90deg, transparent, #B9955E, transparent);
   }
   .gold-rule-solid {
     height: 1px;
-    background-color: #C9973E;
+    background-color: #B9955E;
   }
 
   /* Fade-up animation */
@@ -166,6 +179,15 @@
   .animate-fade-up-delay-2 { animation-delay: 0.16s; opacity: 0; }
   .animate-fade-up-delay-3 { animation-delay: 0.24s; opacity: 0; }
   .animate-fade-up-delay-4 { animation-delay: 0.32s; opacity: 0; }
+
+  .brand-page-hero {
+    background: #163B59;
+  }
+
+  .brand-surface {
+    background: linear-gradient(145deg, #FFFEFB 0%, #F5F1E8 100%);
+    box-shadow: 0 16px 40px rgba(22, 59, 89, 0.08);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .animate-fade-up,

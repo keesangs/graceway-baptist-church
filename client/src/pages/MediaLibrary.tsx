@@ -9,6 +9,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import {
   Upload,
   Trash2,
@@ -106,6 +107,13 @@ export default function MediaLibrary() {
     }
   };
 
+  const handleDropzoneKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fileInputRef.current?.click();
+    }
+  };
+
   const handleUpload = async () => {
     if (!uploadFile) return;
     setUploadStatus("uploading");
@@ -171,35 +179,22 @@ export default function MediaLibrary() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F7]">
+    <div className="min-h-screen bg-[#FCFAF6]">
       <Navbar />
 
-      {/* Page Header */}
-      <section className="pt-28 pb-12 bg-[#17324D] relative overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent opacity-60" />
-        <div className="container">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px w-8 bg-[#C9973E]" />
-            <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">Church Resources</p>
-          </div>
-          <h1
-            className="text-white text-4xl font-bold mb-2"
-            style={{ fontFamily: "'Source Serif 4', serif" }}
-          >
-            Media Library
-          </h1>
-          <p className="text-white/60 text-sm">
-            Upload and manage church media — sermons, images, and documents.
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow="Church Resources"
+        title="Media Library"
+        description="A shared library for sermons, worship, images, and documents that serve our church family."
+        visual="word"
+      />
 
       <div className="container py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Upload Panel ── */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-sm shadow-sm p-6 sticky top-24">
+            <div className="brand-surface sticky top-24 rounded-xl border border-[#DCE4E7] p-6 shadow-none">
               <h2
                 className="text-[#17324D] text-lg font-bold mb-5"
                 style={{ fontFamily: "'Source Serif 4', serif" }}
@@ -209,13 +204,17 @@ export default function MediaLibrary() {
 
               {/* Drop zone */}
               <div
-                className="border-2 border-dashed border-[#17324D]/20 rounded-sm p-6 text-center cursor-pointer hover:border-[#C9973E]/60 hover:bg-[#C9973E]/5 transition-all duration-200 mb-4"
+                className="mb-4 cursor-pointer rounded-lg border-2 border-dashed border-[#AEBEC6] p-6 text-center transition-all duration-200 hover:border-[#B9955E]/70 hover:bg-[#B9955E]/5"
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={handleDropzoneKeyDown}
+                role="button"
+                tabIndex={0}
+                aria-label="Select a file to upload"
               >
                 {uploadFile ? (
                   <div className="flex items-center gap-3 text-left">
-                    <div className="w-10 h-10 rounded-full bg-[#17324D]/10 flex items-center justify-center shrink-0">
-                      <File size={18} className="text-[#17324D]" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E7EEF1]">
+                      <File size={18} className="text-[#163B59]" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[#17324D] text-sm font-medium truncate">{uploadFile.name}</p>
@@ -224,15 +223,16 @@ export default function MediaLibrary() {
                     <button
                       onClick={(e) => { e.stopPropagation(); setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                       className="ml-auto shrink-0 text-[#242A30]/40 hover:text-red-500 transition-colors"
+                      aria-label="Clear selected file"
                     >
                       <X size={16} />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <Upload size={28} className="text-[#17324D]/30 mx-auto mb-2" />
-                    <p className="text-[#17324D]/60 text-sm font-medium">Click to select a file</p>
-                    <p className="text-[#242A30]/40 text-xs mt-1">Images, PDFs, audio/video · Max 50 MB</p>
+                    <Upload size={28} className="mx-auto mb-2 text-[#607A91]/55" />
+                    <p className="text-sm font-medium text-[#607A91]">Click to select a file</p>
+                    <p className="mt-1 text-xs text-[#607A91]/65">Images, PDFs, audio/video · Max 50 MB</p>
                   </>
                 )}
               </div>
@@ -242,6 +242,7 @@ export default function MediaLibrary() {
                 className="hidden"
                 accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.ppt,.pptx"
                 onChange={handleFileChange}
+                aria-label="Choose a media file"
               />
 
               {/* Category */}
@@ -258,8 +259,8 @@ export default function MediaLibrary() {
                         onClick={() => setUploadCategory(cat)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-sm text-xs font-medium border transition-all duration-150 ${
                           uploadCategory === cat
-                            ? "bg-[#17324D] text-white border-[#17324D]"
-                            : "bg-white text-[#17324D]/70 border-[#17324D]/20 hover:border-[#17324D]/50"
+                            ? "border-[#163B59] bg-[#163B59] text-white"
+                            : "border-[#C8D4D9] bg-white text-[#607A91] hover:border-[#607A91]"
                         }`}
                       >
                         <Icon size={13} />
@@ -280,7 +281,7 @@ export default function MediaLibrary() {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   placeholder="e.g. Sunday Sermon — July 27, 2026"
                   rows={2}
-                  className="w-full px-3 py-2 border border-[#17324D]/20 rounded-sm text-sm text-[#242A30] placeholder:text-[#242A30]/30 focus:outline-none focus:border-[#C9973E] resize-none transition-colors"
+                  className="w-full resize-none rounded-md border border-[#C8D4D9] bg-white px-3 py-2 text-sm text-[#2E3A46] placeholder:text-[#607A91]/55 transition-colors focus:border-[#607A91] focus:outline-none"
                 />
               </div>
 
@@ -288,7 +289,7 @@ export default function MediaLibrary() {
               <button
                 onClick={handleUpload}
                 disabled={!uploadFile || uploadStatus === "uploading"}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#C9973E] text-white font-semibold text-sm tracking-wide rounded-sm hover:bg-[#b8862e] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.97]"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-[#B9955E] px-5 py-3 text-sm font-semibold tracking-wide text-[#0B2C43] transition-all duration-200 hover:bg-[#C8A977] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {uploadStatus === "uploading" ? (
                   <><Loader2 size={16} className="animate-spin" /> Uploading…</>
@@ -322,8 +323,8 @@ export default function MediaLibrary() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-1.5 rounded-sm text-xs font-semibold tracking-wide border transition-all duration-150 ${
                     activeCategory === cat
-                      ? "bg-[#17324D] text-white border-[#17324D]"
-                      : "bg-white text-[#17324D]/70 border-[#17324D]/20 hover:border-[#17324D]/50"
+                      ? "border-[#163B59] bg-[#163B59] text-white"
+                      : "border-[#C8D4D9] bg-[#FFFEFB] text-[#607A91] hover:border-[#607A91]"
                   }`}
                 >
                   {CATEGORY_LABELS[cat]}
@@ -336,10 +337,10 @@ export default function MediaLibrary() {
                 <Loader2 size={28} className="animate-spin text-[#17324D]/40" />
               </div>
             ) : !files || files.length === 0 ? (
-              <div className="bg-white rounded-sm shadow-sm p-12 text-center">
-                <Upload size={36} className="text-[#17324D]/20 mx-auto mb-3" />
-                <p className="text-[#17324D]/50 font-medium">No files yet</p>
-                <p className="text-[#242A30]/40 text-sm mt-1">Upload your first file using the panel on the left.</p>
+              <div className="brand-surface rounded-xl border border-[#DCE4E7] p-12 text-center shadow-none">
+                <Upload size={36} className="mx-auto mb-3 text-[#607A91]/35" />
+                <p className="font-medium text-[#163B59]/70">No files yet</p>
+                <p className="mt-1 text-sm text-[#607A91]">Upload your first file using the panel on the left.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -349,10 +350,10 @@ export default function MediaLibrary() {
                   return (
                     <div
                       key={file.id}
-                      className="bg-white rounded-sm shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition-shadow duration-200 group"
+                      className="group flex items-center gap-4 rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-4 shadow-sm transition-shadow duration-200 hover:shadow-md"
                     >
                       {/* Thumbnail or icon */}
-                      <div className="w-14 h-14 rounded-sm overflow-hidden shrink-0 bg-[#F4F6F7] flex items-center justify-center">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#EEF3F5]">
                         {isImage ? (
                           <img
                             src={file.url}
@@ -360,22 +361,22 @@ export default function MediaLibrary() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Icon size={22} className="text-[#17324D]/40" />
+                          <Icon size={22} className="text-[#607A91]/60" />
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[#17324D] font-semibold text-sm truncate">{file.filename}</p>
+                        <p className="truncate text-sm font-semibold text-[#163B59]">{file.filename}</p>
                         {file.description && (
-                          <p className="text-[#242A30]/55 text-xs truncate mt-0.5">{file.description}</p>
+                          <p className="mt-0.5 truncate text-xs text-[#607A91]">{file.description}</p>
                         )}
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] px-2 py-0.5 bg-[#17324D]/10 text-[#17324D] rounded-sm font-medium tracking-wide capitalize">
+                          <span className="rounded-sm bg-[#E7EEF1] px-2 py-0.5 text-[10px] font-medium capitalize tracking-wide text-[#163B59]">
                             {file.category}
                           </span>
-                          <span className="text-[#242A30]/40 text-xs">{formatBytes(file.fileSize)}</span>
-                          <span className="text-[#242A30]/40 text-xs">{formatDate(file.createdAt)}</span>
+                          <span className="text-xs text-[#607A91]/70">{formatBytes(file.fileSize)}</span>
+                          <span className="text-xs text-[#607A91]/70">{formatDate(file.createdAt)}</span>
                         </div>
                       </div>
 
@@ -385,7 +386,7 @@ export default function MediaLibrary() {
                           href={file.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#2F6F9F] text-xs font-medium hover:underline"
+                          className="text-xs font-medium text-[#607A91] hover:underline"
                         >
                           View
                         </a>
@@ -399,6 +400,7 @@ export default function MediaLibrary() {
                             disabled={deleteMutation.isPending}
                             className="p-1.5 text-[#242A30]/30 hover:text-red-500 transition-colors rounded-sm hover:bg-red-50"
                             title="Delete file"
+                            aria-label={`Delete ${file.filename}`}
                           >
                             <Trash2 size={14} />
                           </button>

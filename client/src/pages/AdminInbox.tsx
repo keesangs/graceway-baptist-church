@@ -11,6 +11,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import {
   Inbox,
   Mail,
@@ -184,27 +185,12 @@ export default function AdminInbox() {
     <div className="min-h-screen bg-[#F4F6F7]">
       <Navbar />
 
-      {/* Page Header */}
-      <section className="pt-28 pb-12 bg-[#17324D] relative overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[#C9973E] to-transparent opacity-60" />
-        <div className="container">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px w-8 bg-[#C9973E]" />
-            <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold">
-              Church Staff
-            </p>
-          </div>
-          <h1
-            className="text-white text-4xl font-bold mb-2"
-            style={{ fontFamily: "'Source Serif 4', serif" }}
-          >
-            Inbox
-          </h1>
-          <p className="text-white/60 text-sm">
-            Enquiries from the Connect page and newsletter signups, newest first.
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow="Church Staff"
+        title="Inbox"
+        description="Enquiries from the Connect page and newsletter signups, newest first."
+        visual="community"
+      />
 
       <div className="container py-12">
         {/* Tabs + actions */}
@@ -219,15 +205,16 @@ export default function AdminInbox() {
               <button
                 key={item.key}
                 onClick={() => setTab(item.key)}
+                aria-pressed={tab === item.key}
                 className={`px-5 py-2.5 text-sm font-semibold tracking-wide transition-colors duration-200 ${
                   tab === item.key
-                    ? "bg-[#17324D] text-white"
-                    : "text-[#17324D]/70 hover:bg-[#17324D]/5"
+                    ? "bg-[#163B59] text-white"
+                    : "text-[#607A91] hover:bg-[#E7EEF1]"
                 }`}
               >
                 {item.label}
                 <span
-                  className={`ml-2 text-xs ${tab === item.key ? "text-[#C9973E]" : "text-[#242A30]/40"}`}
+                  className={`ml-2 text-xs ${tab === item.key ? "text-[#D9B87A]" : "text-[#607A91]/60"}`}
                 >
                   {item.count}
                 </span>
@@ -238,13 +225,13 @@ export default function AdminInbox() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => refetch()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#17324D] border border-[#17324D]/20 bg-white rounded-sm hover:bg-[#17324D]/5 transition-all duration-200 active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-md border border-[#C8D4D9] bg-[#FFFEFB] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#E7EEF1] active:scale-[0.97]"
             >
               <RefreshCw size={15} /> Refresh
             </button>
             <button
               onClick={handleExport}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#17324D] rounded-sm hover:bg-[#1e4060] transition-all duration-200 active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97]"
             >
               <Download size={15} /> Export CSV
             </button>
@@ -252,8 +239,8 @@ export default function AdminInbox() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-24 bg-white border border-[#17324D]/10 rounded-sm">
-            <Loader2 size={28} className="animate-spin text-[#17324D]" />
+          <div className="brand-surface flex items-center justify-center rounded-xl border border-[#DCE4E7] py-24">
+            <Loader2 size={28} className="animate-spin text-[#163B59]" />
           </div>
         ) : tab === "messages" ? (
           messages.length === 0 ? (
@@ -267,17 +254,17 @@ export default function AdminInbox() {
               {messages.map(m => (
                 <article
                   key={m.id}
-                  className="bg-white border border-[#17324D]/10 rounded-sm p-6 hover:border-[#17324D]/25 transition-colors duration-200"
+                  className="brand-surface rounded-xl border border-[#DCE4E7] p-6 transition-colors duration-200 hover:border-[#B7C5CD]"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                     <div>
                       <h3
-                        className="text-[#17324D] text-lg font-bold"
+                        className="text-lg font-bold text-[#163B59]"
                         style={{ fontFamily: "'Source Serif 4', serif" }}
                       >
                         {m.firstName} {m.lastName}
                       </h3>
-                      <p className="text-[#242A30]/45 text-xs mt-1">
+                      <p className="mt-1 text-xs text-[#607A91]/70">
                         {formatDateTime(m.createdAt)}
                       </p>
                     </div>
@@ -293,14 +280,14 @@ export default function AdminInbox() {
                   <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 text-sm">
                     <a
                       href={`mailto:${m.email}`}
-                      className="inline-flex items-center gap-2 text-[#2F6F9F] hover:underline"
+                      className="inline-flex items-center gap-2 text-[#607A91] hover:underline"
                     >
                       <Mail size={14} /> {m.email}
                     </a>
                     {m.phone && (
                       <a
                         href={`tel:${m.phone}`}
-                        className="inline-flex items-center gap-2 text-[#2F6F9F] hover:underline"
+                        className="inline-flex items-center gap-2 text-[#607A91] hover:underline"
                       >
                         <Phone size={14} /> {m.phone}
                       </a>
@@ -308,7 +295,7 @@ export default function AdminInbox() {
                   </div>
 
                   {m.message ? (
-                    <p className="text-[#242A30]/75 text-sm leading-relaxed whitespace-pre-line border-l-2 border-[#C9973E]/40 pl-4">
+                    <p className="border-l-2 border-[#B9955E]/55 pl-4 text-sm leading-relaxed whitespace-pre-line text-[#44515C]">
                       {m.message}
                     </p>
                   ) : (
@@ -325,35 +312,35 @@ export default function AdminInbox() {
             body="Visitors who sign up through the newsletter form on the Home page will be listed here."
           />
         ) : (
-          <div className="bg-white border border-[#17324D]/10 rounded-sm overflow-hidden">
+          <div className="overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#17324D]/5 text-left">
-                  <th className="px-6 py-3 font-semibold text-[#17324D]">Email</th>
-                  <th className="px-6 py-3 font-semibold text-[#17324D] w-32">Language</th>
-                  <th className="px-6 py-3 font-semibold text-[#17324D] w-56">Subscribed</th>
+                <tr className="bg-[#E7EEF1] text-left">
+                  <th className="px-6 py-3 font-semibold text-[#163B59]">Email</th>
+                  <th className="w-32 px-6 py-3 font-semibold text-[#163B59]">Language</th>
+                  <th className="w-56 px-6 py-3 font-semibold text-[#163B59]">Subscribed</th>
                 </tr>
               </thead>
               <tbody>
                 {subscribers.map(s => (
                   <tr
                     key={s.id}
-                    className="border-t border-[#17324D]/8 hover:bg-[#17324D]/[0.03] transition-colors duration-150"
+                    className="border-t border-[#DCE4E7] transition-colors duration-150 hover:bg-[#EEF3F5]"
                   >
                     <td className="px-6 py-3.5">
                       <a
                         href={`mailto:${s.email}`}
-                        className="text-[#2F6F9F] hover:underline"
+                        className="text-[#607A91] hover:underline"
                       >
                         {s.email}
                       </a>
                     </td>
                     <td className="px-6 py-3.5">
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-sm bg-[#17324D]/8 text-[#17324D]">
+                      <span className="rounded-sm bg-[#E7EEF1] px-2 py-0.5 text-xs font-semibold text-[#163B59]">
                         {s.lang.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-[#242A30]/55">
+                    <td className="px-6 py-3.5 text-[#607A91]">
                       {formatDateTime(s.createdAt)}
                     </td>
                   </tr>
@@ -379,17 +366,17 @@ function EmptyState({
   body: string;
 }) {
   return (
-    <div className="bg-white border border-[#17324D]/10 rounded-sm py-20 px-6 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#17324D]/8 flex items-center justify-center mx-auto mb-5">
-        <Icon size={24} className="text-[#17324D]/50" />
+    <div className="brand-surface rounded-xl border border-[#DCE4E7] px-6 py-20 text-center">
+      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#E7EEF1]">
+        <Icon size={24} className="text-[#163B59]/60" />
       </div>
       <h3
-        className="text-[#17324D] text-lg font-bold mb-2"
+        className="mb-2 text-lg font-bold text-[#163B59]"
         style={{ fontFamily: "'Source Serif 4', serif" }}
       >
         {title}
       </h3>
-      <p className="text-[#242A30]/55 text-sm max-w-md mx-auto leading-relaxed">{body}</p>
+      <p className="mx-auto max-w-md text-sm leading-relaxed text-[#607A91]">{body}</p>
     </div>
   );
 }

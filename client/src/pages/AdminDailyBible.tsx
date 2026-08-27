@@ -197,13 +197,19 @@ export default function AdminDailyBible() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[#FCFAF6]">
       <Navbar />
 
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-8 py-8 mt-20">
-        <h1 className="text-3xl font-bold text-[#17324D] mb-8">
-          {lang === "ko" ? "Daily Bible 관리" : "Daily Bible Management"}
-        </h1>
+      <div className="mx-auto mt-20 w-full max-w-4xl flex-1 px-4 py-8 md:px-8">
+        <div className="brand-surface mb-8 rounded-xl border border-[#DCE4E7] px-6 py-7 md:px-8">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="h-px w-8 bg-[#B9955E]" />
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#607A91]">Church Staff</p>
+          </div>
+          <h1 className="font-serif text-3xl font-semibold tracking-[-0.03em] text-[#163B59]">
+            {lang === "ko" ? "Daily Bible 관리" : "Daily Bible Management"}
+          </h1>
+        </div>
 
         {/* 메시지 표시 */}
         {message && (
@@ -219,13 +225,14 @@ export default function AdminDailyBible() {
         )}
 
         {/* 폼 */}
-        <Card className="p-6 mb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="brand-surface mb-8 rounded-xl border-[#DCE4E7] p-6 shadow-none">
+          <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-[#C8D4D9] [&_input]:bg-white [&_input]:focus-visible:ring-[#607A91] [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91] [&_label]:text-[#44515C]">
             <div>
-              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+              <label htmlFor="admin-meditation-date" className="block text-sm font-semibold text-[#17324D] mb-2">
                 {lang === "ko" ? "날짜" : "Date"}
               </label>
               <Input
+                id="admin-meditation-date"
                 type="date"
                 name="meditationDate"
                 value={formData.meditationDate}
@@ -235,10 +242,11 @@ export default function AdminDailyBible() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+              <label htmlFor="admin-scripture-reference" className="block text-sm font-semibold text-[#17324D] mb-2">
                 {lang === "ko" ? "성경 구절" : "Scripture Reference"}
               </label>
               <Input
+                id="admin-scripture-reference"
                 type="text"
                 name="scriptureReference"
                 placeholder={lang === "ko" ? "예: 시편 119:105-112" : "e.g., John 3:16"}
@@ -249,10 +257,11 @@ export default function AdminDailyBible() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+              <label htmlFor="admin-scripture-text" className="block text-sm font-semibold text-[#17324D] mb-2">
                 {lang === "ko" ? "성경 본문" : "Scripture Text"}
               </label>
               <Textarea
+                id="admin-scripture-text"
                 name="scriptureText"
                 placeholder={lang === "ko" ? "성경 본문을 입력하세요..." : "Enter scripture text..."}
                 value={formData.scriptureText}
@@ -263,10 +272,11 @@ export default function AdminDailyBible() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+              <label htmlFor="admin-title" className="block text-sm font-semibold text-[#17324D] mb-2">
                 {lang === "ko" ? "제목" : "Title"}
               </label>
               <Input
+                id="admin-title"
                 type="text"
                 name="title"
                 placeholder={lang === "ko" ? "묵상 제목" : "Meditation title"}
@@ -277,10 +287,11 @@ export default function AdminDailyBible() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#17324D] mb-2">
+              <label htmlFor="admin-content" className="block text-sm font-semibold text-[#17324D] mb-2">
                 {lang === "ko" ? "묵상 내용" : "Meditation Content"}
               </label>
               <Textarea
+                id="admin-content"
                 name="content"
                 placeholder={lang === "ko" ? "묵상 내용을 입력하세요..." : "Enter meditation content..."}
                 value={formData.content}
@@ -290,28 +301,28 @@ export default function AdminDailyBible() {
               />
             </div>
 
-            <fieldset className="space-y-4 border-t border-[#17324D]/10 pt-6">
-              <legend className="pr-2 text-sm font-semibold text-[#17324D]">
-                English translation <span className="font-normal text-[#242A30]/50">(optional)</span>
+            <fieldset className="space-y-4 border-t border-[#B7C5CD] pt-6">
+              <legend className="pr-2 text-sm font-semibold text-[#163B59]">
+                English translation <span className="font-normal text-[#607A91]">(optional)</span>
               </legend>
-              <p className="-mt-2 text-xs leading-relaxed text-[#242A30]/55">
+              <p className="-mt-2 text-xs leading-relaxed text-[#607A91]">
                 Provide all four fields to present a fully localized English Daily Bible entry. If left blank, English readers will see a clear Korean-content notice.
               </p>
               <div>
-                <label className="block text-sm font-medium text-[#17324D] mb-2">Scripture reference</label>
-                <Input name="scriptureReferenceEn" placeholder="e.g., Ezekiel 44:15–31" value={formData.scriptureReferenceEn} onChange={handleInputChange} />
+                <label htmlFor="admin-scripture-reference-en" className="block text-sm font-medium text-[#17324D] mb-2">Scripture reference</label>
+                <Input id="admin-scripture-reference-en" name="scriptureReferenceEn" placeholder="e.g., Ezekiel 44:15–31" value={formData.scriptureReferenceEn} onChange={handleInputChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#17324D] mb-2">Scripture text</label>
-                <Textarea name="scriptureTextEn" placeholder="Enter licensed English Scripture text..." value={formData.scriptureTextEn} onChange={handleInputChange} rows={6} />
+                <label htmlFor="admin-scripture-text-en" className="block text-sm font-medium text-[#17324D] mb-2">Scripture text</label>
+                <Textarea id="admin-scripture-text-en" name="scriptureTextEn" placeholder="Enter licensed English Scripture text..." value={formData.scriptureTextEn} onChange={handleInputChange} rows={6} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#17324D] mb-2">Meditation title</label>
-                <Input name="titleEn" placeholder="Enter an English meditation title" value={formData.titleEn} onChange={handleInputChange} />
+                <label htmlFor="admin-title-en" className="block text-sm font-medium text-[#17324D] mb-2">Meditation title</label>
+                <Input id="admin-title-en" name="titleEn" placeholder="Enter an English meditation title" value={formData.titleEn} onChange={handleInputChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#17324D] mb-2">Meditation reflection</label>
-                <Textarea name="contentEn" placeholder="Enter the English meditation reflection..." value={formData.contentEn} onChange={handleInputChange} rows={6} />
+                <label htmlFor="admin-content-en" className="block text-sm font-medium text-[#17324D] mb-2">Meditation reflection</label>
+                <Textarea id="admin-content-en" name="contentEn" placeholder="Enter the English meditation reflection..." value={formData.contentEn} onChange={handleInputChange} rows={6} />
               </div>
             </fieldset>
 
@@ -319,7 +330,7 @@ export default function AdminDailyBible() {
               <Button
                 type="submit"
                 disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
-                className="bg-[#17324D] hover:bg-[#0f1f33] text-white"
+                className="bg-[#163B59] text-white hover:bg-[#245170]"
               >
                 {isSubmitting || createMutation.isPending || updateMutation.isPending ? (
                   <>
@@ -342,7 +353,7 @@ export default function AdminDailyBible() {
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  className="bg-gray-400 hover:bg-gray-500 text-white"
+                  className="bg-[#607A91] text-white hover:bg-[#4E687E]"
                 >
                   <X className="w-4 h-4 mr-2" />
                   {lang === "ko" ? "취소" : "Cancel"}
@@ -354,7 +365,7 @@ export default function AdminDailyBible() {
 
         {/* 묵상 목록 */}
         <div>
-          <h2 className="text-2xl font-bold text-[#17324D] mb-4">
+          <h2 className="mb-4 font-serif text-2xl font-semibold text-[#163B59]">
             {lang === "ko" ? "묵상 목록" : "Meditations"}
           </h2>
 
@@ -363,19 +374,20 @@ export default function AdminDailyBible() {
           ) : meditations && meditations.length > 0 ? (
             <div className="space-y-4">
               {meditations.map((meditation) => (
-                <Card key={meditation.id} className="p-4">
+                <Card key={meditation.id} className="brand-surface rounded-xl border-[#DCE4E7] p-4 shadow-none">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className="text-sm text-gray-500">{meditation.meditationDate}</p>
-                      <h3 className="text-lg font-semibold text-[#17324D]">{lang === "en" && meditation.titleEn ? meditation.titleEn : meditation.title}</h3>
-                      <p className="text-sm text-[#C9973E]">{lang === "en" && meditation.scriptureReferenceEn ? meditation.scriptureReferenceEn : meditation.scriptureReference}</p>
-                      <p className="text-gray-700 mt-2 line-clamp-2">{lang === "en" && meditation.contentEn ? meditation.contentEn : meditation.content}</p>
+                      <p className="text-sm text-[#607A91]">{meditation.meditationDate}</p>
+                      <h3 className="text-lg font-semibold text-[#163B59]">{lang === "en" && meditation.titleEn ? meditation.titleEn : meditation.title}</h3>
+                      <p className="text-sm text-[#B07834]">{lang === "en" && meditation.scriptureReferenceEn ? meditation.scriptureReferenceEn : meditation.scriptureReference}</p>
+                      <p className="mt-2 line-clamp-2 text-[#44515C]">{lang === "en" && meditation.contentEn ? meditation.contentEn : meditation.content}</p>
                     </div>
                     <div className="flex gap-2 ml-4">
                       <Button
                         onClick={() => handleEdit(meditation)}
                         size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                        className="bg-[#607A91] text-white hover:bg-[#4E687E]"
+                        aria-label={lang === "ko" ? `${meditation.title} 수정` : `Edit ${meditation.titleEn || meditation.title}`}
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -383,6 +395,7 @@ export default function AdminDailyBible() {
                         onClick={() => handleDelete(meditation.id)}
                         size="sm"
                         className="bg-red-500 hover:bg-red-600 text-white"
+                        aria-label={lang === "ko" ? `${meditation.title} 삭제` : `Delete ${meditation.titleEn || meditation.title}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

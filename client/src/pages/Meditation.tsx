@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
@@ -244,40 +245,47 @@ export default function Meditation() {
   const scriptures = displayMeditation ? parseScripture(displayMeditation.scriptureText) : [];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-[#FCFAF6]">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 pt-20">
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 pb-14 pt-24 md:pt-28">
         {/* 헤더 */}
-        <div className="text-center mb-8 mt-12">
-          <p className="text-gray-600">
+        <div className="mb-7 mt-7 flex items-center gap-3 md:mt-10">
+          <span className="h-px w-9 bg-[#B9955E]" />
+          <p className="text-xs font-semibold uppercase tracking-[0.23em] text-[#607A91]">
             {lang === "ko" ? "매일 말씀과 함께 묵상하는 시간" : "Meditate on God's Word daily"}
           </p>
         </div>
 
         {/* 날짜 네비게이션 */}
-        <div className="flex items-center justify-between mb-8 bg-white p-6 rounded-lg shadow">
+        <div className="brand-surface relative mb-8 flex items-center justify-between overflow-hidden rounded-xl border border-[#DCE4E7] p-5 md:p-6">
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-44 opacity-[0.11]">
+            <BrandAbstractVisual kind="word" />
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={handlePrevDay}
             disabled={isLoading}
+            className="relative border-[#B7C5CD] bg-white/75 text-[#163B59] hover:bg-[#EEF3F5]"
+            aria-label={lang === "ko" ? "이전 묵상" : "Previous meditation"}
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
 
-          <div className="text-center flex-1">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+          <div className="relative flex-1 text-center">
+            <h2 className="mb-1 text-xl font-bold text-[#163B59]">
               {formatDate(currentDate)}
             </h2>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-[#607A91]">
               {lang === "ko" ? `연중 ${getDayOfYear(currentDate)}일` : `Day ${getDayOfYear(currentDate)} of 365`}
             </p>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowCalendar(!showCalendar)}
-              className="mt-2"
+              className="mt-2 text-[#607A91] hover:bg-[#E8EFF2] hover:text-[#163B59]"
+              aria-expanded={showCalendar}
             >
               {lang === "ko" ? "📅 캘린더" : "📅 Calendar"}
             </Button>
@@ -288,6 +296,8 @@ export default function Meditation() {
             size="sm"
             onClick={handleNextDay}
             disabled={isLoading}
+            className="relative border-[#B7C5CD] bg-white/75 text-[#163B59] hover:bg-[#EEF3F5]"
+            aria-label={lang === "ko" ? "다음 묵상" : "Next meditation"}
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -295,10 +305,10 @@ export default function Meditation() {
 
         {/* 캘린더 뷰 */}
         {showCalendar && (
-          <Card className="mb-8 p-6">
+          <Card className="brand-surface mb-8 rounded-xl border-[#DCE4E7] p-6 shadow-none">
             <div className="grid grid-cols-7 gap-2">
               {calendarWeekdays.map((day) => (
-                <div key={day} className="text-center font-semibold text-sm text-gray-600 py-2">
+                <div key={day} className="py-2 text-center text-sm font-semibold text-[#607A91]">
                   {day}
                 </div>
               ))}
@@ -311,14 +321,14 @@ export default function Meditation() {
                     !day
                       ? "bg-transparent"
                       : currentDate === `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-                      ? "bg-blue-500 text-white font-bold"
+                      ? "bg-[#163B59] text-white font-bold"
                       : allMeditations.some(
                           (m) =>
                             m.meditationDate ===
                             `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
                         )
-                      ? "bg-blue-100 text-blue-900 cursor-pointer hover:bg-blue-200"
-                      : "bg-gray-100 text-gray-500 cursor-pointer hover:bg-gray-200"
+                      ? "cursor-pointer bg-[#E7EEF1] text-[#163B59] hover:bg-[#D7E3E8]"
+                      : "cursor-pointer bg-[#F3F1EC] text-[#8B9297] hover:bg-[#EAE6DC]"
                   }`}
                 >
                   {day}
@@ -333,8 +343,8 @@ export default function Meditation() {
             <p className="text-gray-600">{lang === "ko" ? "로딩 중..." : "Loading..."}</p>
           </div>
         ) : !currentMeditation ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-600">
+          <div className="brand-surface rounded-xl border border-[#DCE4E7] py-12 text-center">
+            <p className="text-[#607A91]">
               {lang === "ko" ? "이 날짜의 묵상이 없습니다." : "No meditation for this date."}
             </p>
           </div>
@@ -342,15 +352,15 @@ export default function Meditation() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 왼쪽: 성경 본문 (2/3) */}
             <div className="lg:col-span-2">
-              <Card className="p-8">
+              <Card className="brand-surface rounded-xl border-[#DCE4E7] p-6 shadow-none md:p-8">
                 <div className="mb-3">
-                  <p className="text-sm text-amber-600 font-semibold mb-1">
+                  <p className="mb-1 text-sm font-semibold text-[#B07834]">
                     {lang === "ko" ? "개역개정" : hasEnglishContent ? "English translation" : "Revised Korean Version"}
                   </p>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  <h3 className="mb-1 text-2xl font-bold text-[#163B59]">
                     {displayMeditation?.scriptureReference}
                   </h3>
-                  <p className="text-gray-600 mb-3">{displayMeditation?.title}</p>
+                  <p className="mb-3 text-[#607A91]">{displayMeditation?.title}</p>
                   {lang === "en" && !hasEnglishContent && (
                     <p className="mb-3 rounded-md border border-[#C9973E]/25 bg-[#FBF8F3] px-3 py-2 text-xs leading-relaxed text-[#6A5734]">
                       This entry is currently available in Korean only. Add all four English fields in Daily Bible Management to publish its English version.
@@ -362,17 +372,18 @@ export default function Meditation() {
                   {scriptures.map((item, idx) => (
                     <div
                       key={idx}
-                      className="group flex items-start gap-3 p-2 rounded hover:bg-gray-50 transition"
+                      className="group flex items-start gap-3 rounded-md p-2 transition hover:bg-[#EEF3F5]"
                       onMouseEnter={() => {}}
                     >
                       {item.verse && (
-                        <span className="text-amber-600 font-semibold min-w-fit">{item.verse}</span>
+                        <span className="min-w-fit font-semibold text-[#B07834]">{item.verse}</span>
                       )}
-                      <span className="text-gray-800 flex-1">{item.text}</span>
+                      <span className="flex-1 text-[#2E3A46]">{item.text}</span>
                       {item.verse && (
                         <button
                           onClick={() => handleCopyVerse(`${item.verse} ${item.text}`)}
-                          className="opacity-0 group-hover:opacity-100 transition"
+                          className="opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+                          aria-label={lang === "ko" ? `${item.verse} 구절 복사` : `Copy verse ${item.verse}`}
                         >
                           {copiedVerse === `${item.verse} ${item.text}` ? (
                             <Check className="w-4 h-4 text-green-600" />
@@ -390,7 +401,7 @@ export default function Meditation() {
                   <div className="flex items-center justify-between gap-4 mb-5">
                     <div className="flex items-center gap-2">
                       <MessageCircle className="w-5 h-5 text-[#C9973E]" aria-hidden="true" />
-                      <h4 id="meditation-comments-title" className="font-semibold text-gray-900">
+                      <h4 id="meditation-comments-title" className="font-semibold text-[#163B59]">
                         {lang === "ko" ? "묵상 나눔" : "Meditation Sharing"}
                       </h4>
                     </div>
@@ -406,7 +417,7 @@ export default function Meditation() {
                         {lang === "ko" ? "나눔을 불러오는 중..." : "Loading reflections..."}
                       </div>
                     ) : comments.length === 0 ? (
-                      <div className="rounded-lg bg-[#F4F6F7] p-5 text-sm text-gray-600">
+                      <div className="rounded-lg bg-[#EEF3F5] p-5 text-sm text-[#607A91]">
                         {lang === "ko"
                           ? "아직 나눔이 없습니다. 말씀을 통해 받은 은혜를 첫 번째로 나누어 주세요."
                           : "No reflections have been shared yet. Be the first to share what you received from the Word."}
@@ -415,7 +426,7 @@ export default function Meditation() {
                       comments.map((comment) => {
                         const mayDelete = user && (user.id === comment.authorId || user.role === "admin");
                         return (
-                          <article key={comment.id} className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+                          <article key={comment.id} className="rounded-lg border border-[#DCE4E7] bg-white/80 p-4 shadow-sm">
                             <div className="flex items-start justify-between gap-4 mb-2">
                               <div>
                                 <p className="font-semibold text-sm text-[#17324D]">
@@ -437,13 +448,14 @@ export default function Meditation() {
                                 </button>
                               )}
                             </div>
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{comment.content}</p>
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#44515C]">{comment.content}</p>
 
                             <div className="mt-3 flex items-center gap-4 text-xs font-medium">
                               <button
                                 type="button"
                                 onClick={() => handleToggleCommentLike(comment.id)}
                                 disabled={toggleCommentLike.isPending}
+                                aria-label={lang === "ko" ? `나눔 공감 ${comment.likeCount}` : `Like reflection, ${comment.likeCount} likes`}
                                 aria-pressed={comment.hasLiked}
                                 className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 transition disabled:opacity-50 ${
                                   comment.hasLiked
@@ -464,6 +476,7 @@ export default function Meditation() {
                                   setReplyingToId((activeId) => (activeId === comment.id ? null : comment.id));
                                   setReplyDraft("");
                                 }}
+                                aria-expanded={replyingToId === comment.id}
                                 className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-gray-500 transition hover:bg-[#17324D]/5 hover:text-[#17324D]"
                               >
                                 <Reply className="w-3.5 h-3.5" />
@@ -503,6 +516,7 @@ export default function Meditation() {
                                         type="button"
                                         onClick={() => handleToggleCommentLike(reply.id)}
                                         disabled={toggleCommentLike.isPending}
+                                        aria-label={lang === "ko" ? `답글 공감 ${reply.likeCount}` : `Like reply, ${reply.likeCount} likes`}
                                         aria-pressed={reply.hasLiked}
                                         className={`mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium transition disabled:opacity-50 ${
                                           reply.hasLiked ? "bg-[#C9973E]/15 text-[#9B6817]" : "text-gray-500 hover:bg-[#C9973E]/10 hover:text-[#9B6817]"
@@ -518,7 +532,7 @@ export default function Meditation() {
                             )}
 
                             {replyingToId === comment.id && isAuthenticated && (
-                              <form onSubmit={(event) => handleReplySubmit(event, comment.id)} className="mt-4 ml-2 sm:ml-6 rounded-md bg-[#F4F6F7] p-3">
+                              <form onSubmit={(event) => handleReplySubmit(event, comment.id)} className="mt-4 ml-2 rounded-md border border-[#DCE4E7] bg-[#EEF3F5] p-3 sm:ml-6 [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91]">
                                 <label htmlFor={`reply-${comment.id}`} className="sr-only">
                                   {lang === "ko" ? "답글 작성" : "Write a reply"}
                                 </label>
@@ -537,7 +551,7 @@ export default function Meditation() {
                                     <Button type="button" size="sm" variant="ghost" onClick={() => setReplyingToId(null)}>
                                       {lang === "ko" ? "취소" : "Cancel"}
                                     </Button>
-                                    <Button type="submit" size="sm" disabled={!replyDraft.trim() || createComment.isPending} className="bg-[#17324D] hover:bg-[#244A70]">
+                                    <Button type="submit" size="sm" disabled={!replyDraft.trim() || createComment.isPending} className="bg-[#163B59] hover:bg-[#245170]">
                                       {createComment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                       {lang === "ko" ? "답글 등록" : "Reply"}
                                     </Button>
@@ -580,7 +594,7 @@ export default function Meditation() {
                   )}
 
                   {isAuthenticated ? (
-                    <form onSubmit={handleCommentSubmit} className="rounded-lg bg-[#F4F6F7] p-4">
+                    <form onSubmit={handleCommentSubmit} className="rounded-lg border border-[#DCE4E7] bg-[#EEF3F5] p-4 [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91]">
                       <label htmlFor="meditation-comment" className="block text-sm font-semibold text-[#17324D] mb-2">
                         {lang === "ko" ? "말씀을 통해 받은 은혜를 나누어 주세요" : "Share your reflection from today's Word"}
                       </label>
@@ -594,7 +608,7 @@ export default function Meditation() {
                       />
                       <div className="mt-3 flex items-center justify-between gap-4">
                         <p className="text-xs text-gray-500">{commentDraft.length}/1200</p>
-                        <Button type="submit" size="sm" disabled={!commentDraft.trim() || createComment.isPending} className="bg-[#17324D] hover:bg-[#244A70]">
+                        <Button type="submit" size="sm" disabled={!commentDraft.trim() || createComment.isPending} className="bg-[#163B59] hover:bg-[#245170]">
                           {createComment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                           {lang === "ko" ? "나눔 등록" : "Share"}
                         </Button>
@@ -623,12 +637,12 @@ export default function Meditation() {
             {/* 오른쪽: QT 질문 (1/3, sticky) */}
             <div className="lg:col-span-1">
               <div className="sticky top-24">
-                <Card className="p-6 bg-white">
-                  <h4 className="font-semibold text-gray-900 mb-6">
+                <Card className="brand-surface rounded-xl border-[#DCE4E7] bg-white/85 p-6 shadow-none">
+                  <h4 className="mb-6 font-semibold text-[#163B59]">
                     {lang === "ko" ? "묵상 질문" : "QT Questions"}
                   </h4>
 
-                  <div className="space-y-6">
+                  <div className="space-y-6 [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91]">
                     {/* Q1 */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -673,8 +687,8 @@ export default function Meditation() {
                   </div>
 
                   {/* 오디오 플레이스홀더 */}
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
-                    <p className="text-sm text-gray-600">
+                  <div className="mt-6 rounded-lg bg-[#EEF3F5] p-4 text-center">
+                    <p className="text-sm text-[#607A91]">
                       {lang === "ko" ? "🎙️ 음성 묵상 (준비 중)" : "🎙️ Voice Meditation (Coming soon)"}
                     </p>
                   </div>

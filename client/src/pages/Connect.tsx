@@ -6,6 +6,7 @@ import { useState, useRef } from "react";
 import { Clock, MapPin, Mail, Phone, ChevronRight, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BrandPageHero } from "@/components/BrandPageHero";
 import { MapView } from "@/components/Map";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
@@ -104,32 +105,18 @@ export default function Connect() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F7]">
+    <div className="min-h-screen bg-[#FCFAF6]">
       <Navbar />
 
-      {/* Page Hero */}
-      <section className="relative pt-32 pb-20 bg-[#17324D] overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img src={COMMUNITY_IMG} alt="" className="w-full h-full object-cover" />
-        </div>
-        <div className="absolute inset-0 bg-[#17324D]/80" />
-        <div className="relative container text-center">
-          <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{ko ? "만나고 싶습니다" : "We’d Love to Meet You"}</p>
-          <h1
-            className="text-white mb-4"
-            style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700 }}
-          >
-            {ko ? "문의하기" : "Connect With Us"}
-          </h1>
-          <div className="gold-rule w-16 mx-auto mb-4" />
-          <p className="text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-            {ko ? "처음 방문하시든, 더 깊이 참여하고 싶으시든, 언제든지 편하게 문의해 주세요." : "Whether you’re visiting for the first time or looking to get more involved, we’re here for you."}
-          </p>
-        </div>
-      </section>
+      <BrandPageHero
+        eyebrow={ko ? "만나고 싶습니다" : "We’d Love to Meet You"}
+        title={ko ? "문의하기" : "Connect With Us"}
+        description={ko ? "처음 방문하시든, 더 깊이 참여하고 싶으시든, 언제든지 편하게 문의해 주세요." : "Whether you’re visiting for the first time or looking to get more involved, we’re here for you."}
+        visual="welcome"
+      />
 
       {/* Plan a Visit */}
-      <section className="py-20 bg-white">
+      <section className="bg-[#FFFEFB] py-20">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             {/* Service Info */}
@@ -173,20 +160,20 @@ export default function Connect() {
                   },
                 ].map(({ icon: Icon, title, lines, link }) => (
                   <div key={title} className="flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-full bg-[#17324D]/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Icon size={15} className="text-[#17324D]" />
+                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E7EEF1]">
+                      <Icon size={15} className="text-[#163B59]" />
                     </div>
                     <div>
-                      <p className="text-[#242A30] font-semibold text-sm mb-0.5">{title}</p>
+                      <p className="mb-0.5 text-sm font-semibold text-[#2E3A46]">{title}</p>
                       {lines.map((l) => (
-                        <p key={l} className="text-[#242A30]/60 text-sm">{l}</p>
+                        <p key={l} className="text-sm text-[#607A91]">{l}</p>
                       ))}
                       {link && (
                         <a
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#2F6F9F] text-xs font-medium hover:text-[#17324D] transition-colors mt-1 inline-flex items-center gap-1"
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#607A91] transition-colors hover:text-[#163B59]"
                         >
                           {ko ? "길찾기" : "Get Directions"} <ChevronRight size={12} />
                         </a>
@@ -198,29 +185,30 @@ export default function Connect() {
             </div>
 
             {/* Contact Form */}
-            <div className="bg-[#F4F6F7] rounded-sm p-8">
+            <div className="brand-surface rounded-xl border border-[#DCE4E7] p-6 md:p-8">
               <h3
-                className="text-[#17324D] font-semibold mb-6"
+                className="mb-6 font-semibold text-[#163B59]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "1.3rem" }}
               >
                 {ko ? "메시지 보내기" : "Send Us a Message"}
               </h3>
               {formSent ? (
                 <div className="text-center py-10">
-                  <div className="w-12 h-12 rounded-full bg-[#C9973E]/20 flex items-center justify-center mx-auto mb-4">
-                    <Mail size={20} className="text-[#C9973E]" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#B9955E]/20">
+                    <Mail size={20} className="text-[#B07834]" />
                   </div>
-                  <p className="text-[#17324D] font-semibold mb-2" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                  <p className="mb-2 font-semibold text-[#163B59]" style={{ fontFamily: "'Source Serif 4', serif" }}>
                     {ko ? "메시지를 보냈습니다!" : "Message Sent!"}
                   </p>
-                  <p className="text-[#242A30]/60 text-sm">{ko ? "곧 연락드리겠습니다. 문의해 주셔서 감사합니다." : "We’ll be in touch soon. Thank you for reaching out."}</p>
+                  <p className="text-sm text-[#607A91]">{ko ? "곧 연락드리겠습니다. 문의해 주셔서 감사합니다." : "We’ll be in touch soon. Thank you for reaching out."}</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 [&_input]:rounded-md [&_input]:border-[#C8D4D9] [&_input]:focus:border-[#607A91] [&_select]:rounded-md [&_select]:border-[#C8D4D9] [&_select]:focus:border-[#607A91] [&_textarea]:rounded-md [&_textarea]:border-[#C8D4D9] [&_textarea]:focus:border-[#607A91] [&_label]:text-[#607A91]">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "이름" : "First Name"}</label>
+                      <label htmlFor="contact-first-name" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "이름" : "First Name"}</label>
                       <input
+                        id="contact-first-name"
                         type="text"
                         required
                         value={form.firstName}
@@ -230,8 +218,9 @@ export default function Connect() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "성" : "Last Name"}</label>
+                      <label htmlFor="contact-last-name" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "성" : "Last Name"}</label>
                       <input
+                        id="contact-last-name"
                         type="text"
                         required
                         value={form.lastName}
@@ -242,8 +231,9 @@ export default function Connect() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "이메일" : "Email"}</label>
+                    <label htmlFor="contact-email" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "이메일" : "Email"}</label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={form.email}
@@ -253,8 +243,9 @@ export default function Connect() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "전화번호 (선택)" : "Phone (optional)"}</label>
+                    <label htmlFor="contact-phone" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "전화번호 (선택)" : "Phone (optional)"}</label>
                     <input
+                      id="contact-phone"
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setField("phone", e.target.value)}
@@ -263,8 +254,9 @@ export default function Connect() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "어떻게 도와드릴까요?" : "How can we help?"}</label>
+                    <label htmlFor="contact-topic" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "어떻게 도와드릴까요?" : "How can we help?"}</label>
                     <select
+                      id="contact-topic"
                       value={form.topic}
                       onChange={(e) => setField("topic", e.target.value as ContactTopic)}
                       disabled={submitMutation.isPending}
@@ -277,8 +269,9 @@ export default function Connect() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[#242A30]/60 block mb-1.5">{ko ? "메시지" : "Message"}</label>
+                    <label htmlFor="contact-message" className="block mb-1.5 text-xs font-medium text-[#242A30]/60">{ko ? "메시지" : "Message"}</label>
                     <textarea
+                      id="contact-message"
                       rows={4}
                       value={form.message}
                       onChange={(e) => setField("message", e.target.value)}
@@ -296,7 +289,7 @@ export default function Connect() {
                   <button
                     type="submit"
                     disabled={submitMutation.isPending}
-                    className="w-full py-3 bg-[#17324D] text-white text-sm font-semibold tracking-wide rounded-sm hover:bg-[#1e4060] transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#163B59] py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#245170] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {submitMutation.isPending && <Loader2 size={15} className="animate-spin" />}
                     {submitMutation.isPending ? (ko ? "전송 중..." : "Sending...") : (ko ? "메시지 보내기" : "Send Message")}
@@ -309,7 +302,7 @@ export default function Connect() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-[#F4F6F7]">
+      <section className="bg-[#EEF3F5] py-20">
         <div className="container max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{ko ? "처음 방문하시나요?" : "First Time?"}</p>
@@ -323,26 +316,26 @@ export default function Connect() {
           </div>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <div key={i} className="bg-white rounded-sm overflow-hidden shadow-sm">
+              <div key={i} className="overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-sm">
                 <button
-                  className="w-full px-6 py-4 flex items-center justify-between text-left"
+                  className="flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#607A91]"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
                   <span
-                    className="text-[#17324D] font-medium text-sm"
+                    className="text-sm font-medium text-[#163B59]"
                     style={{ fontFamily: "'Source Serif 4', serif" }}
                   >
                     {ko ? faq.qKo : faq.qEn}
                   </span>
                   <ChevronRight
                     size={16}
-                    className={`text-[#C9973E] shrink-0 transition-transform duration-200 ${openFaq === i ? "rotate-90" : ""}`}
+                    className={`shrink-0 text-[#B07834] transition-transform duration-200 ${openFaq === i ? "rotate-90" : ""}`}
                   />
                 </button>
                 {openFaq === i && (
                   <div className="px-6 pb-4">
-                    <div className="h-px bg-[#C9973E]/20 mb-3" />
-                    <p className="text-[#242A30]/65 text-sm leading-relaxed">{ko ? faq.aKo : faq.aEn}</p>
+                    <div className="mb-3 h-px bg-[#B9955E]/25" />
+                    <p className="text-sm leading-relaxed text-[#607A91]">{ko ? faq.aKo : faq.aEn}</p>
                   </div>
                 )}
               </div>
@@ -361,17 +354,17 @@ export default function Connect() {
         />
 
         {/* Address card overlaid on the map */}
-        <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:max-w-sm bg-white shadow-xl border-l-4 border-[#C9973E] p-5 pointer-events-auto">
+        <div className="pointer-events-auto absolute bottom-6 left-6 right-6 border-l-4 border-[#B9955E] bg-[#FFFEFB] p-5 shadow-xl sm:right-auto sm:max-w-sm">
           <div className="flex items-start gap-3">
-            <MapPin size={18} className="text-[#C9973E] shrink-0 mt-0.5" />
+            <MapPin size={18} className="mt-0.5 shrink-0 text-[#B07834]" />
             <div className="min-w-0">
               <p
-                className="text-[#17324D] font-semibold text-sm mb-1"
+                className="mb-1 text-sm font-semibold text-[#163B59]"
                 style={{ fontFamily: "'Source Serif 4', serif" }}
               >
                 {ko ? "그레이스웨이 침례교회" : "Graceway Baptist Church"}
               </p>
-              <p className="text-[#17324D]/60 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed text-[#607A91]">
                 2791 Driscoll Rd
                 <br />
                 Fremont, CA 94539
@@ -380,7 +373,7 @@ export default function Connect() {
                 href="https://maps.google.com/?q=2791+Driscoll+Rd,+Fremont,+CA+94539"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-[#2F6F9F] text-xs font-semibold hover:text-[#17324D] transition-colors"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#607A91] transition-colors hover:text-[#163B59]"
               >
                 {ko ? "길찾기" : "Get Directions"} <ChevronRight size={12} />
               </a>

@@ -80,3 +80,17 @@
 - [x] About visual refresh: 소개 페이지의 배경·본문 이미지를 인물 없는 ‘은혜의 길’ 브랜드 추상 비주얼로 통일하고 리더십 목회자 사진은 유지
 - [x] Ministries visual refresh: 말씀·공동체·보냄 및 Youth Ministry 카드에 인물이 없는 Graceway 팔레트의 차별화된 추상 비주얼 적용
 - [x] Home welcome refresh: 우리 이야기 이미지를 브랜드 추상 비주얼로 교체하고 가족 환영 섹션을 포용적인 환대 문구와 사역 페이지 연결 중심으로 재구성
+- [x] Full visual renewal: 새 Graceway 로고를 프로젝트 저장소에 등록하고 모든 공통 브랜드 자산의 기준 로고로 적용
+- [x] Design system renewal: 새 로고의 네이비·슬레이트 블루·웜 그레이·아이보리 팔레트, 서체, 간격, 표면·버튼·카드 토큰 정의
+- [x] Global chrome renewal: Navbar·Footer·모바일 내비게이션 및 공통 페이지 헤더를 새 브랜드 체계로 재디자인
+- [x] Public page renewal: Home·About·Sermons·Worship·Ministries·Connect·Media 페이지의 콘텐츠 구조는 유지하면서 시각 UI 전면 개편
+- [x] Meditation and admin renewal: Meditation·Admin Daily Bible·Media Library 등 기능 페이지에 새 디자인 시스템의 일관된 UI 적용
+- [x] Renewal verification: 전체 주요 경로의 데스크톱·모바일 렌더링, 접근성 상태, TypeScript 및 Vitest 검증
+- [x] Public interior polish: Connect의 방문·문의·FAQ·지도 영역 및 Media Library의 업로드·필터·파일 목록을 새 브랜드 표면 체계로 재구성
+- [x] Feature-page surface polish: Meditation의 댓글·답글·QT 입력과 Admin Daily Bible의 전체 폼·목록 상태에 일관된 브랜드 입력·카드·상태 스타일 적용
+- [x] Accessibility review: 주요 경로의 키보드 포커스·버튼 레이블·폼 레이블·색상 대비를 점검하고 필요한 보완 적용
+- [x] Feature input detail: Meditation의 나눔·답글·QT 입력과 Daily Bible 관리 양언어 입력 전체에 브랜드 입력·포커스 스타일을 적용
+- [x] Accessibility contrast audit: 핵심 브랜드 텍스트·버튼·입력 포커스 색상의 명도 대비를 계산하고 회귀 테스트로 기록
+- [x] Route accessibility audit: 주요 공개·관리 경로의 클릭 가능한 버튼·폼·내비게이션에 프로그램적 이름과 키보드 포커스 처리가 있는지 회귀 테스트로 점검
+- [x] Interactive contrast audit: 네이비·골드 버튼과 슬레이트 포커스 링의 실제 전경·배경 색상 대비를 계산해 회귀 테스트로 검증
+- [x] Remaining route accessibility audit: Home·About·Sermons·Worship·Ministries·Admin Inbox의 상호작용 요소와 포커스 표시를 경로별 회귀 테스트로 검증
