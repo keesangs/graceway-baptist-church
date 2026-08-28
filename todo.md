@@ -98,13 +98,13 @@
 - [x] GitHub synchronization: 현재 코드 변경과 GitHub에 추적 가능한 이미지 자산을 원격 main 브랜치에 동기화하고 반영 상태 확인
 - [x] Sticky shrinking navigation: 새 Graceway 로고가 항상 보이도록 상단 내비게이션을 고정하고 스크롤 시 컴팩트한 높이·로고 크기로 전환
 - [x] Home vision line break: 비전 문구 ‘다시 말씀으로, 다시 세상으로’의 요청한 줄바꿈 표현을 검증·반영하고 화면 확인
-- [ ] GitHub vision sync: 최신 홈 비전 패널 줄바꿈 변경을 원격 main 브랜치에 동기화하고 반영 상태 확인
+- [x] GitHub vision sync: 최신 홈 비전 패널 줄바꿈 변경을 원격 main 브랜치에 동기화하고 반영 상태 확인
 - [x] Home image refresh: 새 로고와 차분한 브랜드 팔레트에 맞춰 홈 히어로·스토리·환영 섹션의 시각 자산을 새롭게 구성
 - [x] About image refresh: 소개 페이지의 히어로·스토리 비주얼을 새 Graceway 브랜드 이미지 체계로 갱신하되 리더십 실제 사진은 유지
 - [x] Sermons and Worship image refresh: 설교·찬양 페이지의 대표·아카이브 영상 이미지를 새 톤의 일관된 비주얼 체계로 갱신
 - [x] Ministries image refresh: 말씀·공동체·대학·청소년·보냄 사역의 추상 비주얼을 새 로고·팔레트에 맞게 재구성
 - [x] Refreshed image verification: 모든 신규 이미지의 저장소 경로·데스크톱·모바일 렌더링·회귀 테스트 검증
 - [x] Final visual asset replacement: 확정된 인물 없는 추상 이미지 자산을 Home·About·Sermons·Worship·Ministries에 실제 연결
-- [ ] Final GitHub verification: 비전 줄바꿈 변경을 포함한 최종 커밋이 원격 main의 HEAD와 일치하는지 확인
+- [x] Final GitHub verification: 비전 줄바꿈 변경을 포함한 최종 커밋이 원격 main의 HEAD와 일치하는지 확인
 - [x] Archive visual treatment: 설교·찬양 아카이브의 실제 YouTube 썸네일에 새 Graceway 팔레트의 오버레이·프레임을 적용해 일관된 이미지 체계 완성
 - [x] Campus visual assignment: College Campus Ministry에 대학 전용 추상 이미지 자산을 실제 연결
