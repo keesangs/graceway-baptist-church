@@ -148,3 +148,7 @@
 - [x] YouTube playlist manual sync: 두 공개 플레이리스트를 조회해 새 영상만 등록하는 관리자 실행 동기화 구현
 - [x] Dynamic sermon and worship archives: 설교·찬양 페이지를 자동 동기화 영상 데이터에 연결하고 기존 영상 연속성 유지
 - [x] YouTube sync verification: 동기화 중복 방지·실패 처리·표시 흐름을 자동 테스트와 운영 점검으로 검증
+- [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
+- [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
+- [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
+- [ ] GitHub replacement repository bootstrap: 현재 Graceway 프로젝트의 최신 코드와 Git 이력을 새 저장소 main에 안전하게 초기 동기화
