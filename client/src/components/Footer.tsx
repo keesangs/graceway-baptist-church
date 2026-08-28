@@ -107,7 +107,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
           <p className="text-xs text-white/40">{t("footer.copyright").replace("2026", String(new Date().getFullYear()))}</p>
-          <p className="text-xs text-white/40">{t("footer.grace")} · {t("footer.faith")} · {t("footer.community")}</p>
+          <p className="text-xs text-white/40">{t("footer.brandValues")}</p>
         </div>
       </div>
     </footer>

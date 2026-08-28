@@ -143,6 +143,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "footer.grace": { en: "Grace", ko: "은혜" },
   "footer.faith": { en: "Faith", ko: "믿음" },
   "footer.community": { en: "Community", ko: "공동체" },
+  "footer.brandValues": { en: "Grace | Faith | Word | Love & Community", ko: "은혜 | 믿음 | 말씀 | 사랑 공동체" },
 
   // About page
   "about.whoWeAre": { en: "A Community of Grace, Faith, the Word, and Love", ko: "은혜 | 믿음 | 말씀 | 사랑 공동체" },
