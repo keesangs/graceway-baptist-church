@@ -87,3 +87,18 @@ export function getUpcomingCalendarEventOccurrences<T extends CalendarEventSerie
   searchEnd.setUTCFullYear(searchEnd.getUTCFullYear() + 2);
   return expandCalendarEventOccurrences(events, now, searchEnd).slice(0, limit);
 }
+
+/**
+ * Return the closest future special event. When staff have not yet categorized an
+ * older one-off event as `special`, use the closest non-recurring non-service event
+ * so a meaningful public highlight is not silently absent.
+ */
+export function getFeaturedSpecialCalendarEventOccurrence<T extends CalendarEventSeries & { eventType: string }>(
+  events: T[],
+  now: Date,
+): CalendarEventOccurrence<T> | null {
+  const categorizedSpecials = events.filter(event => event.eventType === "special");
+  const fallbackOneOffEvents = events.filter(event => event.recurrence === "none" && !["worship", "prayer"].includes(event.eventType));
+  const candidates = categorizedSpecials.length ? categorizedSpecials : fallbackOneOffEvents;
+  return getUpcomingCalendarEventOccurrences(candidates, now, 1)[0] ?? null;
+}

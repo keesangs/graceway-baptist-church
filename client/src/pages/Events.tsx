@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, CalendarPlus, ChevronRight, Clock3, MapPin } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
@@ -69,6 +69,15 @@ function formatEventTime(event: EventOccurrence, lang: "ko" | "en") {
   });
 }
 
+function formatEventDate(event: EventOccurrence, lang: "ko" | "en") {
+  return new Date(event.occurrenceStart).toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", {
+    timeZone: CHURCH_TIME_ZONE,
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
+}
+
 function EventCard({ event, lang }: { event: EventOccurrence; lang: "ko" | "en" }) {
   const title = lang === "en" && event.titleEn ? event.titleEn : event.titleKo;
   const venue = lang === "en" && event.venueEn ? event.venueEn : event.venueKo;
@@ -112,17 +121,39 @@ export default function Events() {
   const rangeInput = useMemo(() => ({ start: range.start, end: range.end }), [range]);
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
   const upcomingQuery = trpc.events.upcoming.useQuery();
+  const featuredSpecialQuery = trpc.events.featuredSpecial.useQuery();
   const occurrences = (eventsQuery.data ?? []) as EventOccurrence[];
   const filteredOccurrences = useMemo(() => eventFilter === "all" ? occurrences : occurrences.filter(event => event.eventType === eventFilter), [eventFilter, occurrences]);
   const selectedKey = selectedDate ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}` : null;
   const selectedEvents = selectedKey ? filteredOccurrences.filter(event => dateKey(event.occurrenceStart) === selectedKey) : [];
   const eventDates = useMemo(() => Array.from(new Set(filteredOccurrences.map(event => dateKey(event.occurrenceStart)))).map(calendarDate), [filteredOccurrences]);
   const upcoming = (upcomingQuery.data ?? []) as EventOccurrence[];
+  const featuredSpecial = (featuredSpecialQuery.data ?? null) as EventOccurrence | null;
   const filteredUpcoming = useMemo(() => eventFilter === "all" ? upcoming : upcoming.filter(event => event.eventType === eventFilter), [eventFilter, upcoming]);
   const filterOptions: { value: EventFilter; label: string }[] = [
     { value: "all", label: lang === "ko" ? "전체" : "All" },
     ...Object.entries(eventTypeLabels).map(([value, label]) => ({ value: value as EventType, label: label[lang] })),
   ];
+  const featuredTitle = featuredSpecial ? (lang === "en" && featuredSpecial.titleEn ? featuredSpecial.titleEn : featuredSpecial.titleKo) : "";
+  const featuredVenue = featuredSpecial ? (lang === "en" && featuredSpecial.venueEn ? featuredSpecial.venueEn : featuredSpecial.venueKo) : null;
+  const featuredDescription = featuredSpecial ? (lang === "en" && featuredSpecial.descriptionEn ? featuredSpecial.descriptionEn : featuredSpecial.descriptionKo) : null;
+  const featuredCalendarUrl = featuredSpecial ? createGoogleCalendarUrl({
+    title: featuredTitle,
+    start: featuredSpecial.occurrenceStart,
+    end: featuredSpecial.occurrenceEnd,
+    allDay: Boolean(featuredSpecial.allDay),
+    location: featuredVenue,
+    description: featuredDescription,
+  }) : "";
+
+  const showFeaturedDate = () => {
+    if (!featuredSpecial) return;
+    const start = new Date(featuredSpecial.occurrenceStart);
+    setMonth(new Date(start.getFullYear(), start.getMonth(), 1));
+    setSelectedDate(calendarDate(dateKey(featuredSpecial.occurrenceStart)));
+    setEventFilter("all");
+    document.getElementById("events-calendar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F4F6F7]">
@@ -136,7 +167,34 @@ export default function Events() {
       />
 
       <main className="container flex-1 py-12 md:py-16">
-        <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
+        {featuredSpecial && (
+          <section aria-labelledby="featured-event-title" className="relative mb-10 overflow-hidden rounded-xl border border-[#B9955E]/40 bg-[#163B59] px-6 py-7 text-white shadow-[0_18px_36px_rgba(22,59,89,0.17)] sm:px-8 sm:py-8">
+            <div aria-hidden="true" className="absolute -right-20 -top-28 size-72 rounded-full border border-[#C9973E]/25" />
+            <div aria-hidden="true" className="absolute right-12 top-8 size-32 rounded-full bg-[#2F6F9F]/25 blur-3xl" />
+            <div className="relative grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <div>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C484]"><Sparkles className="size-3.5" />{lang === "ko" ? "추천 행사" : "Featured event"}</p>
+                <h2 id="featured-event-title" className="mt-3 font-serif text-3xl font-semibold tracking-tight text-white sm:text-4xl">{featuredTitle}</h2>
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#E7EEF1]">
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 text-[#E5C484]" />{formatEventDate(featuredSpecial, lang)}</span>
+                  <span className="inline-flex items-center gap-1.5"><Clock3 className="size-4 text-[#E5C484]" />{formatEventTime(featuredSpecial, lang)}</span>
+                  {featuredVenue && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[#E5C484]" />{featuredVenue}</span>}
+                </div>
+                {featuredDescription && <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-6 text-[#D7E4EA]">{featuredDescription}</p>}
+              </div>
+              <div className="flex flex-wrap gap-3 lg:justify-end">
+                <button type="button" onClick={showFeaturedDate} className="inline-flex items-center gap-2 rounded-sm bg-[#C9973E] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color] duration-200 hover:bg-[#E5C484] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
+                  {lang === "ko" ? "일정 자세히 보기" : "View event details"}<ArrowUpRight className="size-4" />
+                </button>
+                <a href={featuredCalendarUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm border border-white/40 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 hover:border-[#E5C484] hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
+                  <CalendarPlus className="size-4 text-[#E5C484]" />{lang === "ko" ? "내 캘린더에 추가" : "Add to my calendar"}
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <div id="events-calendar" className="scroll-mt-24 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
           <section className="brand-surface rounded-xl border border-[#DCE4E7] p-4 sm:p-6">
             <div className="mb-5 flex items-start gap-3">
               <div className="mt-1 rounded-sm bg-[#F6F0E5] p-2 text-[#8A6420]"><CalendarDays className="size-5" /></div>

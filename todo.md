@@ -167,6 +167,8 @@
 - [x] Events category filter: 공개 월간 캘린더 상단에서 예배·기도·교제·사역·특별 행사 등 유형별 필터링 제공
 - [x] Google Calendar event links: 각 공개 행사 발생 항목을 개인 Google Calendar에 추가하는 안전한 외부 링크 생성·표시
 - [x] Events interaction tests: 유형 필터·Google Calendar URL·반응형 행사 카드 상호작용 회귀 테스트 추가
+- [x] Featured special event banner: 가장 가까운 공개 특별 행사를 일정 캘린더 상단에 자동 강조하고 행사 상세·개인 캘린더 링크로 연결
+- [x] Featured special event tests: 특별 행사 우선 선정·빈 상태·양언어 배너·날짜 상세 연결 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

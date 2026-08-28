@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createGoogleCalendarUrl } from "../client/src/lib/googleCalendar";
 
 const eventsSource = readFileSync(resolve(process.cwd(), "client/src/pages/Events.tsx"), "utf8");
+const routersSource = readFileSync(resolve(process.cwd(), "server/routers.ts"), "utf8");
 
 describe("event card interactions", () => {
   it("builds a Google Calendar template URL with timed event details and church timezone", () => {
@@ -49,5 +50,14 @@ describe("event card interactions", () => {
     expect(eventsSource).toContain('target="_blank"');
     expect(eventsSource).toContain('rel="noreferrer"');
     expect(eventsSource).toContain("Google Calendar에 추가");
+  });
+
+  it("renders a bilingual featured special-event banner with event-detail and personal-calendar actions", () => {
+    expect(routersSource).toContain("featuredSpecial: publicProcedure");
+    expect(eventsSource).toContain("featuredSpecialQuery");
+    expect(eventsSource).toContain("추천 행사");
+    expect(eventsSource).toContain("Featured event");
+    expect(eventsSource).toContain("showFeaturedDate");
+    expect(eventsSource).toContain("내 캘린더에 추가");
   });
 });

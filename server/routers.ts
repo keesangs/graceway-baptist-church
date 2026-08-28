@@ -37,7 +37,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { fetchPlaylistVideos } from "./youtube";
-import { expandCalendarEventOccurrences, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
+import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -220,6 +220,12 @@ export const appRouter = router({
     upcoming: publicProcedure.query(async () => {
       const events = await listPublishedCalendarEvents();
       return getUpcomingCalendarEventOccurrences(events, new Date(), 6);
+    }),
+
+    /** The nearest public event intentionally marked as special for the calendar feature. */
+    featuredSpecial: publicProcedure.query(async () => {
+      const events = await listPublishedCalendarEvents();
+      return getFeaturedSpecialCalendarEventOccurrence(events, new Date());
     }),
 
     /** Full source list is restricted to administrators so drafts and cancellations remain private. */

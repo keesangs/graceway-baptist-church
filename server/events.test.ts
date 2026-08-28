@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
-import { expandCalendarEventOccurrences, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
+import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 
 const createCalendarEvent = vi.fn();
 const deleteCalendarEvent = vi.fn();
@@ -90,6 +90,24 @@ describe("event recurrence expansion", () => {
     expect(result).toHaveLength(1);
     expect(result[0]?.occurrenceStart.toISOString()).toBe("2026-08-09T20:30:00.000Z");
   });
+
+  it("prioritizes the closest upcoming event marked as special", () => {
+    const earlySpecial = { ...sundayWorship, id: 21, eventType: "special" as const, recurrence: "none" as const, startAt: new Date("2026-08-14T01:00:00.000Z"), endAt: null };
+    const laterSpecial = { ...earlySpecial, id: 22, startAt: new Date("2026-09-01T01:00:00.000Z") };
+
+    const result = getFeaturedSpecialCalendarEventOccurrence([sundayWorship, laterSpecial, earlySpecial], new Date("2026-08-08T00:00:00.000Z"));
+
+    expect(result?.seriesId).toBe(earlySpecial.id);
+    expect(result?.occurrenceStart).toEqual(earlySpecial.startAt);
+  });
+
+  it("falls back to the closest one-off non-service event when no category is marked special", () => {
+    const oneOffOtherEvent = { ...sundayWorship, id: 32, eventType: "other" as const, recurrence: "none" as const, startAt: new Date("2026-08-15T01:00:00.000Z"), endAt: null };
+
+    const result = getFeaturedSpecialCalendarEventOccurrence([sundayWorship, oneOffOtherEvent], new Date("2026-08-08T00:00:00.000Z"));
+
+    expect(result?.seriesId).toBe(oneOffOtherEvent.id);
+  });
 });
 
 describe("events router", () => {
@@ -104,6 +122,16 @@ describe("events router", () => {
     expect(month).toHaveLength(5);
     expect(upcoming[0]?.seriesId).toBe(sundayWorship.id);
     expect(listCalendarEvents).not.toHaveBeenCalled();
+  });
+
+  it("returns only the closest published special event for the featured banner", async () => {
+    const specialEvent = { ...sundayWorship, id: 44, titleKo: "가을 특별 예배", eventType: "special" as const, recurrence: "none" as const, startAt: new Date("2026-09-14T01:00:00.000Z"), endAt: null };
+    listPublishedCalendarEvents.mockResolvedValue([sundayWorship, specialEvent]);
+
+    const featured = await appRouter.createCaller(makeContext()).events.featuredSpecial();
+
+    expect(featured).toEqual(expect.objectContaining({ seriesId: specialEvent.id, eventType: "special" }));
+    expect(listPublishedCalendarEvents).toHaveBeenCalledTimes(1);
   });
 
   it("denies a non-administrator before an event can be created", async () => {
