@@ -179,9 +179,9 @@ export default function Home() {
           style={{ opacity: heroVisible ? 0.6 : 0 }}
         />
 
-        {/* Official Graceway mark — a restrained sacred motif, offset into the background so the composition can breathe. */}
+        {/* Official Graceway mark — a restrained background motif, always behind the desktop title and CTA safety layer. */}
         <div
-          className="pointer-events-none absolute right-[20%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out lg:block"
+          className="pointer-events-none absolute z-0 right-[24%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out xl:right-[32%] lg:block"
           style={{
             opacity: heroVisible ? 0.13 : 0,
             transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-45%) scale(0.96)",
@@ -203,7 +203,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="relative container pt-24 pb-32">
+        <div className="relative z-10 container pt-24 pb-32">
           <div className="max-w-2xl">
             {/* Tag line */}
             <div

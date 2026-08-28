@@ -111,3 +111,5 @@
 - [x] GitHub image asset manifest: 배포용 이미지 원본은 영구 저장소에 유지하고, GitHub에서 경로·용도·파일 메타데이터를 추적할 매니페스트 작성 및 검증
 - [x] Home hero quiet mark: 새 추상 배경과 균형을 이루도록 데스크톱 공식 Graceway 심볼을 중간 크기로 축소하고 왼쪽으로 재배치
 - [x] Home hero mark refinement: 데스크톱 공식 Graceway 심볼을 추가 축소하고 배경 중앙 쪽으로 더 왼쪽에 재배치
+- [x] Home hero mark center alignment: 데스크톱 공식 Graceway 심볼을 제목 영역과 겹치지 않게 유지하며 배경 중앙 방향으로 추가 이동
+- [x] Home hero mark collision safety: 데스크톱 심볼이 제목·CTA보다 뒤 레이어에 유지되고 텍스트 안전 영역을 침범하지 않도록 코드 제약과 회귀 테스트 추가
