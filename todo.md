@@ -129,3 +129,4 @@
 - [x] Home image hover consistency: Home의 주요 이미지 프레임에 동일한 부드러운 호버 확대 효과를 일관되게 적용
 - [x] Home worship guide section: 참고 사이트 구성을 반영해 02 비전 다음·최근 설교 이전에 실제 예배 시간과 장소 안내 섹션 추가
 - [x] Sermons hero copy correction: 설교 페이지 히어로 설명을 ‘매주일 선포되는 주일예배 설교영상과 기타 말씀영상 라이브러리’ 문구로 반영하고 검증
+- [x] About join section alignment: 소개 페이지 함께하세요 섹션의 제목·설명·CTA를 중앙 정렬로 변경
