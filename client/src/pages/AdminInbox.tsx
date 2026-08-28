@@ -21,9 +21,12 @@ import {
   ShieldAlert,
   Download,
   RefreshCw,
+  Youtube,
 } from "lucide-react";
 
 type Tab = "messages" | "subscribers";
+const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
+const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
 
 const TOPIC_LABELS: Record<string, string> = {
   visit: "Plan a visit",
@@ -75,6 +78,17 @@ export default function AdminInbox() {
 
   const messagesQuery = trpc.contact.list.useQuery(undefined, { enabled: isAdmin });
   const subscribersQuery = trpc.newsletter.list.useQuery(undefined, { enabled: isAdmin });
+  const sermonVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT, { enabled: isAdmin });
+  const worshipVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT, { enabled: isAdmin });
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const syncYouTubeMutation = trpc.youtube.sync.useMutation({
+    onSuccess: async (result) => {
+      setSyncResult(
+        `Synced ${result.sermons.total} sermon and ${result.worship.total} worship playlist videos. Added ${result.sermons.added + result.worship.added} new record(s).`,
+      );
+      await Promise.all([sermonVideosQuery.refetch(), worshipVideosQuery.refetch()]);
+    },
+  });
 
   const messages = messagesQuery.data ?? [];
   const subscribers = subscribersQuery.data ?? [];
@@ -224,6 +238,16 @@ export default function AdminInbox() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                setSyncResult(null);
+                syncYouTubeMutation.mutate();
+              }}
+              disabled={syncYouTubeMutation.isPending}
+              className="inline-flex items-center gap-2 rounded-md border border-[#B9955E]/50 bg-[#FFFEFB] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#F6F0E5] disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.97]"
+            >
+              <Youtube size={15} /> {syncYouTubeMutation.isPending ? "Syncing playlists…" : "Sync YouTube playlists"}
+            </button>
+            <button
               onClick={() => refetch()}
               className="inline-flex items-center gap-2 rounded-md border border-[#C8D4D9] bg-[#FFFEFB] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#E7EEF1] active:scale-[0.97]"
             >
@@ -237,6 +261,28 @@ export default function AdminInbox() {
             </button>
           </div>
         </div>
+
+        <section className="mb-8 rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">YouTube playlists</p>
+              <h2 className="mt-1 text-lg font-bold text-[#163B59]" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                Manual video sync
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#607A91]">
+                Pull new Sunday sermon and worship videos from the configured playlists. Existing videos are refreshed, and duplicate cards are prevented by video ID.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-center text-xs">
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{sermonVideosQuery.data?.length ?? 0}</strong>Sermons</div>
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{worshipVideosQuery.data?.length ?? 0}</strong>Worship</div>
+            </div>
+          </div>
+          {syncResult && <p className="mt-4 rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]">{syncResult}</p>}
+          {syncYouTubeMutation.error && (
+            <p className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">Unable to sync playlists: {syncYouTubeMutation.error.message}</p>
+          )}
+        </section>
 
         {isLoading ? (
           <div className="brand-surface flex items-center justify-center rounded-xl border border-[#DCE4E7] py-24">

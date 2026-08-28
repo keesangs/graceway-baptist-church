@@ -17,6 +17,8 @@ import {
   listMeditationComments,
   listMediaFiles,
   listNewsletterSubscribers,
+  listYouTubeVideos,
+  saveYouTubePlaylistVideos,
   subscribeToNewsletter,
   toggleMeditationCommentLike,
   updateDailyMeditation,
@@ -26,6 +28,7 @@ import { notifyOwner } from "./_core/notification";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
+import { fetchPlaylistVideos } from "./youtube";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -118,6 +121,29 @@ export const appRouter = router({
         await deleteMediaFile(input.id);
         return { success: true };
       }),
+  }),
+
+  // ── YouTube Playlist Sync ─────────────────────────────────────────────────
+  youtube: router({
+    /** Public pages read the persisted records, never the server-side API key. */
+    list: publicProcedure
+      .input(z.object({ videoKind: z.enum(["sermon", "worship"]) }))
+      .query(({ input }) => listYouTubeVideos(input.videoKind)),
+
+    /** Church staff manually pulls new playlist videos on demand. */
+    sync: adminProcedure.mutation(async () => {
+      const [sermonVideos, worshipVideos] = await Promise.all([
+        fetchPlaylistVideos("sermon"),
+        fetchPlaylistVideos("worship"),
+      ]);
+
+      const [sermons, worship] = await Promise.all([
+        saveYouTubePlaylistVideos(sermonVideos),
+        saveYouTubePlaylistVideos(worshipVideos),
+      ]);
+
+      return { sermons, worship };
+    }),
   }),
 
   // ── Newsletter ─────────────────────────────────────────────────────

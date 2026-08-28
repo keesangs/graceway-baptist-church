@@ -9,12 +9,14 @@ import {
   InsertMeditationComment,
   InsertNewsletterSubscriber,
   InsertUser,
+  InsertYouTubeVideo,
   mediaFiles,
   meditationCommentLikes,
   meditationComments,
   meditationLikes,
   newsletterSubscribers,
   users,
+  youtubeVideos,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -130,6 +132,61 @@ export async function deleteMediaFile(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(mediaFiles).where(eq(mediaFiles.id, id));
+}
+
+// ── YouTube Playlist Videos ──────────────────────────────────────────────────
+
+export type YouTubeVideoKind = "sermon" | "worship";
+
+export async function listYouTubeVideos(videoKind: YouTubeVideoKind) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(youtubeVideos)
+    .where(eq(youtubeVideos.videoKind, videoKind))
+    .orderBy(desc(youtubeVideos.publishedAt));
+}
+
+/**
+ * Inserts playlist videos once and refreshes source metadata on later manual
+ * syncs. The unique video-kind key prevents duplicate public cards.
+ */
+export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  let added = 0;
+  let updated = 0;
+  const syncTime = new Date();
+
+  for (const video of videos) {
+    const [existing] = await db
+      .select({ id: youtubeVideos.id })
+      .from(youtubeVideos)
+      .where(and(eq(youtubeVideos.videoKind, video.videoKind), eq(youtubeVideos.videoId, video.videoId)))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(youtubeVideos)
+        .set({
+          playlistItemId: video.playlistItemId,
+          title: video.title,
+          publishedAt: video.publishedAt,
+          thumbnailUrl: video.thumbnailUrl,
+          playlistPosition: video.playlistPosition,
+          lastSyncedAt: syncTime,
+        })
+        .where(eq(youtubeVideos.id, existing.id));
+      updated += 1;
+    } else {
+      await db.insert(youtubeVideos).values({ ...video, lastSyncedAt: syncTime });
+      added += 1;
+    }
+  }
+
+  return { added, updated, total: videos.length };
 }
 
 /**
