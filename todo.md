@@ -155,6 +155,7 @@
 - [x] Home sermon archive refresh: 2026-08-23 최신 설교와 이전 설교 영상을 YouTube 설교 플레이리스트 기준으로 재동기화하고 Home 카드에 반영
 - [x] Sermon social sharing: 설교 카드와 재생 영역에 기기 기본 공유·클립보드 링크 복사를 제공하는 접근 가능한 공유 버튼 추가
 - [x] Contact visitor FAQ refinement: 처음 방문 FAQ 제목을 자연스럽게 다듬고 예배 시간·식사 교제 안내 질문과 답변 추가
+- [x] Worship social sharing: 찬양 카드와 재생 영역에 기기 기본 공유·클립보드 링크 복사를 제공하는 접근 가능한 공유 버튼 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

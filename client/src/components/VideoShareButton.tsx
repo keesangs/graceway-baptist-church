@@ -5,6 +5,7 @@ type VideoShareButtonProps = {
   videoId: string;
   title: string;
   lang: "ko" | "en";
+  contentType?: "sermon" | "worship";
   compact?: boolean;
   className?: string;
 };
@@ -35,7 +36,7 @@ async function copyToClipboard(value: string) {
  * browsers it copies the canonical YouTube link, which users can paste into
  * KakaoTalk or any social platform.
  */
-export function VideoShareButton({ videoId, title, lang, compact = false, className = "" }: VideoShareButtonProps) {
+export function VideoShareButton({ videoId, title, lang, contentType = "sermon", compact = false, className = "" }: VideoShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
 
@@ -74,9 +75,12 @@ export function VideoShareButton({ videoId, title, lang, compact = false, classN
     }
   };
 
+  const videoTypeLabel = contentType === "worship"
+    ? (lang === "ko" ? "찬양 영상" : "worship video")
+    : (lang === "ko" ? "설교 영상" : "sermon video");
   const label = copied
     ? (lang === "ko" ? "링크가 복사되었습니다" : "Link copied")
-    : (lang === "ko" ? "설교 영상 공유하기" : "Share sermon video");
+    : (lang === "ko" ? `${videoTypeLabel} 공유하기` : `Share ${videoTypeLabel}`);
   const compactClasses = compact
     ? "px-2.5 py-1.5 text-xs"
     : "px-4 py-2.5 text-sm";

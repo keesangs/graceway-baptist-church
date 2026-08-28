@@ -8,6 +8,7 @@ import { Play, Clock, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
+import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
@@ -161,6 +162,7 @@ export default function Worship() {
   });
 
   const featured = worships[0];
+  const playingWorship = worships.find((worship) => worship.videoId === playingId);
 
   return (
     <div className="min-h-screen bg-[#F4F6F7]">
@@ -191,6 +193,16 @@ export default function Worship() {
                 className="w-full h-full"
               />
             </div>
+            {playingWorship && (
+              <div className="mt-4 flex justify-end">
+                <VideoShareButton
+                  videoId={playingWorship.videoId}
+                  title={lang === "ko" ? playingWorship.titleKo : playingWorship.titleEn}
+                  lang={lang}
+                  contentType="worship"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -254,13 +266,21 @@ export default function Worship() {
                   ? "주일 예배 시간에 함께 드린 찬양입니다. 영상을 클릭하여 재생하세요."
                   : "Worship from our Sunday service. Click to play."}
               </p>
-              <button
-                onClick={() => setPlayingId(featured.videoId)}
-                className="inline-flex items-center gap-2 rounded-sm bg-[#B9955E] px-6 py-2.5 text-sm font-semibold text-[#0B2C43] transition-colors hover:bg-[#C8A977]"
-              >
-                <Play size={16} className="ml-0.5" fill="white" />
-                {lang === "ko" ? "재생" : "Play"}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setPlayingId(featured.videoId)}
+                  className="inline-flex items-center gap-2 rounded-sm bg-[#B9955E] px-6 py-2.5 text-sm font-semibold text-[#0B2C43] transition-colors hover:bg-[#C8A977]"
+                >
+                  <Play size={16} className="ml-0.5" fill="white" />
+                  {lang === "ko" ? "재생" : "Play"}
+                </button>
+                <VideoShareButton
+                  videoId={featured.videoId}
+                  title={lang === "ko" ? featured.titleKo : featured.titleEn}
+                  lang={lang}
+                  contentType="worship"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -300,38 +320,52 @@ export default function Worship() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.length > 0 ? (
               filtered.map((w, i) => (
-                <button
+                <article
                   key={i}
-                  onClick={() => setPlayingId(w.videoId)}
-                  className="group cursor-pointer overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
-                  aria-label={lang === "ko" ? `${w.titleKo} 찬양 재생` : `Play worship: ${w.titleEn}`}
+                  className="group overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
                 >
-                  <div className="relative aspect-video overflow-hidden">
-                    <img
-                      src={w.thumbnailUrl ?? ytThumb(w.videoId, "mqdefault")}
-                      alt={lang === "ko" ? w.titleKo : w.titleEn}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = WORSHIP_IMG;
-                      }}
-                    />
-                    <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.4),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B9955E]">
-                        <Play size={16} className="text-white ml-0.5" fill="white" />
+                  <button
+                    type="button"
+                    onClick={() => setPlayingId(w.videoId)}
+                    className="w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#607A91]"
+                    aria-label={lang === "ko" ? `${w.titleKo} 찬양 재생` : `Play worship: ${w.titleEn}`}
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        src={w.thumbnailUrl ?? ytThumb(w.videoId, "mqdefault")}
+                        alt={lang === "ko" ? w.titleKo : w.titleEn}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = WORSHIP_IMG;
+                        }}
+                      />
+                      <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.4),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B9955E]">
+                          <Play size={16} className="text-white ml-0.5" fill="white" />
+                        </div>
+                      </div>
+                      <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
+                        {w.duration}
                       </div>
                     </div>
-                    <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
-                      {w.duration}
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-[#163B59] transition-colors group-hover:text-[#607A91]" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                        {lang === "ko" ? w.titleKo : w.titleEn}
+                      </h3>
+                      <p className="text-[#242A30]/45 text-[11px] mt-2">{w.date}</p>
                     </div>
+                  </button>
+                  <div className="px-4 pb-4">
+                    <VideoShareButton
+                      videoId={w.videoId}
+                      title={lang === "ko" ? w.titleKo : w.titleEn}
+                      lang={lang}
+                      contentType="worship"
+                      compact
+                    />
                   </div>
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-[#163B59] transition-colors group-hover:text-[#607A91]" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                      {lang === "ko" ? w.titleKo : w.titleEn}
-                    </h3>
-                    <p className="text-[#242A30]/45 text-[11px] mt-2">{w.date}</p>
-                  </div>
-                </button>
+                </article>
               ))
             ) : (
               <div className="col-span-full text-center py-12">
