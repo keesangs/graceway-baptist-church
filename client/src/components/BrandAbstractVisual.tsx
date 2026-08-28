@@ -11,9 +11,10 @@ type BrandAbstractVisualProps = {
   kind: BrandAbstractVisualKind;
   imageSrc?: string;
   className?: string;
+  showPathMotif?: boolean;
 };
 
-export function BrandAbstractVisual({ kind, imageSrc, className = "" }: BrandAbstractVisualProps) {
+export function BrandAbstractVisual({ kind, imageSrc, className = "", showPathMotif = true }: BrandAbstractVisualProps) {
   return (
     <div
       aria-hidden="true"
@@ -26,7 +27,7 @@ export function BrandAbstractVisual({ kind, imageSrc, className = "" }: BrandAbs
       <div className="absolute -right-4 -top-10 h-40 w-40 rounded-full border border-white/10" />
       <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#56708A]/20 blur-2xl" />
 
-      {kind === "path" && (
+      {kind === "path" && showPathMotif && (
         <>
           <div className="absolute -bottom-[68%] left-[45%] h-[150%] w-[42%] -translate-x-1/2 rotate-[18deg] rounded-[50%] border-l-[26px] border-[#F4F2EC]/90 shadow-[0_0_70px_rgba(201,151,62,0.2)]" />
           <div className="absolute -bottom-[58%] left-[61%] h-[130%] w-[32%] -translate-x-1/2 rotate-[18deg] rounded-[50%] border-l-[5px] border-[#C9973E]/85" />

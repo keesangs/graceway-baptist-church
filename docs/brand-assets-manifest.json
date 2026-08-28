@@ -31,12 +31,12 @@
       "usedBy": ["About hero", "Ministries Bible study"]
     },
     {
-      "id": "about-story-hero-variation",
-      "storagePath": "/manus-storage/graceway-about-story-hero-variation-2026_831d3159.png",
-      "sourceFilename": "graceway-about-story-hero-variation-2026.png",
+      "id": "about-story-riverlight",
+      "storagePath": "/manus-storage/graceway-about-story-riverlight-2026_b7fceaa5.png",
+      "sourceFilename": "graceway-about-story-riverlight-2026.png",
       "mediaType": "image/png",
-      "byteSize": 5013146,
-      "sha256": "30729bf09c879cd6e1ecc6b81ddd2326caab110cb8233aa0693c8ed70aa76cbe",
+      "byteSize": 6178800,
+      "sha256": "8ae2cdf76b75a0777da05fccbfc5ac6d7e3057ec7f5408571a41d722cd5e040c",
       "usedBy": ["About story"]
     },
     {

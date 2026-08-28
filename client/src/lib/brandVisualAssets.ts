@@ -5,7 +5,7 @@ export const brandVisualAssets = {
   homeHero: "/manus-storage/graceway-renewal-style-reference_dcc4d541.jpg",
   homeStory: "/manus-storage/graceway-home-ribbon-2026_8b537440.jpg",
   aboutPath: "/manus-storage/graceway-about-marble-2026_83654443.jpeg",
-  aboutStory: "/manus-storage/graceway-about-story-hero-variation-2026_831d3159.png",
+  aboutStory: "/manus-storage/graceway-about-story-riverlight-2026_b7fceaa5.png",
   sermonsCover: "/manus-storage/graceway-sermons-current-2026_29c55360.jpg",
   worshipCover: "/manus-storage/graceway-worship-current-2026_95ba9b2b.jpeg",
   ministry: {
