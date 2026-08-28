@@ -11,6 +11,7 @@ import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
+import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
@@ -627,37 +628,47 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
             {/* ── LEFT: Featured video — unchanged from original ── */}
-            <a
-              href={`https://www.youtube.com/watch?v=${sermonCards[0].videoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg:col-span-3 bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer block"
-            >
-              <div className="relative aspect-video overflow-hidden">
-                <img
-                  src={sermonCards[0].thumbnailUrl ?? `https://img.youtube.com/vi/${sermonCards[0].videoId}/maxresdefault.jpg`}
-                  alt={sermonCards[0].title}
-                  className="h-full w-full object-cover will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
-                  onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/80 via-transparent to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-[#C9973E] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
-                    <Play size={20} className="text-white ml-1" />
+            <div className="lg:col-span-3">
+              <a
+                href={`https://www.youtube.com/watch?v=${sermonCards[0].videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block overflow-hidden rounded-sm bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+              >
+                <div className="relative aspect-video overflow-hidden">
+                  <img
+                    src={sermonCards[0].thumbnailUrl ?? `https://img.youtube.com/vi/${sermonCards[0].videoId}/maxresdefault.jpg`}
+                    alt={sermonCards[0].title}
+                    className="h-full w-full object-cover will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
+                    onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[#C9973E] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                      <Play size={20} className="text-white ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-5 right-5">
+                    <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermonCards[0].scripture : sermonCards[0].scriptureEn}</p>
+                    <h3 className="text-white font-bold text-xl" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                      {lang === "ko" ? sermonCards[0].titleKo : sermonCards[0].title}
+                    </h3>
+                    <p className="text-white/60 text-xs mt-1">{sermonCards[0].speaker} · {sermonCards[0].date}</p>
+                  </div>
+                  <div className="absolute top-3 right-3 bg-[#17324D]/80 text-white text-xs px-2 py-1 rounded-sm">
+                    {sermonCards[0].duration}
                   </div>
                 </div>
-                <div className="absolute bottom-4 left-5 right-5">
-                  <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermonCards[0].scripture : sermonCards[0].scriptureEn}</p>
-                  <h3 className="text-white font-bold text-xl" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                    {lang === "ko" ? sermonCards[0].titleKo : sermonCards[0].title}
-                  </h3>
-                  <p className="text-white/60 text-xs mt-1">{sermonCards[0].speaker} · {sermonCards[0].date}</p>
-                </div>
-                <div className="absolute top-3 right-3 bg-[#17324D]/80 text-white text-xs px-2 py-1 rounded-sm">
-                  {sermonCards[0].duration}
-                </div>
+              </a>
+              <div className="mt-3 flex justify-end">
+                <VideoShareButton
+                  videoId={sermonCards[0].videoId}
+                  title={lang === "ko" ? sermonCards[0].titleKo : sermonCards[0].title}
+                  lang={lang}
+                  compact
+                />
               </div>
-            </a>
+            </div>
 
             {/* ── RIGHT: header + list rows + scripture quote ── */}
             <div className="lg:col-span-2 flex flex-col">
@@ -680,29 +691,35 @@ export default function Home() {
               {/* Sermon list rows — next three latest sermons */}
               <div className="flex flex-col divide-y divide-[#E8ECF0] mb-5">
                 {sermonCards.slice(1, 4).map((s) => (
-                  <a
-                    key={s.videoId}
-                    href={`https://www.youtube.com/watch?v=${s.videoId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 py-4 group cursor-pointer hover:bg-[#F0F4F7] -mx-2 px-2 rounded-md transition-colors duration-150"
-                  >
-                    {/* Play icon circle */}
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[#D1D9E0] group-hover:border-[#C9973E] flex items-center justify-center transition-colors duration-150">
-                      <Play size={11} className="text-[#17324D] group-hover:text-[#C9973E] ml-0.5 transition-colors duration-150" fill="currentColor" />
-                    </div>
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-[#17324D] font-semibold text-sm leading-snug group-hover:text-[#2F6F9F] transition-colors duration-150"
-                        style={{ fontFamily: "'Source Serif 4', serif" }}
-                      >
-                        {lang === "ko" ? s.titleKo : s.title}
-                      </p>
-                      <p className="text-[#C9973E] text-xs mt-0.5">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
-                      <p className="text-[#242A30]/50 text-[11px] mt-0.5">{s.date}</p>
-                    </div>
-                  </a>
+                  <div key={s.videoId} className="flex items-center gap-3 py-4 -mx-2 px-2 rounded-md transition-colors duration-150 hover:bg-[#F0F4F7]">
+                    <a
+                      href={`https://www.youtube.com/watch?v=${s.videoId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex min-w-0 flex-1 items-center gap-3"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[#D1D9E0] group-hover:border-[#C9973E] flex items-center justify-center transition-colors duration-150">
+                        <Play size={11} className="text-[#17324D] group-hover:text-[#C9973E] ml-0.5 transition-colors duration-150" fill="currentColor" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-[#17324D] font-semibold text-sm leading-snug group-hover:text-[#2F6F9F] transition-colors duration-150"
+                          style={{ fontFamily: "'Source Serif 4', serif" }}
+                        >
+                          {lang === "ko" ? s.titleKo : s.title}
+                        </p>
+                        <p className="text-[#C9973E] text-xs mt-0.5">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
+                        <p className="text-[#242A30]/50 text-[11px] mt-0.5">{s.date}</p>
+                      </div>
+                    </a>
+                    <VideoShareButton
+                      videoId={s.videoId}
+                      title={lang === "ko" ? s.titleKo : s.title}
+                      lang={lang}
+                      compact
+                      className="shrink-0"
+                    />
+                  </div>
                 ))}
               </div>
 

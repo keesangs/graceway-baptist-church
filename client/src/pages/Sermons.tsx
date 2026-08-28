@@ -8,6 +8,7 @@ import { Play, Clock, BookOpen, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
+import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
@@ -198,6 +199,7 @@ export default function Sermons() {
   });
 
   const featured = sermons[0];
+  const playingSermon = playingId ? sermons.find((sermon) => sermon.videoId === playingId) : null;
 
   return (
     <div className="min-h-screen bg-[#F4F6F7]">
@@ -228,6 +230,15 @@ export default function Sermons() {
                 className="w-full h-full"
               />
             </div>
+            {playingSermon && (
+              <div className="mt-4 flex justify-end">
+                <VideoShareButton
+                  videoId={playingSermon.videoId}
+                  title={lang === "ko" ? playingSermon.titleKo : playingSermon.titleEn}
+                  lang={lang}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -290,12 +301,19 @@ export default function Sermons() {
                 </div>
               )}
               <p className="text-[#242A30]/60 text-sm mb-6">{[featured.speaker, featured.date].filter(Boolean).join(" · ")}</p>
-              <button
-                onClick={() => setPlayingId(featured.videoId)}
-                className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#245170] active:scale-[0.97]"
-              >
-                <Play size={14} /> {t("sermons.watchNow")}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setPlayingId(featured.videoId)}
+                  className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#245170] active:scale-[0.97]"
+                >
+                  <Play size={14} /> {t("sermons.watchNow")}
+                </button>
+                <VideoShareButton
+                  videoId={featured.videoId}
+                  title={lang === "ko" ? featured.titleKo : featured.titleEn}
+                  lang={lang}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -336,48 +354,56 @@ export default function Sermons() {
 
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => setPlayingId(s.videoId)}
-                className="group w-full cursor-pointer overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
-                aria-label={lang === "ko" ? `${s.titleKo} 설교 재생` : `Play sermon: ${s.titleEn}`}
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <img
+            {filtered.map((s) => (
+              <article key={s.videoId} className="group overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-sm transition-shadow duration-300 hover:shadow-md">
+                <button
+                  onClick={() => setPlayingId(s.videoId)}
+                  className="w-full cursor-pointer text-left"
+                  aria-label={lang === "ko" ? `${s.titleKo} 설교 재생` : `Play sermon: ${s.titleEn}`}
+                >
+                  <div className="relative aspect-video overflow-hidden">
+                    <img
                       src={s.thumbnailUrl ?? ytThumb(s.videoId, "mqdefault")}
-                    alt={lang === "ko" ? s.titleKo : s.titleEn}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
-                  />
-                  <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.42),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B9955E]">
-                      <Play size={14} className="text-white ml-0.5" />
+                      alt={lang === "ko" ? s.titleKo : s.titleEn}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
+                    />
+                    <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.42),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B9955E]">
+                        <Play size={14} className="text-white ml-0.5" />
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
+                      {s.duration}
+                    </div>
+                    <div className="absolute top-2 left-2 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-bold flex items-center gap-0.5">
+                      <Play size={7} className="fill-white" /> YT
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2 bg-[#17324D]/80 text-white text-[10px] px-2 py-0.5 rounded-sm">
-                    {s.duration}
+                  <div className="p-4">
+                    {(lang === "ko" ? s.scripture : s.scriptureEn) && (
+                      <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
+                    )}
+                    <h3
+                      className="mb-1.5 text-sm font-semibold leading-snug text-[#163B59] transition-colors group-hover:text-[#607A91]"
+                      style={{ fontFamily: "'Source Serif 4', serif" }}
+                    >
+                      {lang === "ko" ? s.titleKo : s.titleEn}
+                    </h3>
+                    {s.speaker && <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>}
+                    <p className="text-[#242A30]/40 text-[11px]">{s.date}</p>
                   </div>
-                  {/* YouTube badge */}
-                  <div className="absolute top-2 left-2 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-bold flex items-center gap-0.5">
-                    <Play size={7} className="fill-white" /> YT
-                  </div>
+                </button>
+                <div className="border-t border-[#DCE4E7] px-4 py-2.5">
+                  <VideoShareButton
+                    videoId={s.videoId}
+                    title={lang === "ko" ? s.titleKo : s.titleEn}
+                    lang={lang}
+                    compact
+                  />
                 </div>
-                <div className="p-4">
-                  {(lang === "ko" ? s.scripture : s.scriptureEn) && (
-                    <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
-                  )}
-                  <h3
-                    className="mb-1.5 text-sm font-semibold leading-snug text-[#163B59] transition-colors group-hover:text-[#607A91]"
-                    style={{ fontFamily: "'Source Serif 4', serif" }}
-                  >
-                    {lang === "ko" ? s.titleKo : s.titleEn}
-                  </h3>
-                  {s.speaker && <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>}
-                  <p className="text-[#242A30]/40 text-[11px]">{s.date}</p>
-                </div>
-              </button>
+              </article>
             ))}
           </div>
 
