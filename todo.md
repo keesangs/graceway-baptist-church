@@ -41,8 +41,8 @@
 
 ## Future Enhancements — Not Yet Implemented
 - [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
-- [ ] Meditation likes feature (members only)
-- [ ] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
+- [x] Meditation likes feature (members only)
+- [x] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
 - [ ] Meditation likes behavior test: 공감 상태 조회·토글이 DB 값을 실제로 변경하고 비로그인 사용자는 거부되는지 동작 테스트 추가
 - [ ] Meditation likes E2E verification: 로그인 사용자 흐름에서 공감 수·aria-pressed·새로고침 후 유지 상태를 실제 확인
 - [ ] Meditation likes cache/render verification: 일반 /meditation 경로에서 공감 버튼이 최신 번들로 항상 표시되는지 확인

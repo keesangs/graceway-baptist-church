@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
+import AdminEventsPanel from "@/components/AdminEventsPanel";
 import {
   Inbox,
   Mail,
@@ -24,7 +25,7 @@ import {
   Youtube,
 } from "lucide-react";
 
-type Tab = "messages" | "subscribers";
+type Tab = "messages" | "subscribers" | "events";
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
 
@@ -80,6 +81,7 @@ export default function AdminInbox() {
   const subscribersQuery = trpc.newsletter.list.useQuery(undefined, { enabled: isAdmin });
   const sermonVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT, { enabled: isAdmin });
   const worshipVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT, { enabled: isAdmin });
+  const eventsQuery = trpc.events.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const syncYouTubeMutation = trpc.youtube.sync.useMutation({
     onSuccess: async (result) => {
@@ -94,8 +96,8 @@ export default function AdminInbox() {
   const subscribers = subscribersQuery.data ?? [];
 
   const counts = useMemo(
-    () => ({ messages: messages.length, subscribers: subscribers.length }),
-    [messages.length, subscribers.length],
+    () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0 }),
+    [messages.length, subscribers.length, eventsQuery.data?.length],
   );
 
   // ── Auth gates ──────────────────────────────────────────────────────────
@@ -169,8 +171,8 @@ export default function AdminInbox() {
     );
   }
 
-  const isLoading = tab === "messages" ? messagesQuery.isLoading : subscribersQuery.isLoading;
-  const refetch = tab === "messages" ? messagesQuery.refetch : subscribersQuery.refetch;
+  const isLoading = tab === "messages" ? messagesQuery.isLoading : tab === "subscribers" ? subscribersQuery.isLoading : false;
+  const refetch = tab === "messages" ? messagesQuery.refetch : tab === "subscribers" ? subscribersQuery.refetch : eventsQuery.refetch;
 
   const handleExport = () => {
     if (tab === "messages") {
@@ -187,7 +189,7 @@ export default function AdminInbox() {
           m.message ?? "",
         ]),
       ]);
-    } else {
+    } else if (tab === "subscribers") {
       downloadCsv("graceway-newsletter-subscribers.csv", [
         ["Subscribed", "Email", "Language"],
         ...subscribers.map(s => [formatDateTime(s.createdAt), s.email, s.lang.toUpperCase()]),
@@ -214,6 +216,7 @@ export default function AdminInbox() {
               [
                 { key: "messages" as Tab, label: "Messages", count: counts.messages },
                 { key: "subscribers" as Tab, label: "Subscribers", count: counts.subscribers },
+                { key: "events" as Tab, label: "Events", count: counts.events },
               ]
             ).map(item => (
               <button
@@ -253,12 +256,14 @@ export default function AdminInbox() {
             >
               <RefreshCw size={15} /> Refresh
             </button>
-            <button
-              onClick={handleExport}
-              className="inline-flex items-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97]"
-            >
-              <Download size={15} /> Export CSV
-            </button>
+            {tab !== "events" && (
+              <button
+                onClick={handleExport}
+                className="inline-flex items-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97]"
+              >
+                <Download size={15} /> Export CSV
+              </button>
+            )}
           </div>
         </div>
 
@@ -274,8 +279,8 @@ export default function AdminInbox() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-center text-xs">
-              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{sermonVideosQuery.data?.length ?? 0}</strong>Sermons</div>
-              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{worshipVideosQuery.data?.length ?? 0}</strong>Worship</div>
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{sermonVideosQuery.data?.length ?? 0}</strong>Synced sermons</div>
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{worshipVideosQuery.data?.length ?? 0}</strong>Synced worship</div>
             </div>
           </div>
           {syncResult && <p className="mt-4 rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]">{syncResult}</p>}
@@ -351,7 +356,7 @@ export default function AdminInbox() {
               ))}
             </div>
           )
-        ) : subscribers.length === 0 ? (
+        ) : tab === "subscribers" ? subscribers.length === 0 ? (
           <EmptyState
             icon={Mail}
             title="No subscribers yet"
@@ -394,7 +399,7 @@ export default function AdminInbox() {
               </tbody>
             </table>
           </div>
-        )}
+        ) : <AdminEventsPanel />}
       </div>
 
       <Footer />

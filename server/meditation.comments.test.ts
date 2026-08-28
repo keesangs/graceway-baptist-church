@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const getDailyMeditationById = vi.fn();
+const getUserMeditationLike = vi.fn();
 const insertDailyMeditation = vi.fn();
 const insertMeditationComment = vi.fn();
 const listMeditationComments = vi.fn();
 const getMeditationCommentById = vi.fn();
 const deleteMeditationComment = vi.fn();
+const toggleMeditationLike = vi.fn();
 const toggleMeditationCommentLike = vi.fn();
 
 vi.mock("./db", () => ({
@@ -15,6 +17,7 @@ vi.mock("./db", () => ({
   deleteDailyMeditation: vi.fn(),
   getDailyMeditationByDate: vi.fn(),
   getDailyMeditationById: (...args: unknown[]) => getDailyMeditationById(...args),
+  getUserMeditationLike: (...args: unknown[]) => getUserMeditationLike(...args),
   getMeditationCommentById: (...args: unknown[]) => getMeditationCommentById(...args),
   insertContactMessage: vi.fn(),
   insertDailyMeditation: (...args: unknown[]) => insertDailyMeditation(...args),
@@ -26,6 +29,7 @@ vi.mock("./db", () => ({
   listMediaFiles: vi.fn(),
   listNewsletterSubscribers: vi.fn(),
   subscribeToNewsletter: vi.fn(),
+  toggleMeditationLike: (...args: unknown[]) => toggleMeditationLike(...args),
   toggleMeditationCommentLike: (...args: unknown[]) => toggleMeditationCommentLike(...args),
   updateDailyMeditation: vi.fn(),
 }));
@@ -198,5 +202,32 @@ describe("meditation.comments", () => {
 
     expect(result).toEqual({ liked: true });
     expect(toggleMeditationCommentLike).toHaveBeenCalledWith(7, 4);
+  });
+});
+
+describe("meditation.likes", () => {
+  it("shows the aggregate count and anonymous state for every visitor", async () => {
+    getDailyMeditationById.mockResolvedValue({ id: 4, likeCount: 2 });
+
+    const result = await appRouter.createCaller(makeContext()).meditation.likeStatus({ meditationId: 4 });
+
+    expect(result).toEqual({ likeCount: 2, hasLiked: false });
+    expect(getUserMeditationLike).not.toHaveBeenCalled();
+  });
+
+  it("shows a member's existing state and toggles that member's selected meditation", async () => {
+    getDailyMeditationById.mockResolvedValue({ id: 4, likeCount: 2 });
+    getUserMeditationLike.mockResolvedValue({ id: 17, meditationId: 4, userId: 4 });
+    toggleMeditationLike.mockResolvedValue(true);
+    const caller = appRouter.createCaller(makeContext("user", 4));
+
+    await expect(caller.meditation.likeStatus({ meditationId: 4 })).resolves.toEqual({ likeCount: 2, hasLiked: true });
+    await expect(caller.meditation.toggleLike({ meditationId: 4 })).resolves.toEqual({ liked: true });
+    expect(toggleMeditationLike).toHaveBeenCalledWith(4, 4);
+  });
+
+  it("rejects anonymous attempts to toggle a meditation like", async () => {
+    await expect(appRouter.createCaller(makeContext()).meditation.toggleLike({ meditationId: 4 })).rejects.toThrow();
+    expect(toggleMeditationLike).not.toHaveBeenCalled();
   });
 });
