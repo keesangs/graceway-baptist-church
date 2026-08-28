@@ -110,3 +110,4 @@
 - [x] Campus visual assignment: College Campus Ministry에 대학 전용 추상 이미지 자산을 실제 연결
 - [x] GitHub image asset manifest: 배포용 이미지 원본은 영구 저장소에 유지하고, GitHub에서 경로·용도·파일 메타데이터를 추적할 매니페스트 작성 및 검증
 - [x] Home hero quiet mark: 새 추상 배경과 균형을 이루도록 데스크톱 공식 Graceway 심볼을 중간 크기로 축소하고 왼쪽으로 재배치
+- [x] Home hero mark refinement: 데스크톱 공식 Graceway 심볼을 추가 축소하고 배경 중앙 쪽으로 더 왼쪽에 재배치

@@ -179,15 +179,15 @@ export default function Home() {
           style={{ opacity: heroVisible ? 0.6 : 0 }}
         />
 
-        {/* Official Graceway mark — a quiet, mid-scale sacred motif, offset left so the abstract background can breathe. */}
+        {/* Official Graceway mark — a restrained sacred motif, offset into the background so the composition can breathe. */}
         <div
-          className="pointer-events-none absolute right-[11%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out lg:block"
+          className="pointer-events-none absolute right-[20%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out lg:block"
           style={{
-            opacity: heroVisible ? 0.16 : 0,
+            opacity: heroVisible ? 0.13 : 0,
             transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-45%) scale(0.96)",
             transitionDelay: "500ms",
-            width: "clamp(15rem, 21vw, 25rem)",
-            height: "clamp(17rem, 24vw, 28rem)",
+            width: "clamp(12rem, 16vw, 20rem)",
+            height: "clamp(14rem, 19vw, 23rem)",
           }}
         >
           <img
