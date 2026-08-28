@@ -161,7 +161,7 @@ const translations: Record<string, Record<Lang, string>> = {
   // Sermons page
   "sermons.messages": { en: "Messages", ko: "말씀" },
   "sermons.title": { en: "Sermons", ko: "설교" },
-  "sermons.subtitle": { en: "Explore our library of messages rooted in Scripture and relevant to everyday life.", ko: "성경에 뿌리를 두고 일상과 연결된 말씀 라이브러리를 탐색해 보세요." },
+  "sermons.subtitle": { en: "Explore our library of messages rooted in Scripture and relevant to everyday life.", ko: "매주일 선포되는 주일예배 설교영상과 기타 말씀영상 라이브러리" },
   "sermons.latestMessage": { en: "Featured Sermon", ko: "최근 설교 말씀" },
   "sermons.watchNow": { en: "Watch Now", ko: "지금 보기" },
   "sermons.searchPlaceholder": { en: "Search sermons...", ko: "설교 검색..." },
