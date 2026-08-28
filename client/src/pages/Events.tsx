@@ -107,6 +107,7 @@ export default function Events() {
         title={lang === "ko" ? "일정과 행사" : "Events & calendar"}
         description={lang === "ko" ? "그레이스웨이의 예배, 기도회, 공동체 모임과 특별 행사를 한눈에 확인하세요." : "See Graceway worship services, prayer gatherings, community meetings, and special events in one place."}
         visual="path"
+        imageSrc="/manus-storage/graceway-events-journey-2026_a03d3ec8.png"
       />
 
       <main className="container flex-1 py-12 md:py-16">
