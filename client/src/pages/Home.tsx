@@ -126,6 +126,7 @@ export default function Home() {
   const storyFade = useFadeIn();
   const serviceFade = useFadeIn();
   const missionFade = useFadeIn();
+  const worshipGuideFade = useFadeIn();
   const sermonFade = useFadeIn();
   const ministriesFade = useFadeIn();
   const welcomeFade = useFadeIn();
@@ -362,9 +363,9 @@ export default function Home() {
               <p className="text-[#242A30]/70 leading-relaxed mb-8">{t("home.storyBody2")}</p>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 text-[#17324D] font-semibold text-sm hover:text-[#C9973E] transition-colors group"
+                className="group inline-flex items-center gap-2 rounded-sm bg-[#17324D] px-6 py-3 text-sm font-semibold tracking-wide text-white transition-all duration-200 hover:bg-[#214d6e] active:scale-[0.97]"
               >
-                {t("home.learnMore")}
+                {lang === "ko" ? "자세히 보기" : "Learn More"}
                 <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -500,6 +501,77 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── WORSHIP GUIDE ── */}
+      <section id="services" aria-labelledby="worship-guide-heading" className="relative overflow-hidden bg-[#163B59] py-24 lg:py-28">
+        <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full border border-[#B9955E]/15" />
+        <div className="pointer-events-none absolute -bottom-44 right-[18%] h-96 w-96 rounded-full bg-[#4F697E]/15 blur-3xl" />
+        <div
+          ref={worshipGuideFade.ref}
+          className="container relative transition-all duration-700 ease-out motion-reduce:transition-none"
+          style={{ opacity: worshipGuideFade.visible ? 1 : 0, transform: worshipGuideFade.visible ? "translateY(0)" : "translateY(28px)" }}
+        >
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-9 bg-[#B9955E]" />
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#D9B87A]">
+                  {lang === "ko" ? "예배 안내" : "Worship Guide"}
+                </p>
+              </div>
+              <h2 id="worship-guide-heading" className="mt-5 max-w-md text-white" style={SECTION_HEADING_STYLE}>
+                {lang === "ko" ? <>함께 예배합니다</> : <>Worship With Us</>}
+              </h2>
+              <p className="mt-6 max-w-md text-sm leading-7 text-white/68">
+                {lang === "ko"
+                  ? "처음 오시는 분도, 오래 함께한 분도 환영합니다. 말씀과 찬양, 기도 가운데 하나님을 함께 예배합니다."
+                  : "Whether this is your first visit or you have worshiped with us for years, you are welcome as we gather around the Word, praise, and prayer."}
+              </p>
+              <Link
+                href="/connect"
+                className="mt-8 inline-flex items-center gap-2 rounded-sm bg-[#B9955E] px-6 py-3 text-sm font-semibold tracking-wide text-[#0B2C43] transition-all duration-200 hover:bg-[#C8A977] active:scale-[0.97]"
+              >
+                {lang === "ko" ? "방문 안내" : "Plan Your Visit"} <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-px overflow-hidden rounded-sm border border-white/12 bg-white/12 sm:grid-cols-2 lg:col-span-7">
+              <div className="bg-[#173B59] p-7 sm:p-8">
+                <Clock size={20} className="text-[#D9B87A]" aria-hidden="true" />
+                <p className="mt-7 text-xs font-semibold uppercase tracking-[0.22em] text-white/48">
+                  {lang === "ko" ? "주일 예배" : "Sunday Worship"}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white" style={{ fontFamily: "'Source Serif 4', serif" }}>1:30 PM</p>
+                <p className="mt-3 text-sm text-white/58">{lang === "ko" ? "매주 주일" : "Every Sunday"}</p>
+              </div>
+              <div className="bg-[#173B59] p-7 sm:p-8">
+                <Clock size={20} className="text-[#D9B87A]" aria-hidden="true" />
+                <p className="mt-7 text-xs font-semibold uppercase tracking-[0.22em] text-white/48">
+                  {lang === "ko" ? "수요 기도회" : "Wednesday Prayer"}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white" style={{ fontFamily: "'Source Serif 4', serif" }}>8:00 PM</p>
+                <p className="mt-3 text-sm text-white/58">{lang === "ko" ? "매주 수요일" : "Every Wednesday"}</p>
+              </div>
+              <div className="bg-[#173B59] p-7 sm:col-span-2 sm:p-8">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-4">
+                    <MapPin size={20} className="mt-0.5 shrink-0 text-[#D9B87A]" aria-hidden="true" />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/48">
+                        {lang === "ko" ? "예배 장소" : "Location"}
+                      </p>
+                      <p className="mt-2 text-sm font-medium leading-6 text-white">2791 Driscoll Rd, Fremont, CA 94539</p>
+                    </div>
+                  </div>
+                  <Link href="/connect" className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#D9B87A] transition-colors hover:text-white">
+                    {lang === "ko" ? "오시는 길" : "Directions"} <ChevronRight size={15} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── RECENT SERMONS ── */}
       <section className="py-24 bg-[#F4F6F7]">
         <div
@@ -521,7 +593,7 @@ export default function Home() {
                 <img
                   src={`https://img.youtube.com/vi/${sermons[0].videoId}/maxresdefault.jpg`}
                   alt={sermons[0].title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="h-full w-full object-cover will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
                   onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/80 via-transparent to-transparent" />
@@ -668,8 +740,12 @@ export default function Home() {
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 order-2 lg:order-1 relative">
-              <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-                <BrandAbstractVisual kind="welcome" imageSrc={brandVisualAssets.homeStory} />
+              <div className="group aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
+                <BrandAbstractVisual
+                  kind="welcome"
+                  imageSrc={brandVisualAssets.homeStory}
+                  imageClassName="will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
+                />
               </div>
               <div className="absolute -top-5 -right-5 bg-[#C9973E] text-white p-4 rounded-sm shadow-lg">
                 <p className="text-2xl font-bold" style={{ fontFamily: "'Source Serif 4', serif" }}>

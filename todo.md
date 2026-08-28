@@ -125,3 +125,6 @@
 - [x] About story visual cross-free refresh: 우리 이야기 이미지의 불완전한 십자가 형태를 제거하고 동일 팔레트의 새 추상 빛 흐름 비주얼로 교체
 - [x] Home story visual alignment: Home 우리 이야기 우측 이미지에도 About의 새 물빛 길 이미지를 동일하게 적용
 - [x] Story visual hover zoom: Home·About 우리 이야기 이미지에 프레임을 유지하는 부드러운 호버 확대 효과 추가
+- [x] Home story detail CTA: Home 우리 이야기 본문 아래에 소개 페이지로 이동하는 자세히 보기 버튼 추가
+- [x] Home image hover consistency: Home의 주요 이미지 프레임에 동일한 부드러운 호버 확대 효과를 일관되게 적용
+- [x] Home worship guide section: 참고 사이트 구성을 반영해 02 비전 다음·최근 설교 이전에 실제 예배 시간과 장소 안내 섹션 추가
