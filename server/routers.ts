@@ -8,7 +8,6 @@ import {
   getDailyMeditationById,
   getDailyMeditationByDate,
   getMeditationCommentById,
-  getUserMeditationLike,
   insertContactMessage,
   insertDailyMeditation,
   insertMeditationComment,
@@ -22,7 +21,6 @@ import {
   saveYouTubePlaylistVideos,
   subscribeToNewsletter,
   toggleMeditationCommentLike,
-  toggleMeditationLike,
   updateDailyMeditation,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -308,26 +306,6 @@ export const appRouter = router({
       .mutation(({ input }) => {
         deleteDailyMeditation(input.id);
         return { success: true } as const;
-      }),
-
-    likeStatus: publicProcedure
-      .input(z.object({ meditationId: z.number().int().positive() }))
-      .query(async ({ input, ctx }) => {
-        const meditation = await getDailyMeditationById(input.meditationId);
-        if (!meditation) throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
-        const hasLiked = ctx.user
-          ? Boolean(await getUserMeditationLike(input.meditationId, ctx.user.id))
-          : false;
-        return { likeCount: meditation.likeCount, hasLiked };
-      }),
-
-    toggleLike: protectedProcedure
-      .input(z.object({ meditationId: z.number().int().positive() }))
-      .mutation(async ({ input, ctx }) => {
-        const meditation = await getDailyMeditationById(input.meditationId);
-        if (!meditation) throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
-        const liked = await toggleMeditationLike(input.meditationId, ctx.user.id);
-        return { liked } as const;
       }),
 
     comments: router({

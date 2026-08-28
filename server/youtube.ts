@@ -30,9 +30,9 @@ type PlaylistItemsResponse = {
 };
 
 function getThumbnailUrl(thumbnails: Record<string, { url?: string }> | undefined) {
-  return thumbnails?.maxres?.url
+  return thumbnails?.high?.url
     ?? thumbnails?.standard?.url
-    ?? thumbnails?.high?.url
+    ?? thumbnails?.maxres?.url
     ?? thumbnails?.medium?.url
     ?? thumbnails?.default?.url
     ?? "";

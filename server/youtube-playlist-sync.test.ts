@@ -41,4 +41,29 @@ describe("YouTube playlist sync", () => {
     ]);
     expect(global.fetch).toHaveBeenCalledOnce();
   });
+
+  it("prefers the high thumbnail when a max-resolution placeholder is also present", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        items: [{
+          id: "playlist-item-2",
+          snippet: {
+            title: "Sunday worship",
+            publishedAt: "2026-08-02T20:00:00Z",
+            position: 1,
+            resourceId: { videoId: "video-2" },
+            thumbnails: {
+              maxres: { url: "https://img.youtube.com/vi/video-2/maxresdefault.jpg" },
+              high: { url: "https://img.youtube.com/vi/video-2/hqdefault.jpg" },
+            },
+          },
+        }],
+      }),
+    }) as unknown as typeof fetch;
+
+    const [video] = await fetchPlaylistVideos("worship", "test-key");
+
+    expect(video?.thumbnailUrl).toBe("https://img.youtube.com/vi/video-2/hqdefault.jpg");
+  });
 });

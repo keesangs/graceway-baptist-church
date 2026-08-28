@@ -157,7 +157,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "about.leadershipTitle": { en: "Leadership", ko: "교회 리더십" },
   "about.joinUs": { en: "Join Us", ko: "함께하세요" },
   "about.joinCTA": { en: "There’s a place for you every Sunday.", ko: "매 주일, 여러분을 위한 자리가\n준비되어 있습니다." },
-  "about.joinDesc": { en: "We'd love to meet you. Come as you are — no perfect faith required.", ko: "있는 그대로 오세요 — 완벽한 믿음은 필요하지 않습니다." },
+  "about.joinDesc": { en: "We'd love to meet you. Come as you are — no perfect faith required.", ko: "은혜의 자리로 초대합니다 — 완벽한 믿음은 필요하지 않습니다." },
 
   // Sermons page
   "sermons.messages": { en: "Messages", ko: "말씀" },

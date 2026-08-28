@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageC
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
 
@@ -32,14 +32,6 @@ export default function Meditation() {
   );
 
   const currentMeditation = allMeditations.find((m) => m.meditationDate === currentDate);
-  const meditationLikeInput = useMemo(
-    () => ({ meditationId: currentMeditation?.id ?? 0 }),
-    [currentMeditation?.id],
-  );
-  const meditationLikeStatus = trpc.meditation.likeStatus.useQuery(meditationLikeInput, {
-    enabled: Boolean(currentMeditation?.id),
-    staleTime: 1000 * 30,
-  });
   const { data: commentPage, isLoading: commentsLoading, isFetching: commentsFetching } = trpc.meditation.comments.list.useQuery(
     { meditationId: currentMeditation?.id ?? 0, limit: 10, offset: commentOffset },
     { enabled: Boolean(currentMeditation?.id), staleTime: 1000 * 30 },
@@ -70,15 +62,6 @@ export default function Meditation() {
   const toggleCommentLike = trpc.meditation.comments.toggleLike.useMutation({
     onSuccess: async () => {
       await utils.meditation.comments.list.invalidate();
-    },
-  });
-
-  const toggleMeditationLike = trpc.meditation.toggleLike.useMutation({
-    onSuccess: async () => {
-      await Promise.all([
-        utils.meditation.likeStatus.invalidate(),
-        utils.meditation.list.invalidate(),
-      ]);
     },
   });
 
@@ -160,15 +143,6 @@ export default function Meditation() {
       return;
     }
     toggleCommentLike.mutate({ id: commentId });
-  };
-
-  const handleToggleMeditationLike = () => {
-    if (!currentMeditation) return;
-    if (!isAuthenticated) {
-      startLogin();
-      return;
-    }
-    toggleMeditationLike.mutate({ meditationId: currentMeditation.id });
   };
 
   const formatCommentDate = (value: Date | string) =>
@@ -387,22 +361,6 @@ export default function Meditation() {
                     {displayMeditation?.scriptureReference}
                   </h3>
                   <p className="mb-3 text-[#607A91]">{displayMeditation?.title}</p>
-                  <button
-                    type="button"
-                    onClick={handleToggleMeditationLike}
-                    disabled={toggleMeditationLike.isPending || meditationLikeStatus.isLoading}
-                    aria-label={lang === "ko" ? `오늘의 묵상 공감 ${meditationLikeStatus.data?.likeCount ?? 0}` : `Like today's meditation, ${meditationLikeStatus.data?.likeCount ?? 0} likes`}
-                    aria-pressed={meditationLikeStatus.data?.hasLiked ?? false}
-                    className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                      meditationLikeStatus.data?.hasLiked
-                        ? "border-[#C9973E]/40 bg-[#C9973E]/15 text-[#8A6420]"
-                        : "border-[#DCE4E7] bg-white text-[#607A91] hover:border-[#C9973E]/45 hover:bg-[#C9973E]/8 hover:text-[#8A6420]"
-                    }`}
-                  >
-                    <Heart className={`h-3.5 w-3.5 ${meditationLikeStatus.data?.hasLiked ? "fill-current" : ""}`} />
-                    {lang === "ko" ? "공감" : "Like"}
-                    <span aria-live="polite">{meditationLikeStatus.data?.likeCount ?? 0}</span>
-                  </button>
                   {lang === "en" && !hasEnglishContent && (
                     <p className="mb-3 rounded-md border border-[#C9973E]/25 bg-[#FBF8F3] px-3 py-2 text-xs leading-relaxed text-[#6A5734]">
                       This entry is currently available in Korean only. Add all four English fields in Daily Bible Management to publish its English version.

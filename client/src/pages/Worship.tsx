@@ -124,7 +124,21 @@ export default function Worship() {
   const syncedVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT);
 
   const worships = useMemo(() => {
+    const syncedByVideoId = new Map(
+      (syncedVideosQuery.data ?? []).map((video) => [video.videoId, video]),
+    );
     const legacyIds = new Set(legacyWorships.map((worship) => worship.videoId));
+    const refreshedLegacyWorships = legacyWorships.map((worship) => {
+      const synced = syncedByVideoId.get(worship.videoId);
+      if (!synced?.thumbnailUrl) return worship;
+
+      const thumbnailVersion = new Date(synced.lastSyncedAt).valueOf();
+      const separator = synced.thumbnailUrl.includes("?") ? "&" : "?";
+      return {
+        ...worship,
+        thumbnailUrl: `${synced.thumbnailUrl}${separator}cb=${thumbnailVersion}`,
+      };
+    });
     const newSyncedWorships = (syncedVideosQuery.data ?? [])
       .filter((video) => !legacyIds.has(video.videoId))
       .map((video) => ({
@@ -136,7 +150,7 @@ export default function Worship() {
         videoId: video.videoId,
         thumbnailUrl: video.thumbnailUrl,
       }));
-    return [...newSyncedWorships, ...legacyWorships];
+    return [...newSyncedWorships, ...refreshedLegacyWorships];
   }, [syncedVideosQuery.data]);
 
   const filtered = worships.filter((w) => {
