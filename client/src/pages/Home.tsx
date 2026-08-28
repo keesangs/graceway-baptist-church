@@ -179,15 +179,15 @@ export default function Home() {
           style={{ opacity: heroVisible ? 0.6 : 0 }}
         />
 
-        {/* Official Graceway mark — a large-scale sacred motif that gives the desktop composition a stronger right-side anchor. */}
+        {/* Official Graceway mark — a quiet, mid-scale sacred motif, offset left so the abstract background can breathe. */}
         <div
-          className="pointer-events-none absolute right-[4%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out lg:block"
+          className="pointer-events-none absolute right-[11%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out lg:block"
           style={{
-            opacity: heroVisible ? 0.2 : 0,
+            opacity: heroVisible ? 0.16 : 0,
             transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-45%) scale(0.96)",
             transitionDelay: "500ms",
-            width: "clamp(19rem, 30vw, 34rem)",
-            height: "clamp(22rem, 34vw, 38rem)",
+            width: "clamp(15rem, 21vw, 25rem)",
+            height: "clamp(17rem, 24vw, 28rem)",
           }}
         >
           <img
