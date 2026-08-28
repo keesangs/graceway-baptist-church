@@ -28,7 +28,16 @@
       "mediaType": "image/jpeg",
       "byteSize": 1746271,
       "sha256": "d2426af49df856da993a515add0650f73720fa718e154e128c30d1ad4381d9ce",
-      "usedBy": ["About hero", "About story", "Ministries Bible study"]
+      "usedBy": ["About hero", "Ministries Bible study"]
+    },
+    {
+      "id": "about-story-hero-variation",
+      "storagePath": "/manus-storage/graceway-about-story-hero-variation-2026_831d3159.png",
+      "sourceFilename": "graceway-about-story-hero-variation-2026.png",
+      "mediaType": "image/png",
+      "byteSize": 5013146,
+      "sha256": "30729bf09c879cd6e1ecc6b81ddd2326caab110cb8233aa0693c8ed70aa76cbe",
+      "usedBy": ["About story"]
     },
     {
       "id": "sermons-cover",

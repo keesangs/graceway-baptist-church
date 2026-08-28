@@ -79,7 +79,7 @@ export default function About() {
               </p>
             </div>
             <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-              <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.aboutPath} />
+              <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.aboutStory} />
             </div>
           </div>
         </div>

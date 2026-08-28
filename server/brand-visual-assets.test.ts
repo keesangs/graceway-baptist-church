@@ -10,6 +10,7 @@ describe("Refreshed Graceway visual assets", () => {
       "graceway-renewal-style-reference_dcc4d541.jpg",
       "graceway-home-ribbon-2026_8b537440.jpg",
       "graceway-about-marble-2026_83654443.jpeg",
+      "graceway-about-story-hero-variation-2026_831d3159.png",
       "graceway-sermons-current-2026_29c55360.jpg",
       "graceway-worship-current-2026_95ba9b2b.jpeg",
     ].forEach((asset) => expect(assetsSource).toContain(asset));

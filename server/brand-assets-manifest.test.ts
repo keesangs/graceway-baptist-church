@@ -17,7 +17,7 @@ const manifest = JSON.parse(
 describe("Git-tracked brand asset manifest", () => {
   it("records every refreshed public-page visual with an immutable managed-storage path", () => {
     expect(manifest.manifestVersion).toBe(1);
-    expect(manifest.assets).toHaveLength(10);
+    expect(manifest.assets).toHaveLength(11);
     manifest.assets.forEach((asset) => {
       expect(asset.storagePath).toMatch(/^\/manus-storage\/.+/);
       expect(asset.byteSize).toBeGreaterThan(0);
