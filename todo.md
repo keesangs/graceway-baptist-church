@@ -41,15 +41,11 @@
 
 ## Future Enhancements — Not Yet Implemented
 - [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
-- [ ] Meditation likes feature (members only)
-- [ ] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
-- [ ] Meditation likes behavior test: 공감 상태 조회·토글이 DB 값을 실제로 변경하고 비로그인 사용자는 거부되는지 동작 테스트 추가
-- [ ] Meditation likes E2E verification: 로그인 사용자 흐름에서 공감 수·aria-pressed·새로고침 후 유지 상태를 실제 확인
-- [ ] Meditation likes cache/render verification: 일반 /meditation 경로에서 공감 버튼이 최신 번들로 항상 표시되는지 확인
-- [ ] Meditation likes DB integration test: 실제 DB 상태에서 공감 토글이 meditation_likes 레코드와 likeCount를 함께 증감시키고 원상 복구하는지 검증
-- [ ] Meditation likes logged-in verification: 실제 로그인 세션의 일반 /meditation 경로에서 공감 버튼과 토글·새로고침 후 상태 유지 확인
-- [ ] Meditation likes render bug fix: 일반 /meditation 경로에서 공감 버튼이 누락되는 캐시·번들·세션 불일치 원인 해결 및 재검증
+- [x] Meditation likes feature (members only)
+- [x] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
 - [ ] Bible API integration for automatic scripture retrieval
+- [ ] YouVersion Korean passage normalization: 에스겔 등 한글 성경 구절 표기의 공백·물결표·대시를 정규화해 개역개정 본문 조회에 사용
+- [ ] Admin Bible automatic passage fill: 관리자 Daily Bible 입력에서 성경 구절만으로 본문을 자동 채우고 명확한 오류 상태를 표시
 - [ ] Email subscription for new meditations
 - [ ] Sermon series categorization
 - [ ] Worship team member profiles
@@ -142,13 +138,10 @@
 - [x] Footer brand tagline correction: Footer 태그라인을 ‘은혜 | 믿음 | 말씀 | 사랑 공동체’ 문구로 반영하고 검증
 - [x] About leadership labels: 리더십 섹션 라벨을 ‘섬기시는 분들’, 제목을 ‘교회 리더십’으로 수정
 - [x] About MyeongJe role: 조명제 목사의 한국어 직함을 ‘조명제 전도사’로 수정
+- [x] About join invitation copy: 함께하세요 섹션의 안내 문구를 ‘은혜의 자리로 초대합니다 — 완벽한 믿음은 필요하지 않습니다.’로 수정하고 검증
 - [x] YouTube playlist manual-sync architecture: 관리자 수동 동기화 방식과 두 플레이리스트 범위·권한 방식을 확정
 - [x] YouTube Data API credential: 서버 전용 YouTube Data API 키를 안전하게 연결하고 읽기 권한을 확인
 - [x] YouTube video persistence: 영상 ID·플레이리스트 유형·제목·게시 시각·썸네일·동기화 상태를 중복 없이 저장할 구조 추가
 - [x] YouTube playlist manual sync: 두 공개 플레이리스트를 조회해 새 영상만 등록하는 관리자 실행 동기화 구현
 - [x] Dynamic sermon and worship archives: 설교·찬양 페이지를 자동 동기화 영상 데이터에 연결하고 기존 영상 연속성 유지
 - [x] YouTube sync verification: 동기화 중복 방지·실패 처리·표시 흐름을 자동 테스트와 운영 점검으로 검증
-- [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
-- [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
-- [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
-- [ ] GitHub replacement repository bootstrap: 현재 Graceway 프로젝트의 최신 코드와 Git 이력을 새 저장소 main에 안전하게 초기 동기화

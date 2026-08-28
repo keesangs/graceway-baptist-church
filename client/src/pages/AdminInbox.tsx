@@ -274,8 +274,8 @@ export default function AdminInbox() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-center text-xs">
-              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{sermonVideosQuery.data?.length ?? 0}</strong>Sermons</div>
-              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{worshipVideosQuery.data?.length ?? 0}</strong>Worship</div>
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{sermonVideosQuery.data?.length ?? 0}</strong>Synced sermons</div>
+              <div className="rounded-md bg-[#E7EEF1] px-4 py-3 text-[#163B59]"><strong className="block text-lg">{worshipVideosQuery.data?.length ?? 0}</strong>Synced worship</div>
             </div>
           </div>
           {syncResult && <p className="mt-4 rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]">{syncResult}</p>}
