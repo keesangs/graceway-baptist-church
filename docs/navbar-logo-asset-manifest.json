@@ -1,0 +1,17 @@
+{
+  "asset": "Graceway Baptist Church reverse bilingual lockup",
+  "runtimePath": "/manus-storage/graceway-logo-dark-approved_ab158297.png",
+  "sourceProvenance": "High-resolution restoration derivative of the supplied Graceway reverse-lockup template, created at the site owner's request on 2026-08-28.",
+  "preservationRequirement": "Preserve the supplied symbol, English wordmark, Korean church name, dark-surface reverse treatment, and wide lockup composition.",
+  "format": "PNG RGBA",
+  "intrinsicSize": {
+    "width": 2012,
+    "height": 522
+  },
+  "aspectRatio": 3.8544,
+  "background": "transparent",
+  "usage": [
+    "Navbar",
+    "Footer"
+  ]
+}

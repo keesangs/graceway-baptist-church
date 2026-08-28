@@ -116,3 +116,8 @@
 - [x] Home hero mark overlap composition: 제목 영역과의 일부 겹침을 허용하고 데스크톱 심볼을 한 단계 확대·추가 좌측 배치
 - [x] Home hero mark scale: 데스크톱 공식 Graceway 심볼을 한 단계 추가 확대
 - [x] Navbar logo clarity: 호버 효과 중에도 상단 교회 로고가 깨지지 않고 선명하게 보이도록 고해상도 원본·렌더링 방식 보정
+- [x] Navbar logo high-resolution correction: 투명 배경·가로 비율을 보존한 선명한 고해상도 공식 로고 원본으로 교체하고 실제 렌더링 재검증
+- [x] Navbar approved lockup source: 승인된 고해상도 공식 역상 락업을 정확하게 분리·적용하고 자산 기록의 후보 검토 문구를 최종 상태와 일치하도록 정리
+- [x] Navbar lockup regression: 최종 내비게이션 로고 경로·고해상도 PNG 형식·가로 락업 비율을 검증하는 회귀 테스트 추가
+- [x] Navbar restored-source provenance: 사용자 제공 역상 락업 템플릿에서 고해상도 복원한 최종 자산의 출처·적용 경로를 기록하고 코드와 일치 여부 검증
+- [x] Navbar logo runtime verification: 내비게이션 로고의 최종 저장소 경로·투명 PNG 형식·가로 락업 비율을 자동 계약 테스트와 HTTP 응답으로 검증
