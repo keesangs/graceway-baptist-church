@@ -69,7 +69,7 @@ export default function Ministries() {
   const { lang } = useLang();
   const copy = lang === "ko"
     ? {
-        eyebrow: "함께하는 사역", heroTitle: "사역", heroDescription: "그레이스웨이에는 누구나 함께할 자리가 있습니다. 은사와 부르심에 맞는 사역을 찾아보세요.", featured: "주요 사역", featuredCta: "말씀 나눔 참여하기", rowCta: "함께 참여하기", moreWays: "더 함께할 수 있는 사역", ctaEyebrow: "사역에 함께하기", ctaTitle: "우리 공동체 안에서 당신의 자리를 찾아보세요", ctaDescription: "섬기고, 성장하고, 연결되기를 원하신다면 그레이스웨이에서 함께할 자리를 찾아보세요.", ctaButton: "함께하기",
+        eyebrow: "함께하는 사역", heroTitle: "Ministries", heroDescription: "그레이스웨이에는 누구나 함께할 자리가 있습니다. 은사와 부르심에 맞는 사역을 찾아보세요.", featured: "주요 사역", featuredCta: "말씀 나눔 참여하기", rowCta: "함께 참여하기", moreWays: "더 함께할 수 있는 사역", ctaEyebrow: "사역에 함께하기", ctaTitle: "우리 공동체 안에서 당신의 자리를 찾아보세요", ctaDescription: "섬기고, 성장하고, 연결되기를 원하신다면 그레이스웨이에서 함께할 자리를 찾아보세요.", ctaButton: "함께하기",
       }
     : {
         eyebrow: "Get Involved", heroTitle: "Ministries", heroDescription: "There’s a place for everyone at Graceway. Find where you belong and how you can serve.", featured: "Featured Ministry", featuredCta: "Join Bible Study", rowCta: "Get Involved", moreWays: "More Ways to Serve", ctaEyebrow: "Ready to Serve?", ctaTitle: "Find Your Place in Our Community", ctaDescription: "Whether you're looking to serve, grow, or simply connect — we'd love to help you find your place at Graceway.", ctaButton: "Get Connected",
