@@ -2,10 +2,11 @@ import { Check, Link2, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type VideoShareButtonProps = {
-  videoId: string;
+  videoId?: string;
+  url?: string;
   title: string;
   lang: "ko" | "en";
-  contentType?: "sermon" | "worship";
+  contentType?: "sermon" | "worship" | "event";
   compact?: boolean;
   className?: string;
 };
@@ -33,10 +34,10 @@ async function copyToClipboard(value: string) {
 
 /**
  * Uses the operating system's share sheet when available. On desktop and older
- * browsers it copies the canonical YouTube link, which users can paste into
+ * browsers it copies the canonical content link, which users can paste into
  * KakaoTalk or any social platform.
  */
-export function VideoShareButton({ videoId, title, lang, contentType = "sermon", compact = false, className = "" }: VideoShareButtonProps) {
+export function VideoShareButton({ videoId, url, title, lang, contentType = "sermon", compact = false, className = "" }: VideoShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
 
@@ -51,7 +52,7 @@ export function VideoShareButton({ videoId, title, lang, contentType = "sermon",
 
   const copyLink = async () => {
     try {
-      await copyToClipboard(videoUrl(videoId));
+      await copyToClipboard(url ?? videoUrl(videoId ?? ""));
       setCopied(true);
     } catch {
       setError(true);
@@ -59,7 +60,7 @@ export function VideoShareButton({ videoId, title, lang, contentType = "sermon",
   };
 
   const share = async () => {
-    const url = videoUrl(videoId);
+    const shareUrl = url ?? videoUrl(videoId ?? "");
     const text = lang === "ko" ? `${title} | 그레이스웨이 침례교회` : `${title} | Graceway Baptist Church`;
 
     if (typeof navigator.share !== "function") {
@@ -68,7 +69,7 @@ export function VideoShareButton({ videoId, title, lang, contentType = "sermon",
     }
 
     try {
-      await navigator.share({ title, text, url });
+      await navigator.share({ title, text, url: shareUrl });
     } catch (shareError) {
       if (shareError instanceof DOMException && shareError.name === "AbortError") return;
       await copyLink();
@@ -77,7 +78,9 @@ export function VideoShareButton({ videoId, title, lang, contentType = "sermon",
 
   const videoTypeLabel = contentType === "worship"
     ? (lang === "ko" ? "찬양 영상" : "worship video")
-    : (lang === "ko" ? "설교 영상" : "sermon video");
+    : contentType === "event"
+      ? (lang === "ko" ? "추천 행사" : "featured event")
+      : (lang === "ko" ? "설교 영상" : "sermon video");
   const label = copied
     ? (lang === "ko" ? "링크가 복사되었습니다" : "Link copied")
     : (lang === "ko" ? `${videoTypeLabel} 공유하기` : `Share ${videoTypeLabel}`);

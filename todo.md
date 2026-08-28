@@ -169,6 +169,10 @@
 - [x] Events interaction tests: 유형 필터·Google Calendar URL·반응형 행사 카드 상호작용 회귀 테스트 추가
 - [x] Featured special event banner: 가장 가까운 공개 특별 행사를 일정 캘린더 상단에 자동 강조하고 행사 상세·개인 캘린더 링크로 연결
 - [x] Featured special event tests: 특별 행사 우선 선정·빈 상태·양언어 배너·날짜 상세 연결 회귀 테스트 추가
+- [x] Featured event countdown: 추천 행사 시작 시각까지 남은 일·시간·분을 실시간으로 보여주는 접근 가능한 카운트다운 추가
+- [x] Featured event sharing: 추천 행사 배너의 기기 공유·클립보드 대체 동작과 공유 상태 안내 추가
+- [x] Featured event detail scroll: 추천 행사 배너 클릭 시 해당 행사 상세 카드를 선택·표시하고 부드럽게 이동하도록 앵커 연결
+- [x] Featured event interaction tests: 카운트다운 계산·공유 대체 흐름·상세 카드 이동 연결의 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

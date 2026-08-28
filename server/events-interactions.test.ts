@@ -2,9 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createGoogleCalendarUrl } from "../client/src/lib/googleCalendar";
+import { getCountdownParts } from "../client/src/lib/eventCountdown";
 
 const eventsSource = readFileSync(resolve(process.cwd(), "client/src/pages/Events.tsx"), "utf8");
 const routersSource = readFileSync(resolve(process.cwd(), "server/routers.ts"), "utf8");
+const shareSource = readFileSync(resolve(process.cwd(), "client/src/components/VideoShareButton.tsx"), "utf8");
 
 describe("event card interactions", () => {
   it("builds a Google Calendar template URL with timed event details and church timezone", () => {
@@ -59,5 +61,29 @@ describe("event card interactions", () => {
     expect(eventsSource).toContain("Featured event");
     expect(eventsSource).toContain("showFeaturedDate");
     expect(eventsSource).toContain("내 캘린더에 추가");
+  });
+
+  it("calculates a readable countdown and announces when the featured event has started", () => {
+    expect(getCountdownParts("2026-09-08T04:35:00.000Z", new Date("2026-09-06T03:04:00.000Z"))).toEqual({
+      hasStarted: false,
+      days: 2,
+      hours: 1,
+      minutes: 31,
+    });
+    expect(getCountdownParts("2026-09-06T03:03:00.000Z", new Date("2026-09-06T03:04:00.000Z"))).toEqual({
+      hasStarted: true,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+    });
+  });
+
+  it("connects the featured banner to its selected detail card and uses the accessible share control", () => {
+    expect(eventsSource).toContain("FeaturedCountdown");
+    expect(eventsSource).toContain("featuredCardId");
+    expect(eventsSource).toContain('scrollIntoView({ behavior: "smooth", block: "center" })');
+    expect(eventsSource).toContain('contentType="event"');
+    expect(shareSource).toContain('contentType === "event"');
+    expect(shareSource).toContain("추천 행사");
   });
 });

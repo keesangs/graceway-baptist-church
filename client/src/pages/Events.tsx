@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,6 +7,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { createGoogleCalendarUrl } from "@/lib/googleCalendar";
+import { getCountdownParts } from "@/lib/eventCountdown";
+import { VideoShareButton } from "@/components/VideoShareButton";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 const churchDateParts = new Intl.DateTimeFormat("en-US", {
@@ -78,7 +80,31 @@ function formatEventDate(event: EventOccurrence, lang: "ko" | "en") {
   });
 }
 
-function EventCard({ event, lang }: { event: EventOccurrence; lang: "ko" | "en" }) {
+function FeaturedCountdown({ startAt, lang }: { startAt: Date | string; lang: "ko" | "en" }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const countdown = getCountdownParts(startAt, now);
+  if (countdown.hasStarted) {
+    return <p className="mt-4 text-sm font-medium text-[#E5C484]">{lang === "ko" ? "행사가 시작되었습니다" : "This event has started"}</p>;
+  }
+
+  const units = [
+    [countdown.days, lang === "ko" ? "일" : "Days"],
+    [countdown.hours, lang === "ko" ? "시간" : "Hours"],
+    [countdown.minutes, lang === "ko" ? "분" : "Min"],
+  ] as const;
+  return (
+    <dl aria-label={lang === "ko" ? "행사 시작까지 남은 시간" : "Time remaining until the event"} className="mt-5 flex flex-wrap gap-2">
+      {units.map(([value, label]) => <div key={label} className="min-w-15 rounded-sm border border-white/15 bg-white/8 px-3 py-2 text-center"><dd className="font-serif text-xl font-semibold leading-none text-white">{String(value).padStart(2, "0")}</dd><dt className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-[#D7E4EA]">{label}</dt></div>)}
+    </dl>
+  );
+}
+
+function EventCard({ event, lang, id }: { event: EventOccurrence; lang: "ko" | "en"; id?: string }) {
   const title = lang === "en" && event.titleEn ? event.titleEn : event.titleKo;
   const venue = lang === "en" && event.venueEn ? event.venueEn : event.venueKo;
   const description = lang === "en" && event.descriptionEn ? event.descriptionEn : event.descriptionKo;
@@ -91,7 +117,7 @@ function EventCard({ event, lang }: { event: EventOccurrence; lang: "ko" | "en" 
     description,
   });
   return (
-    <article className="group rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5 transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:border-[#B9955E]/65 hover:shadow-[0_16px_30px_rgba(22,59,89,0.12)] focus-within:-translate-y-1 focus-within:border-[#B9955E]/65 focus-within:shadow-[0_16px_30px_rgba(22,59,89,0.12)] motion-reduce:transform-none motion-reduce:transition-none">
+    <article id={id} className="group scroll-mt-24 rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5 transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:border-[#B9955E]/65 hover:shadow-[0_16px_30px_rgba(22,59,89,0.12)] focus-within:-translate-y-1 focus-within:border-[#B9955E]/65 focus-within:shadow-[0_16px_30px_rgba(22,59,89,0.12)] motion-reduce:transform-none motion-reduce:transition-none">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-sm bg-[#F6F0E5] px-2 py-1 text-[0.68rem] font-semibold tracking-wide text-[#8A6420]">{eventTypeLabels[event.eventType][lang]}</span>
         {event.isRecurring && <span className="rounded-sm bg-[#E7EEF1] px-2 py-1 text-[0.68rem] font-semibold tracking-wide text-[#607A91]">{lang === "ko" ? "매주" : "Weekly"}</span>}
@@ -145,6 +171,7 @@ export default function Events() {
     location: featuredVenue,
     description: featuredDescription,
   }) : "";
+  const featuredCardId = featuredSpecial ? `event-occurrence-${featuredSpecial.seriesId}-${dateKey(featuredSpecial.occurrenceStart)}` : "";
 
   const showFeaturedDate = () => {
     if (!featuredSpecial) return;
@@ -152,7 +179,7 @@ export default function Events() {
     setMonth(new Date(start.getFullYear(), start.getMonth(), 1));
     setSelectedDate(calendarDate(dateKey(featuredSpecial.occurrenceStart)));
     setEventFilter("all");
-    document.getElementById("events-calendar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => document.getElementById(featuredCardId)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
   };
 
   return (
@@ -168,7 +195,7 @@ export default function Events() {
 
       <main className="container flex-1 py-12 md:py-16">
         {featuredSpecial && (
-          <section aria-labelledby="featured-event-title" className="relative mb-10 overflow-hidden rounded-xl border border-[#B9955E]/40 bg-[#163B59] px-6 py-7 text-white shadow-[0_18px_36px_rgba(22,59,89,0.17)] sm:px-8 sm:py-8">
+          <section aria-labelledby="featured-event-title" onClick={event => { if (!(event.target as HTMLElement).closest("a, button")) showFeaturedDate(); }} className="relative mb-10 cursor-pointer overflow-hidden rounded-xl border border-[#B9955E]/40 bg-[#163B59] px-6 py-7 text-white shadow-[0_18px_36px_rgba(22,59,89,0.17)] sm:px-8 sm:py-8">
             <div aria-hidden="true" className="absolute -right-20 -top-28 size-72 rounded-full border border-[#C9973E]/25" />
             <div aria-hidden="true" className="absolute right-12 top-8 size-32 rounded-full bg-[#2F6F9F]/25 blur-3xl" />
             <div className="relative grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -181,6 +208,7 @@ export default function Events() {
                   {featuredVenue && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[#E5C484]" />{featuredVenue}</span>}
                 </div>
                 {featuredDescription && <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-6 text-[#D7E4EA]">{featuredDescription}</p>}
+                <FeaturedCountdown startAt={featuredSpecial.occurrenceStart} lang={lang} />
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
                 <button type="button" onClick={showFeaturedDate} className="inline-flex items-center gap-2 rounded-sm bg-[#C9973E] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color] duration-200 hover:bg-[#E5C484] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
@@ -189,6 +217,7 @@ export default function Events() {
                 <a href={featuredCalendarUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm border border-white/40 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 hover:border-[#E5C484] hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
                   <CalendarPlus className="size-4 text-[#E5C484]" />{lang === "ko" ? "내 캘린더에 추가" : "Add to my calendar"}
                 </a>
+                <VideoShareButton title={featuredTitle} url={`${window.location.origin}/events#${featuredCardId}`} lang={lang} contentType="event" className="border-white/40 bg-white/5 text-white hover:border-[#E5C484] hover:bg-white/10 hover:text-white" />
               </div>
             </div>
           </section>
@@ -233,7 +262,7 @@ export default function Events() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">{selectedDate ? (lang === "ko" ? "선택한 날짜" : "Selected date") : (lang === "ko" ? "행사 안내" : "Event details")}</p>
             <h2 className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{selectedDate ? selectedDate.toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", { month: "long", day: "numeric", weekday: "long" }) : (lang === "ko" ? "날짜를 선택하세요" : "Select a date")}</h2>
             <div className="mt-5 space-y-3">
-              {eventsQuery.isLoading ? <p className="text-sm text-[#607A91]">{lang === "ko" ? "일정을 불러오는 중입니다…" : "Loading events…"}</p> : selectedDate && selectedEvents.length ? selectedEvents.map(event => <EventCard key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`} event={event} lang={lang} />) : <div className="rounded-lg bg-[#F4F6F7] px-4 py-6 text-sm leading-6 text-[#607A91]">{selectedDate ? (lang === "ko" ? "선택한 날짜에 공개된 일정이 없습니다." : "There are no published events on this date.") : (lang === "ko" ? "달력에서 금색으로 강조된 날짜를 선택해 일정과 장소를 확인하세요." : "Select a gold-highlighted date on the calendar to see event times and locations.")}</div>}
+              {eventsQuery.isLoading ? <p className="text-sm text-[#607A91]">{lang === "ko" ? "일정을 불러오는 중입니다…" : "Loading events…"}</p> : selectedDate && selectedEvents.length ? selectedEvents.map(event => <EventCard key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`} id={`event-occurrence-${event.seriesId}-${dateKey(event.occurrenceStart)}`} event={event} lang={lang} />) : <div className="rounded-lg bg-[#F4F6F7] px-4 py-6 text-sm leading-6 text-[#607A91]">{selectedDate ? (lang === "ko" ? "선택한 날짜에 공개된 일정이 없습니다." : "There are no published events on this date.") : (lang === "ko" ? "달력에서 금색으로 강조된 날짜를 선택해 일정과 장소를 확인하세요." : "Select a gold-highlighted date on the calendar to see event times and locations.")}</div>}
             </div>
           </section>
         </div>
