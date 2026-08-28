@@ -19,8 +19,8 @@ export default function Footer() {
       <div className="h-px bg-gradient-to-r from-transparent via-[#B9955E] to-transparent" />
 
       <div className="container py-14 md:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[380px_200px_minmax(0,1fr)_minmax(0,1fr)] lg:gap-8">
+          <div>
             <div className="mb-5 w-[13.5rem]">
               <BrandLogo variant="on-dark" />
             </div>
