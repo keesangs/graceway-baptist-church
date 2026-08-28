@@ -8,6 +8,7 @@ describe("About join section", () => {
   it("keeps the join heading, description, and visit CTA centered", () => {
     expect(aboutSource).toContain('className="py-20 bg-white text-center"');
     expect(aboutSource).toContain('className="container max-w-xl mx-auto"');
+    expect(aboutSource).toContain('className="mb-4 whitespace-pre-line text-[#17324D]"');
     expect(aboutSource).toContain('href="/connect"');
     expect(aboutSource).toContain('className="inline-flex items-center gap-2 px-8 py-3.5');
   });

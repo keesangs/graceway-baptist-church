@@ -176,7 +176,7 @@ export default function About() {
         <div className="container max-w-xl mx-auto">
           <p className="text-[#C9973E] text-xs tracking-[0.3em] uppercase font-semibold mb-3">{t("about.joinUs")}</p>
           <h2
-            className="text-[#17324D] mb-4"
+            className="mb-4 whitespace-pre-line text-[#17324D]"
             style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.2rem)", fontWeight: 700 }}
           >
             {t("about.joinCTA")}
