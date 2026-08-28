@@ -59,7 +59,7 @@ export default function Navbar() {
       >
         <Link
           href="/"
-          className={`group block transition-[width,transform] duration-300 ease-out hover:scale-[1.018] ${
+          className={`group block transform-gpu will-change-transform transition-[width,transform] duration-300 ease-out hover:scale-[1.012] ${
             scrolled ? "w-[8.8rem] sm:w-[11rem]" : "w-[10.6rem] sm:w-[13.5rem]"
           }`}
         >

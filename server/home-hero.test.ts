@@ -5,11 +5,11 @@ import { describe, expect, it } from "vitest";
 const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
 
 describe("Home hero brand mark", () => {
-  it("uses a larger, left-centered desktop-only official Graceway mark behind readable content", () => {
+  it("uses a prominent, left-centered desktop-only official Graceway mark behind readable content", () => {
     expect(homeSource).toContain("ease-out");
     expect(homeSource).toContain("lg:block");
-    expect(homeSource).toContain('width: "clamp(14rem, 20vw, 24rem)"');
-    expect(homeSource).toContain('height: "clamp(16rem, 23vw, 27rem)"');
+    expect(homeSource).toContain('width: "clamp(16rem, 24vw, 28rem)"');
+    expect(homeSource).toContain('height: "clamp(18rem, 27vw, 31rem)"');
     expect(homeSource).toContain("right-[35%]");
     expect(homeSource).toContain("xl:right-[44%]");
     expect(homeSource).toContain("opacity: heroVisible ? 0.13 : 0");

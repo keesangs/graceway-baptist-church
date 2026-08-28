@@ -10,7 +10,7 @@ describe("public page brand assets", () => {
   it("uses the supplied official lockup in both light and reverse variants", () => {
     expect(brandLogoSources).toEqual({
       "on-light": "/manus-storage/graceway-logo-light_4da05d65.png",
-      "on-dark": "/manus-storage/graceway-logo-dark_65272897.png",
+      "on-dark": "/manus-storage/graceway-logo-dark-4x_554f394d.png",
     });
   });
 });

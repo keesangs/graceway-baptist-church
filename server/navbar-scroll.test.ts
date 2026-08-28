@@ -11,5 +11,7 @@ describe("Sticky shrinking navigation", () => {
     expect(navbarSource).toContain('scrolled ? "h-[3.75rem] md:h-[4.25rem]" : "h-[4.5rem] md:h-[5.25rem]"');
     expect(navbarSource).toContain('scrolled ? "w-[8.8rem] sm:w-[11rem]" : "w-[10.6rem] sm:w-[13.5rem]"');
     expect(navbarSource).toContain('scrolled ? "gap-4 lg:gap-5" : "gap-5 lg:gap-6"');
+    expect(navbarSource).toContain("transform-gpu will-change-transform");
+    expect(navbarSource).toContain("hover:scale-[1.012]");
   });
 });

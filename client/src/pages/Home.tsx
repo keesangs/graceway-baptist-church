@@ -179,15 +179,15 @@ export default function Home() {
           style={{ opacity: heroVisible ? 0.6 : 0 }}
         />
 
-        {/* Official Graceway mark — a larger, centered background motif that may cross the title zone while remaining behind readable content. */}
+        {/* Official Graceway mark — a prominent, centered background motif that may cross the title zone while remaining behind readable content. */}
         <div
           className="pointer-events-none absolute z-0 right-[35%] top-1/2 hidden select-none transition-all duration-[1600ms] ease-out xl:right-[44%] lg:block"
           style={{
             opacity: heroVisible ? 0.13 : 0,
             transform: heroVisible ? "translateY(-50%) scale(1)" : "translateY(-45%) scale(0.96)",
             transitionDelay: "500ms",
-            width: "clamp(14rem, 20vw, 24rem)",
-            height: "clamp(16rem, 23vw, 27rem)",
+            width: "clamp(16rem, 24vw, 28rem)",
+            height: "clamp(18rem, 27vw, 31rem)",
           }}
         >
           <img
