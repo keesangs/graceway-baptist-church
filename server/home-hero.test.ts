@@ -5,15 +5,15 @@ import { describe, expect, it } from "vitest";
 const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
 
 describe("Home hero brand mark", () => {
-  it("uses a restrained desktop-only official Graceway mark without constraining tablet content", () => {
+  it("uses a larger, left-centered desktop-only official Graceway mark behind readable content", () => {
     expect(homeSource).toContain("ease-out");
     expect(homeSource).toContain("lg:block");
-    expect(homeSource).toContain('width: "clamp(12rem, 16vw, 20rem)"');
-    expect(homeSource).toContain('height: "clamp(14rem, 19vw, 23rem)"');
-    expect(homeSource).toContain("right-[24%]");
-    expect(homeSource).toContain("xl:right-[32%]");
+    expect(homeSource).toContain('width: "clamp(14rem, 20vw, 24rem)"');
+    expect(homeSource).toContain('height: "clamp(16rem, 23vw, 27rem)"');
+    expect(homeSource).toContain("right-[35%]");
+    expect(homeSource).toContain("xl:right-[44%]");
     expect(homeSource).toContain("opacity: heroVisible ? 0.13 : 0");
-    expect(homeSource).toContain("absolute z-0 right-[24%]");
+    expect(homeSource).toContain("absolute z-0 right-[35%]");
     expect(homeSource).toContain('className="relative z-10 container pt-24 pb-32"');
   });
 
