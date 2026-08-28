@@ -131,3 +131,4 @@
 - [x] Sermons hero copy correction: 설교 페이지 히어로 설명을 ‘매주일 선포되는 주일예배 설교영상과 기타 말씀영상 라이브러리’ 문구로 반영하고 검증
 - [x] About join section alignment: 소개 페이지 함께하세요 섹션의 제목·설명·CTA를 중앙 정렬로 변경
 - [x] About join heading line break: 함께하세요 제목을 ‘매 주일, 여러분을 위한 자리가’와 ‘준비되어 있습니다.’의 두 줄로 표시
+- [x] Worship hero copy correction: 찬양 페이지 히어로 설명을 ‘매주일 올려드리는 주일예배 찬양영상 라이브러리’ 문구로 반영하고 검증

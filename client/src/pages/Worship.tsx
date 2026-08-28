@@ -155,7 +155,7 @@ export default function Worship() {
       <BrandPageHero
         eyebrow={lang === "ko" ? "찬양" : "Worship"}
         title={lang === "ko" ? "주일예배 찬양" : "Sunday Worship"}
-        description={lang === "ko" ? "주일 예배 시간에 함께 드린 찬양 영상입니다." : "Worship videos from our Sunday services."}
+        description={lang === "ko" ? "매주일 올려드리는 주일예배 찬양영상 라이브러리" : "Worship videos from our Sunday services."}
         visual="community"
         imageSrc={brandVisualAssets.worshipCover}
       />
