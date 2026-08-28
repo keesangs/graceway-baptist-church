@@ -133,3 +133,5 @@
 - [x] About join heading line break: 함께하세요 제목을 ‘매 주일, 여러분을 위한 자리가’와 ‘준비되어 있습니다.’의 두 줄로 표시
 - [x] Worship hero copy correction: 찬양 페이지 히어로 설명을 ‘매주일 올려드리는 주일예배 찬양영상 라이브러리’ 문구로 반영하고 검증
 - [x] Footer brand tagline correction: Footer 태그라인을 ‘은혜 | 믿음 | 말씀 | 사랑 공동체’ 문구로 반영하고 검증
+- [x] About leadership labels: 리더십 섹션 라벨을 ‘섬기시는 분들’, 제목을 ‘교회 리더십’으로 수정
+- [x] About MyeongJe role: 조명제 목사의 한국어 직함을 ‘조명제 전도사’로 수정

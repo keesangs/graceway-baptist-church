@@ -37,7 +37,7 @@ const staff = [
     ministryEn: "Bridgeway Baptist Church, Palo Alto (Associate Pastor) | Graceway Baptist Church, Fremont (Lead Pastor)",
     ministryKo: "Bridgeway Baptist Church, Palo Alto 전도사 | Graceway Baptist Church, Fremont 담임목사",
   },
-  { nameEn: "Pastor MyeongJe Cho", nameKo: "조명제 목사", roleEn: "Pastoral Staff", roleKo: "목회 스태프", img: MYEONGJE_IMG },
+  { nameEn: "Pastor MyeongJe Cho", nameKo: "조명제 전도사", roleEn: "Pastoral Staff", roleKo: "목회 스태프", img: MYEONGJE_IMG },
 ];
 
 export default function About() {
