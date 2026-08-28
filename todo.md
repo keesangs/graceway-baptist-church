@@ -150,6 +150,7 @@
 - [x] Dynamic sermon and worship archives: 설교·찬양 페이지를 자동 동기화 영상 데이터에 연결하고 기존 영상 연속성 유지
 - [x] YouTube sync verification: 동기화 중복 방지·실패 처리·표시 흐름을 자동 테스트와 운영 점검으로 검증
 - [x] Worship archive thumbnail refresh: 2026-08-09 이전 찬양 영상의 YouTube 플레이리스트 최신 썸네일을 저장·표시 데이터에 반영
+- [x] Ministries Korean localization: 사역 페이지 히어로·사역 카드·설명·CTA를 자연스러운 한국어로 현지화하고 KO/EN 전환 검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
