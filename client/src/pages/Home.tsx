@@ -369,8 +369,13 @@ export default function Home() {
               </Link>
             </div>
             <div className="lg:col-span-7 relative">
-              <div className="aspect-[16/10] rounded-sm overflow-hidden shadow-2xl">
-                <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.homeStory} />
+              <div className="group aspect-[16/10] rounded-sm overflow-hidden shadow-2xl">
+                <BrandAbstractVisual
+                  kind="path"
+                  imageSrc={brandVisualAssets.aboutStory}
+                  imageClassName="will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
+                  showPathMotif={false}
+                />
               </div>
               <div className="absolute -bottom-8 -left-4 lg:-left-8 bg-[#17324D] text-white p-5 rounded-sm shadow-xl max-w-[200px]">
                 <div className="w-6 h-px bg-[#C9973E] mb-3" />

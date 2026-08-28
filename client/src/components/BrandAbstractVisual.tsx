@@ -11,16 +11,17 @@ type BrandAbstractVisualProps = {
   kind: BrandAbstractVisualKind;
   imageSrc?: string;
   className?: string;
+  imageClassName?: string;
   showPathMotif?: boolean;
 };
 
-export function BrandAbstractVisual({ kind, imageSrc, className = "", showPathMotif = true }: BrandAbstractVisualProps) {
+export function BrandAbstractVisual({ kind, imageSrc, className = "", imageClassName = "", showPathMotif = true }: BrandAbstractVisualProps) {
   return (
     <div
       aria-hidden="true"
       className={`relative isolate h-full w-full overflow-hidden bg-[#17324D] ${className}`}
     >
-      {imageSrc && <img src={imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+      {imageSrc && <img src={imageSrc} alt="" className={`absolute inset-0 h-full w-full object-cover ${imageClassName}`} />}
       <div className={`absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(86,112,138,0.74),transparent_38%),linear-gradient(140deg,#102b45_0%,#163B59_52%,#0d2035_100%)] ${imageSrc ? "opacity-60" : ""}`} />
       <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(rgba(244,242,236,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,242,236,0.025)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full border border-[#C9973E]/20" />

@@ -78,8 +78,13 @@ export default function About() {
                   : "Today, Graceway continues to grow as a congregation committed to discipleship, worship, and service — in our neighborhood, our city, and beyond."}
               </p>
             </div>
-            <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-              <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.aboutStory} showPathMotif={false} />
+            <div className="group aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
+              <BrandAbstractVisual
+                kind="path"
+                imageSrc={brandVisualAssets.aboutStory}
+                imageClassName="will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
+                showPathMotif={false}
+              />
             </div>
           </div>
         </div>

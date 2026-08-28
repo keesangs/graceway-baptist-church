@@ -37,7 +37,7 @@
       "mediaType": "image/png",
       "byteSize": 6178800,
       "sha256": "8ae2cdf76b75a0777da05fccbfc5ac6d7e3057ec7f5408571a41d722cd5e040c",
-      "usedBy": ["About story"]
+      "usedBy": ["Home story", "About story"]
     },
     {
       "id": "sermons-cover",

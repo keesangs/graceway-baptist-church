@@ -123,3 +123,5 @@
 - [x] Navbar logo runtime verification: 내비게이션 로고의 최종 저장소 경로·투명 PNG 형식·가로 락업 비율을 자동 계약 테스트와 HTTP 응답으로 검증
 - [x] About story visual refresh: 소개 페이지 우리 이야기 섹션 우측 이미지를 상단 히어로 모티프 기반의 새 브랜드 변형 비주얼로 교체
 - [x] About story visual cross-free refresh: 우리 이야기 이미지의 불완전한 십자가 형태를 제거하고 동일 팔레트의 새 추상 빛 흐름 비주얼로 교체
+- [x] Home story visual alignment: Home 우리 이야기 우측 이미지에도 About의 새 물빛 길 이미지를 동일하게 적용
+- [x] Story visual hover zoom: Home·About 우리 이야기 이미지에 프레임을 유지하는 부드러운 호버 확대 효과 추가

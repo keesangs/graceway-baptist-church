@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const assetsSource = readFileSync(resolve(process.cwd(), "client/src/lib/brandVisualAssets.ts"), "utf8");
 const aboutSource = readFileSync(resolve(process.cwd(), "client/src/pages/About.tsx"), "utf8");
+const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
 
 describe("Refreshed Graceway visual assets", () => {
   it("provides a hosted refreshed visual for each of the primary public page contexts", () => {
@@ -24,5 +25,13 @@ describe("Refreshed Graceway visual assets", () => {
   it("uses the cross-free river-light image without the path marker in the About story panel", () => {
     expect(aboutSource).toContain("imageSrc={brandVisualAssets.aboutStory}");
     expect(aboutSource).toContain("showPathMotif={false}");
+  });
+
+  it("shares the river-light visual and smooth hover zoom across the Home and About story panels", () => {
+    [homeSource, aboutSource].forEach((source) => {
+      expect(source).toContain("imageSrc={brandVisualAssets.aboutStory}");
+      expect(source).toContain("group-hover:scale-[1.045]");
+      expect(source).toContain("motion-reduce:transition-none");
+    });
   });
 });
