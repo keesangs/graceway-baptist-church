@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 const connectSource = readFileSync(resolve(process.cwd(), "client/src/pages/Connect.tsx"), "utf8");
 
 describe("first-time visitor FAQ", () => {
-  it("uses the refined Korean FAQ heading", () => {
-    expect(connectSource).toContain('ko ? "처음 오시는 분들을 위한 안내입니다" : "What to Expect"');
+  it("uses the requested Korean FAQ heading", () => {
+    expect(connectSource).toContain('ko ? "새로 오시는 분들을 위한 안내" : "What to Expect"');
   });
 
   it("answers how long Sunday worship lasts and invites guests to meal fellowship", () => {
@@ -19,5 +19,9 @@ describe("first-time visitor FAQ", () => {
     expect(connectSource).toContain('qKo: "예배는 어떻게 진행되나요?"');
     expect(connectSource).toContain("예배는 약 한시간 가량 진행됩니다");
     expect(connectSource).toContain("Services last approximately 60 minutes");
+  });
+
+  it("explains that childcare can be provided when visitors contact the church in advance", () => {
+    expect(connectSource).toContain("미리 연락을 주시면, 주일 예배 중 Child care를 제공하도록 하겠습니다");
   });
 });

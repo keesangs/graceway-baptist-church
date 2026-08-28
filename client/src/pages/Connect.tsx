@@ -33,7 +33,7 @@ const faqs = [
   { qEn: "Is there parking available?", qKo: "주차할 곳이 있나요?", aEn: "Yes, free parking is available in the lot next to the building. Look for the Graceway signs.", aKo: "네, 건물 옆 주차장을 무료로 이용하실 수 있습니다. 그레이스웨이 표지판을 찾아 주세요." },
   { qEn: "How long does the service usually last?", qKo: "예배시간은 보통 얼마나 걸리나요?", aEn: "Sunday worship usually lasts about one hour. We also share a meal afterward, so please join us for fellowship.", aKo: "주일 예배는 보통 한 시간 정도 진행됩니다. 예배 후에는 맛있는 음식을 나누며 식사 교제도 있으니, 꼭 함께해 주세요." },
   { qEn: "What happens during the service?", qKo: "예배는 어떻게 진행되나요?", aEn: "Our Sunday service includes worship music, prayer, a Scripture-based sermon, and time for community. Services last approximately 60 minutes.", aKo: "주일 예배에는 찬양과 기도, 성경 말씀을 중심으로 한 설교, 그리고 교제의 시간이 포함됩니다. 예배는 약 한시간 가량 진행됩니다." },
-  { qEn: "Is there childcare available?", qKo: "어린이 돌봄이 있나요?", aEn: "Yes! We offer children’s classes from nursery through fifth grade during Sunday worship.", aKo: "네! 주일 예배 중 영아부부터 초등학교 5학년까지 어린이 예배 및 교실이 운영됩니다." },
+  { qEn: "Is there childcare available?", qKo: "어린이 돌봄이 있나요?", aEn: "Yes! We offer children’s classes from nursery through fifth grade during Sunday worship.", aKo: "네! 미리 연락을 주시면, 주일 예배 중 Child care를 제공하도록 하겠습니다." },
   { qEn: "Do I need to be a Christian to attend?", qKo: "그리스도인이 아니어도 참석할 수 있나요?", aEn: "Absolutely not. We welcome everyone — whether you’re exploring faith for the first time or returning after years away.", aKo: "물론입니다. 처음 신앙을 알아가는 분도, 오랜 시간이 지난 뒤 다시 교회를 찾는 분도 모두 환영합니다." },
 ];
 
@@ -311,7 +311,7 @@ export default function Connect() {
               className="text-[#17324D]"
               style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.6rem, 3.5vw, 2.2rem)", fontWeight: 700 }}
             >
-              {ko ? "처음 오시는 분들을 위한 안내입니다" : "What to Expect"}
+              {ko ? "새로 오시는 분들을 위한 안내" : "What to Expect"}
             </h2>
             <div className="gold-rule w-16 mx-auto mt-4" />
           </div>
