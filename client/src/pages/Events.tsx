@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, ChevronRight, Clock3, MapPin } from "lucide-react";
+import { CalendarDays, CalendarPlus, ChevronRight, Clock3, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { Calendar } from "@/components/ui/calendar";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
+import { createGoogleCalendarUrl } from "@/lib/googleCalendar";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 const churchDateParts = new Intl.DateTimeFormat("en-US", {
@@ -30,6 +31,9 @@ type EventOccurrence = {
   eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
   isRecurring: boolean;
 };
+
+type EventType = EventOccurrence["eventType"];
+type EventFilter = "all" | EventType;
 
 function dateKey(value: Date | string) {
   const parts = Object.fromEntries(churchDateParts.formatToParts(new Date(value)).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
@@ -69,8 +73,16 @@ function EventCard({ event, lang }: { event: EventOccurrence; lang: "ko" | "en" 
   const title = lang === "en" && event.titleEn ? event.titleEn : event.titleKo;
   const venue = lang === "en" && event.venueEn ? event.venueEn : event.venueKo;
   const description = lang === "en" && event.descriptionEn ? event.descriptionEn : event.descriptionKo;
+  const googleCalendarUrl = createGoogleCalendarUrl({
+    title,
+    start: event.occurrenceStart,
+    end: event.occurrenceEnd,
+    allDay: Boolean(event.allDay),
+    location: venue,
+    description,
+  });
   return (
-    <article className="group rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5 transition-all duration-200 hover:border-[#B9955E]/55 hover:shadow-[0_10px_24px_rgba(22,59,89,0.07)]">
+    <article className="group rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5 transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:border-[#B9955E]/65 hover:shadow-[0_16px_30px_rgba(22,59,89,0.12)] focus-within:-translate-y-1 focus-within:border-[#B9955E]/65 focus-within:shadow-[0_16px_30px_rgba(22,59,89,0.12)] motion-reduce:transform-none motion-reduce:transition-none">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-sm bg-[#F6F0E5] px-2 py-1 text-[0.68rem] font-semibold tracking-wide text-[#8A6420]">{eventTypeLabels[event.eventType][lang]}</span>
         {event.isRecurring && <span className="rounded-sm bg-[#E7EEF1] px-2 py-1 text-[0.68rem] font-semibold tracking-wide text-[#607A91]">{lang === "ko" ? "매주" : "Weekly"}</span>}
@@ -81,6 +93,12 @@ function EventCard({ event, lang }: { event: EventOccurrence; lang: "ko" | "en" 
         {venue && <span className="inline-flex items-center gap-1.5"><MapPin className="size-3.5 text-[#B07834]" />{venue}</span>}
       </div>
       {description && <p className="mt-3 whitespace-pre-line text-sm leading-6 text-[#44515C]">{description}</p>}
+      <div className="mt-5 flex justify-end border-t border-[#DCE4E7]/85 pt-4">
+        <a href={googleCalendarUrl} target="_blank" rel="noreferrer" aria-label={lang === "ko" ? `${title}을 Google Calendar에 추가` : `Add ${title} to Google Calendar`} className="inline-flex items-center gap-1.5 rounded-sm border border-[#B9955E]/50 bg-white px-3 py-2 text-xs font-semibold text-[#163B59] transition-[transform,background-color,border-color] duration-200 hover:border-[#B9955E] hover:bg-[#F6F0E5] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none">
+          <CalendarPlus className="size-3.5 text-[#B07834]" />
+          {lang === "ko" ? "Google Calendar에 추가" : "Add to Google Calendar"}
+        </a>
+      </div>
     </article>
   );
 }
@@ -89,15 +107,22 @@ export default function Events() {
   const { lang, t } = useLang();
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [eventFilter, setEventFilter] = useState<EventFilter>("all");
   const range = useMemo(() => monthRange(month), [month]);
   const rangeInput = useMemo(() => ({ start: range.start, end: range.end }), [range]);
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
   const upcomingQuery = trpc.events.upcoming.useQuery();
   const occurrences = (eventsQuery.data ?? []) as EventOccurrence[];
+  const filteredOccurrences = useMemo(() => eventFilter === "all" ? occurrences : occurrences.filter(event => event.eventType === eventFilter), [eventFilter, occurrences]);
   const selectedKey = selectedDate ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}` : null;
-  const selectedEvents = selectedKey ? occurrences.filter(event => dateKey(event.occurrenceStart) === selectedKey) : [];
-  const eventDates = useMemo(() => Array.from(new Set(occurrences.map(event => dateKey(event.occurrenceStart)))).map(calendarDate), [occurrences]);
+  const selectedEvents = selectedKey ? filteredOccurrences.filter(event => dateKey(event.occurrenceStart) === selectedKey) : [];
+  const eventDates = useMemo(() => Array.from(new Set(filteredOccurrences.map(event => dateKey(event.occurrenceStart)))).map(calendarDate), [filteredOccurrences]);
   const upcoming = (upcomingQuery.data ?? []) as EventOccurrence[];
+  const filteredUpcoming = useMemo(() => eventFilter === "all" ? upcoming : upcoming.filter(event => event.eventType === eventFilter), [eventFilter, upcoming]);
+  const filterOptions: { value: EventFilter; label: string }[] = [
+    { value: "all", label: lang === "ko" ? "전체" : "All" },
+    ...Object.entries(eventTypeLabels).map(([value, label]) => ({ value: value as EventType, label: label[lang] })),
+  ];
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F4F6F7]">
@@ -116,6 +141,22 @@ export default function Events() {
             <div className="mb-5 flex items-start gap-3">
               <div className="mt-1 rounded-sm bg-[#F6F0E5] p-2 text-[#8A6420]"><CalendarDays className="size-5" /></div>
               <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">{t("home.calendar")}</p><h2 className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "월간 일정" : "Monthly calendar"}</h2></div>
+            </div>
+            <div className="mb-5 border-y border-[#DCE4E7] py-3">
+              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#607A91]">{lang === "ko" ? "유형별 보기" : "Filter by type"}</p>
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
+                {filterOptions.map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={eventFilter === option.value}
+                    onClick={() => setEventFilter(option.value)}
+                    className={`shrink-0 rounded-sm border px-3 py-1.5 text-xs font-semibold transition-[transform,background-color,border-color,color] duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none ${eventFilter === option.value ? "border-[#163B59] bg-[#163B59] text-white" : "border-[#C8D4D9] bg-white text-[#607A91] hover:border-[#B9955E]/70 hover:bg-[#F6F0E5] hover:text-[#163B59]"}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <Calendar
               mode="single"
@@ -141,7 +182,7 @@ export default function Events() {
 
         <section className="mt-14">
           <div className="mb-6 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">{lang === "ko" ? "Looking ahead" : "Looking ahead"}</p><h2 className="mt-1 font-serif text-3xl font-semibold text-[#163B59]">{t("home.upcomingEvents")}</h2></div><ChevronRight className="size-5 text-[#B07834]" /></div>
-          {upcomingQuery.isLoading ? <p className="text-sm text-[#607A91]">{lang === "ko" ? "다가오는 일정을 불러오는 중입니다…" : "Loading upcoming events…"}</p> : upcoming.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{upcoming.map(event => <EventCard key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`} event={event} lang={lang} />)}</div> : <div className="rounded-xl border border-dashed border-[#C8D4D9] bg-[#FFFEFB] px-6 py-12 text-center"><p className="font-serif text-xl font-semibold text-[#163B59]">{lang === "ko" ? "등록된 공개 일정이 아직 없습니다." : "No published events yet."}</p><p className="mt-2 text-sm text-[#607A91]">{lang === "ko" ? "새 일정이 공개되면 이곳에 자동으로 표시됩니다." : "Published events will appear here automatically."}</p></div>}
+          {upcomingQuery.isLoading ? <p className="text-sm text-[#607A91]">{lang === "ko" ? "다가오는 일정을 불러오는 중입니다…" : "Loading upcoming events…"}</p> : filteredUpcoming.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filteredUpcoming.map(event => <EventCard key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`} event={event} lang={lang} />)}</div> : <div className="rounded-xl border border-dashed border-[#C8D4D9] bg-[#FFFEFB] px-6 py-12 text-center"><p className="font-serif text-xl font-semibold text-[#163B59]">{upcoming.length ? (lang === "ko" ? "선택한 유형의 다가오는 일정이 없습니다." : "No upcoming events match this filter.") : (lang === "ko" ? "등록된 공개 일정이 아직 없습니다." : "No published events yet.")}</p><p className="mt-2 text-sm text-[#607A91]">{lang === "ko" ? "새 일정이 공개되면 이곳에 자동으로 표시됩니다." : "Published events will appear here automatically."}</p></div>}
         </section>
       </main>
       <Footer />

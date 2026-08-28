@@ -163,6 +163,10 @@
 - [x] Home upcoming events data: Home의 정적 다음 일정 카드를 공개 일정 쿼리의 다음 4–6개 항목으로 교체
 - [x] Event recurrence and access tests: 반복 일정 계산·공개 상태 필터·관리자 권한·날짜 범위 조회 테스트 추가
 - [x] Events page hero visual refresh: 공개 일정·행사 페이지 우측 브랜드 추상 이미지를 Graceway 팔레트에 맞는 새로운 비주얼로 생성·적용·반응형 검증
+- [x] Events card hover motion: 일정·행사 카드에 브랜드에 맞는 부드러운 호버·키보드 포커스 모션 추가
+- [x] Events category filter: 공개 월간 캘린더 상단에서 예배·기도·교제·사역·특별 행사 등 유형별 필터링 제공
+- [x] Google Calendar event links: 각 공개 행사 발생 항목을 개인 Google Calendar에 추가하는 안전한 외부 링크 생성·표시
+- [x] Events interaction tests: 유형 필터·Google Calendar URL·반응형 행사 카드 상호작용 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
