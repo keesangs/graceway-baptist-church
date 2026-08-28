@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "manifestVersion": 1,
+  "description": "Graceway public-page visual assets. The image bytes remain in the managed /manus-storage service for deployment performance; this Git-tracked manifest records their immutable storage paths and source-file integrity data.",
+  "assets": [
+    {
+      "id": "home-hero",
+      "storagePath": "/manus-storage/graceway-renewal-style-reference_dcc4d541.jpg",
+      "sourceFilename": "graceway-renewal-style-reference.jpg",
+      "mediaType": "image/png",
+      "byteSize": 6277281,
+      "sha256": "befaf2c137ed1c504a7beccc55bf5827c08261ea7f56012ce8552e74b1f26044",
+      "usedBy": ["Home hero"]
+    },
+    {
+      "id": "home-story",
+      "storagePath": "/manus-storage/graceway-home-ribbon-2026_8b537440.jpg",
+      "sourceFilename": "graceway-home-ribbon-2026.jpg",
+      "mediaType": "image/jpeg",
+      "byteSize": 869281,
+      "sha256": "73a2d6d0165502023cb316a7517dd9cacbf2d3fdd960f31bccfd246ff3d3e6bb",
+      "usedBy": ["Home story", "Home welcome"]
+    },
+    {
+      "id": "about-path",
+      "storagePath": "/manus-storage/graceway-about-marble-2026_83654443.jpeg",
+      "sourceFilename": "graceway-about-marble-2026.jpeg",
+      "mediaType": "image/jpeg",
+      "byteSize": 1746271,
+      "sha256": "d2426af49df856da993a515add0650f73720fa718e154e128c30d1ad4381d9ce",
+      "usedBy": ["About hero", "About story", "Ministries Bible study"]
+    },
+    {
+      "id": "sermons-cover",
+      "storagePath": "/manus-storage/graceway-sermons-current-2026_29c55360.jpg",
+      "sourceFilename": "graceway-sermons-current-2026.jpg",
+      "mediaType": "image/jpeg",
+      "byteSize": 2340689,
+      "sha256": "ab60bee7212423cb66ad53de8c279da35486b44b04bbfef93adfeb1bb912098c",
+      "usedBy": ["Sermons hero", "Sermons featured cover"]
+    },
+    {
+      "id": "worship-cover",
+      "storagePath": "/manus-storage/graceway-worship-current-2026_95ba9b2b.jpeg",
+      "sourceFilename": "graceway-worship-current-2026.jpeg",
+      "mediaType": "image/jpeg",
+      "byteSize": 1513034,
+      "sha256": "f8b2ac7f97ae21bf32e77271f6fa68a78f3e66885b557694b088b1b5306a74c9",
+      "usedBy": ["Worship hero", "Worship featured cover"]
+    },
+    {
+      "id": "ministry-word",
+      "storagePath": "/manus-storage/graceway-ministry-word-2026_c63669a4.jpg",
+      "sourceFilename": "graceway-ministry-word-2026.jpg",
+      "mediaType": "image/png",
+      "byteSize": 7139100,
+      "sha256": "99db166363c86cad1d218cf85076a1f65f36bb16a8d866d773918d4ce4c3952d",
+      "usedBy": ["Ministries Bible study"]
+    },
+    {
+      "id": "ministry-community",
+      "storagePath": "/manus-storage/graceway-ministry-community-2026_f8cf29df.jpg",
+      "sourceFilename": "graceway-ministry-community-2026.jpg",
+      "mediaType": "image/png",
+      "byteSize": 7093796,
+      "sha256": "8a46cd95ee87ab8d912de0afb2da33b428e775153dcf0d748fa4b65140f9801a",
+      "usedBy": ["Ministries small groups"]
+    },
+    {
+      "id": "ministry-campus",
+      "storagePath": "/manus-storage/graceway-ministry-campus-2026_d5a584cf.jpg",
+      "sourceFilename": "graceway-ministry-campus-2026.jpg",
+      "mediaType": "image/png",
+      "byteSize": 6860995,
+      "sha256": "1daae53ecc18c015b229de927bec188a41a7f80904a4a5e2f305e47a87541518",
+      "usedBy": ["Ministries College Campus Ministry"]
+    },
+    {
+      "id": "ministry-sending",
+      "storagePath": "/manus-storage/graceway-ministry-sending-2026_46e8d75b.jpg",
+      "sourceFilename": "graceway-ministry-sending-2026.jpg",
+      "mediaType": "image/png",
+      "byteSize": 6379021,
+      "sha256": "ccab349eade50c212cfd1aabf6e512092cce0e8284afba4ac28feb3f92e4de63",
+      "usedBy": ["Ministries hero", "Ministries outreach"]
+    },
+    {
+      "id": "ministry-youth",
+      "storagePath": "/manus-storage/graceway-ministry-youth-2026_2f2ea55f.jpg",
+      "sourceFilename": "graceway-ministry-youth-2026.jpg",
+      "mediaType": "image/png",
+      "byteSize": 7049985,
+      "sha256": "b6c9660886a17a01266c074f6cb9d923acd92fda7935399252b5640befa7dfe0",
+      "usedBy": ["Ministries Youth Ministry"]
+    }
+  ]
+}
