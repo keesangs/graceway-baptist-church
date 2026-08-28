@@ -189,3 +189,35 @@ export const meditationCommentLikes = mysqlTable("meditation_comment_likes", {
 
 export type MeditationCommentLike = typeof meditationCommentLikes.$inferSelect;
 export type InsertMeditationCommentLike = typeof meditationCommentLikes.$inferInsert;
+
+// Church calendar events — the single source of truth for the public calendar
+// and Home's upcoming-event cards. All timestamps persist as UTC Date values.
+// For all-day events, the application stores the America/Los_Angeles day
+// boundaries as UTC instants and formats them back in that same timezone.
+export const calendarEvents = mysqlTable("calendar_events", {
+  id: int("id").autoincrement().primaryKey(),
+  titleKo: varchar("titleKo", { length: 255 }).notNull(),
+  titleEn: varchar("titleEn", { length: 255 }),
+  startAt: timestamp("startAt").notNull(),
+  endAt: timestamp("endAt"),
+  allDay: int("allDay").default(0).notNull(),
+  venueKo: varchar("venueKo", { length: 255 }),
+  venueEn: varchar("venueEn", { length: 255 }),
+  descriptionKo: text("descriptionKo"),
+  descriptionEn: text("descriptionEn"),
+  eventType: mysqlEnum("eventType", ["worship", "prayer", "fellowship", "ministry", "special", "other"])
+    .default("other")
+    .notNull(),
+  status: mysqlEnum("status", ["draft", "published", "cancelled"]).default("draft").notNull(),
+  recurrence: mysqlEnum("recurrence", ["none", "weekly"]).default("none").notNull(),
+  recurrenceUntil: timestamp("recurrenceUntil"),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  statusStartIdx: index("calendar_event_status_start_idx").on(table.status, table.startAt),
+  recurrenceUntilIdx: index("calendar_event_recurrence_until_idx").on(table.recurrence, table.recurrenceUntil),
+}));
+
+export type CalendarEvent = typeof calendarEvents.$inferSelect;
+export type InsertCalendarEvent = typeof calendarEvents.$inferInsert;

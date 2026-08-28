@@ -16,6 +16,7 @@ const translations: Record<string, Record<Lang, string>> = {
   // Navbar
   "nav.about": { en: "About", ko: "소개" },
   "nav.sermons": { en: "Sermons", ko: "설교" },
+  "nav.events": { en: "Events", ko: "행사" },
   "nav.ministries": { en: "Ministries", ko: "사역" },
   "nav.connect": { en: "Connect", ko: "문의" },
   "nav.planVisit": { en: "Plan a Visit", ko: "방문 안내" },

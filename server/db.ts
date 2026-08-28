@@ -1,8 +1,11 @@
 import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  calendarEvents,
+  CalendarEvent,
   contactMessages,
   dailyMeditations,
+  InsertCalendarEvent,
   InsertContactMessage,
   InsertDailyMeditation,
   InsertMediaFile,
@@ -284,6 +287,51 @@ export async function deleteDailyMeditation(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(dailyMeditations).where(eq(dailyMeditations.id, id));
+}
+
+// Church calendar event queries
+export async function listCalendarEvents() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(calendarEvents).orderBy(desc(calendarEvents.startAt));
+}
+
+/** Public feeds only receive events explicitly marked published. */
+export async function listPublishedCalendarEvents(): Promise<CalendarEvent[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(calendarEvents)
+    .where(eq(calendarEvents.status, "published"))
+    .orderBy(asc(calendarEvents.startAt));
+}
+
+export async function getCalendarEventById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, id)).limit(1);
+  return row ?? null;
+}
+
+export async function createCalendarEvent(data: InsertCalendarEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(calendarEvents).values(data);
+  return getCalendarEventById(Number(result.insertId));
+}
+
+export async function updateCalendarEvent(id: number, data: Partial<InsertCalendarEvent>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(calendarEvents).set(data).where(eq(calendarEvents.id, id));
+  return getCalendarEventById(id);
+}
+
+export async function deleteCalendarEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
 }
 
 // Meditation comment queries

@@ -14,6 +14,7 @@ import Meditation from "./pages/Meditation";
 import Ministries from "./pages/Ministries";
 import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
+import Events from "./pages/Events";
 import AdminInbox from "@/pages/AdminInbox";
 import AdminDailyBible from "@/pages/AdminDailyBible";
 import { scrollPageToTop } from "@/lib/navigation";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/ministries" component={Ministries} />
       <Route path="/connect" component={Connect} />
       <Route path="/media" component={MediaLibrary} />
+      <Route path="/events" component={Events} />
       <Route path="/admin" component={AdminInbox} />
       <Route path="/admin/daily-bible" component={AdminDailyBible} />
       <Route path="/404" component={NotFound} />

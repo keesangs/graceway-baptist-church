@@ -83,12 +83,32 @@ const legacySermons: HomeSermon[] = [
 
 const HOME_SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 
-const events = [
-  { date: "Aug 10", titleEn: "Sunday Worship Service", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
-  { date: "Aug 13", titleEn: "Wednesday Prayer Meeting", titleKo: "수요 기도회", time: "8:00 PM", tag: "Weekly" },
-  { date: "Aug 17", titleEn: "Sunday Worship", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
-  { date: "Aug 20", titleEn: "Wednesday Prayer Meeting", titleKo: "수요 기도회", time: "8:00 PM", tag: "Weekly" },
-];
+const CHURCH_TIME_ZONE = "America/Los_Angeles";
+type UpcomingEvent = {
+  seriesId: number;
+  titleKo: string;
+  titleEn: string | null;
+  occurrenceStart: Date | string;
+  allDay: number;
+  eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
+  isRecurring: boolean;
+};
+
+function formatUpcomingEventDate(value: Date | string, lang: "ko" | "en") {
+  const date = new Date(value);
+  const month = date.toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", { timeZone: CHURCH_TIME_ZONE, month: "short" });
+  const day = date.toLocaleDateString("en-US", { timeZone: CHURCH_TIME_ZONE, day: "numeric" });
+  return { month, day };
+}
+
+function formatUpcomingEventTime(event: UpcomingEvent, lang: "ko" | "en") {
+  if (event.allDay) return lang === "ko" ? "종일" : "All day";
+  return new Date(event.occurrenceStart).toLocaleTimeString(lang === "ko" ? "ko-KR" : "en-US", {
+    timeZone: CHURCH_TIME_ZONE,
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 // Fade-in hook using IntersectionObserver
 function useFadeIn(threshold = 0.15) {
@@ -120,6 +140,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const syncedSermonsQuery = trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT);
+  const upcomingEventsQuery = trpc.events.upcoming.useQuery();
   const subscribeMutation = trpc.newsletter.subscribe.useMutation({
     onSuccess: () => {
       setSubscribed(true);
@@ -161,6 +182,8 @@ export default function Home() {
       new Date(b.publishedAt ?? b.date).getTime() - new Date(a.publishedAt ?? a.date).getTime(),
     );
   }, [syncedSermonsQuery.data]);
+
+  const upcomingEvents = (upcomingEventsQuery.data ?? []) as UpcomingEvent[];
 
   // Hero fade-in on mount
   useEffect(() => {
@@ -848,7 +871,7 @@ export default function Home() {
           className="container transition-all duration-700 ease-out"
           style={{ opacity: eventsFade.visible ? 1 : 0, transform: eventsFade.visible ? "translateY(0)" : "translateY(32px)" }}
         >
-          <div className="flex items-end justify-between mb-12">
+          <div className="flex items-end justify-between gap-5 mb-12">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-px w-8 bg-[#C9973E]" />
@@ -861,45 +884,44 @@ export default function Home() {
                 {t("home.upcomingEvents")}
               </h2>
             </div>
+            <Link href="/events" className="hidden shrink-0 items-center gap-1.5 rounded-sm border border-[#B9955E]/50 bg-white px-4 py-2 text-sm font-semibold text-[#163B59] transition-colors duration-200 hover:bg-[#F6F0E5] sm:inline-flex">
+              {lang === "ko" ? "전체 일정" : "View calendar"} <ArrowRight size={14} />
+            </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {events.map((e, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-sm p-5 flex items-center gap-5 shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer border-l-2 border-transparent hover:border-[#C9973E]"
-              >
-                <div className="text-center min-w-[52px]">
-                  <div className="text-[#C9973E] text-xs font-bold tracking-wide uppercase">
-                    {e.date.split(" ")[0]}
-                  </div>
-                  <div
-                    className="text-[#17324D] text-2xl font-bold leading-none"
-                    style={{ fontFamily: "'Source Serif 4', serif" }}
+          {upcomingEventsQuery.isLoading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><div className="h-28 animate-pulse rounded-sm bg-white" /><div className="h-28 animate-pulse rounded-sm bg-white" /></div>
+          ) : upcomingEvents.length ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {upcomingEvents.map((event) => {
+                const date = formatUpcomingEventDate(event.occurrenceStart, lang);
+                const tag = event.isRecurring ? (lang === "ko" ? "매주" : "Weekly") : event.eventType === "worship" ? (lang === "ko" ? "예배" : "Worship") : (lang === "ko" ? "행사" : "Event");
+                return (
+                  <Link
+                    href="/events"
+                    key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`}
+                    className="group flex items-center gap-5 rounded-sm border-l-2 border-transparent bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#C9973E] hover:shadow-md"
                   >
-                    {e.date.split(" ")[1]}
-                  </div>
-                </div>
-                <div className="h-10 w-px bg-[#C9973E]/30" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] px-2 py-0.5 bg-[#17324D]/10 text-[#17324D] rounded-sm font-medium tracking-wide">
-                      {e.tag}
-                    </span>
-                  </div>
-                  <p
-                    className="text-[#17324D] font-semibold group-hover:text-[#2F6F9F] transition-colors"
-                    style={{ fontFamily: "'Source Serif 4', serif" }}
-                  >
-                    {lang === "ko" ? e.titleKo : e.titleEn}
-                  </p>
-                  <p className="text-[#242A30]/50 text-xs flex items-center gap-1 mt-0.5">
-                    <Clock size={10} /> {e.time}
-                  </p>
-                </div>
-                <ChevronRight size={16} className="text-[#242A30]/30 group-hover:text-[#C9973E] transition-colors" />
-              </div>
-            ))}
-          </div>
+                    <div className="min-w-[52px] text-center">
+                      <div className="text-xs font-bold uppercase tracking-wide text-[#C9973E]">{date.month}</div>
+                      <div className="text-2xl font-bold leading-none text-[#17324D]" style={{ fontFamily: "'Source Serif 4', serif" }}>{date.day}</div>
+                    </div>
+                    <div className="h-10 w-px bg-[#C9973E]/30" />
+                    <div className="flex-1">
+                      <span className="mb-1 inline-block rounded-sm bg-[#17324D]/10 px-2 py-0.5 text-[10px] font-medium tracking-wide text-[#17324D]">{tag}</span>
+                      <p className="font-semibold text-[#17324D] transition-colors group-hover:text-[#2F6F9F]" style={{ fontFamily: "'Source Serif 4', serif" }}>{lang === "en" && event.titleEn ? event.titleEn : event.titleKo}</p>
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-[#242A30]/50"><Clock size={10} /> {formatUpcomingEventTime(event, lang)}</p>
+                    </div>
+                    <ChevronRight size={16} className="text-[#242A30]/30 transition-colors group-hover:text-[#C9973E]" />
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-sm border border-dashed border-[#C8D4D9] bg-white px-6 py-10 text-center">
+              <p className="font-serif text-lg font-semibold text-[#17324D]">{lang === "ko" ? "다가오는 공개 일정이 아직 없습니다." : "No upcoming published events yet."}</p>
+              <Link href="/events" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#2F6F9F] hover:text-[#17324D]">{lang === "ko" ? "행사 캘린더 보기" : "View event calendar"} <ArrowRight size={14} /></Link>
+            </div>
+          )}
         </div>
       </section>
 

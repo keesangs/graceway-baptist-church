@@ -53,7 +53,7 @@
 - [ ] Email subscription for new meditations
 - [ ] Sermon series categorization
 - [ ] Worship team member profiles
-- [ ] Event calendar system
+- [x] Event calendar system
 - [ ] Prayer request submission form
 - [ ] Member directory (private)
 - [ ] Online giving integration (Stripe)
@@ -156,6 +156,12 @@
 - [x] Sermon social sharing: 설교 카드와 재생 영역에 기기 기본 공유·클립보드 링크 복사를 제공하는 접근 가능한 공유 버튼 추가
 - [x] Contact visitor FAQ refinement: 처음 방문 FAQ 제목을 자연스럽게 다듬고 예배 시간·식사 교제 안내 질문과 답변 추가
 - [x] Worship social sharing: 찬양 카드와 재생 영역에 기기 기본 공유·클립보드 링크 복사를 제공하는 접근 가능한 공유 버튼 추가
+- [x] Admin-managed event calendar architecture: 관리자 입력을 단일 원본으로 하는 공개 일정·이벤트 캘린더의 데이터 모델·관리 흐름·공개 표시 구조 설계
+- [x] Calendar event schema: KO/EN 제목·시작/종료 일시·장소·설명·유형·공개 상태·반복 규칙·수정자를 기록하는 일정 테이블과 마이그레이션 추가
+- [x] Admin event CRUD: 관리자 Events 탭에서 일정 추가·수정·취소·공개 상태 전환·반복 일정 입력 기능 구현
+- [x] Public event calendar: 월간·목록 보기와 이벤트 상세를 갖춘 공개 /events 페이지 추가
+- [x] Home upcoming events data: Home의 정적 다음 일정 카드를 공개 일정 쿼리의 다음 4–6개 항목으로 교체
+- [x] Event recurrence and access tests: 반복 일정 계산·공개 상태 필터·관리자 권한·날짜 범위 조회 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

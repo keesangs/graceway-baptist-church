@@ -2,9 +2,12 @@ import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
+  createCalendarEvent,
+  deleteCalendarEvent,
   deleteMeditationComment,
   deleteMediaFile,
   deleteDailyMeditation,
+  getCalendarEventById,
   getDailyMeditationById,
   getDailyMeditationByDate,
   getMeditationCommentById,
@@ -14,15 +17,18 @@ import {
   insertMeditationComment,
   insertMediaFile,
   listContactMessages,
+  listCalendarEvents,
   listDailyMeditations,
   listMeditationComments,
   listMediaFiles,
   listNewsletterSubscribers,
+  listPublishedCalendarEvents,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
   subscribeToNewsletter,
   toggleMeditationCommentLike,
   toggleMeditationLike,
+  updateCalendarEvent,
   updateDailyMeditation,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -31,6 +37,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { fetchPlaylistVideos } from "./youtube";
+import { expandCalendarEventOccurrences, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -40,6 +47,54 @@ const TOPIC_LABELS = {
   ministry: "Ministry involvement",
   general: "General question",
 } as const;
+
+const calendarEventValues = {
+  titleKo: z.string().trim().min(1).max(255),
+  titleEn: z.string().trim().max(255).nullable().optional(),
+  startAt: z.coerce.date(),
+  endAt: z.coerce.date().nullable().optional(),
+  allDay: z.boolean().default(false),
+  venueKo: z.string().trim().max(255).nullable().optional(),
+  venueEn: z.string().trim().max(255).nullable().optional(),
+  descriptionKo: z.string().trim().max(8000).nullable().optional(),
+  descriptionEn: z.string().trim().max(8000).nullable().optional(),
+  eventType: z.enum(["worship", "prayer", "fellowship", "ministry", "special", "other"]).default("other"),
+  status: z.enum(["draft", "published", "cancelled"]).default("draft"),
+  recurrence: z.enum(["none", "weekly"]).default("none"),
+  recurrenceUntil: z.coerce.date().nullable().optional(),
+};
+
+const calendarEventCreateInput = z.object(calendarEventValues).superRefine((input, ctx) => {
+  if (input.endAt && input.endAt < input.startAt) {
+    ctx.addIssue({ code: "custom", path: ["endAt"], message: "End time must be after start time" });
+  }
+  if (input.recurrenceUntil && input.recurrenceUntil < input.startAt) {
+    ctx.addIssue({ code: "custom", path: ["recurrenceUntil"], message: "Recurrence end must be on or after the first event" });
+  }
+  if (input.recurrence === "none" && input.recurrenceUntil) {
+    ctx.addIssue({ code: "custom", path: ["recurrenceUntil"], message: "A recurrence end requires a weekly event" });
+  }
+});
+
+const nullableText = (value: string | null | undefined) => value?.trim() || null;
+
+function mapCalendarEventInput(input: z.infer<typeof calendarEventCreateInput>) {
+  return {
+    titleKo: input.titleKo,
+    titleEn: nullableText(input.titleEn),
+    startAt: input.startAt,
+    endAt: input.endAt ?? null,
+    allDay: input.allDay ? 1 : 0,
+    venueKo: nullableText(input.venueKo),
+    venueEn: nullableText(input.venueEn),
+    descriptionKo: nullableText(input.descriptionKo),
+    descriptionEn: nullableText(input.descriptionEn),
+    eventType: input.eventType,
+    status: input.status,
+    recurrence: input.recurrence,
+    recurrenceUntil: input.recurrence === "weekly" ? input.recurrenceUntil ?? null : null,
+  } as const;
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -146,6 +201,51 @@ export const appRouter = router({
 
       return { sermons, worship };
     }),
+  }),
+
+  // ── Church Calendar Events ────────────────────────────────────────────────
+  events: router({
+    /** Published event occurrences for a visible public calendar interval. */
+    listRange: publicProcedure
+      .input(z.object({ start: z.coerce.date(), end: z.coerce.date() }))
+      .query(async ({ input }) => {
+        if (input.end <= input.start) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Calendar end must be after start" });
+        }
+        const events = await listPublishedCalendarEvents();
+        return expandCalendarEventOccurrences(events, input.start, input.end);
+      }),
+
+    /** Home page source: the six soonest published occurrences, including weekly series. */
+    upcoming: publicProcedure.query(async () => {
+      const events = await listPublishedCalendarEvents();
+      return getUpcomingCalendarEventOccurrences(events, new Date(), 6);
+    }),
+
+    /** Full source list is restricted to administrators so drafts and cancellations remain private. */
+    listAdmin: adminProcedure.query(() => listCalendarEvents()),
+
+    create: adminProcedure.input(calendarEventCreateInput).mutation(({ input, ctx }) => {
+      return createCalendarEvent({ ...mapCalendarEventInput(input), createdBy: ctx.user.id });
+    }),
+
+    update: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), event: calendarEventCreateInput }))
+      .mutation(async ({ input }) => {
+        const existing = await getCalendarEventById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        return updateCalendarEvent(input.id, mapCalendarEventInput(input.event));
+      }),
+
+    /** Use status=cancelled for operational cancellation; deletion is for accidental entries only. */
+    delete: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const existing = await getCalendarEventById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        await deleteCalendarEvent(input.id);
+        return { success: true } as const;
+      }),
   }),
 
   // ── Newsletter ─────────────────────────────────────────────────────

@@ -32,4 +32,10 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("sermonCards.slice(1, 4)");
     expect(homeSource).toContain("syncedByVideoId.get(sermon.videoId)?.thumbnailUrl");
   });
+
+  it("uses the public upcoming-events query rather than fixed calendar dates and links to the full calendar", () => {
+    expect(homeSource).toContain("trpc.events.upcoming.useQuery()");
+    expect(homeSource).toContain('href="/events"');
+    expect(homeSource).not.toContain('titleEn: "Sunday Worship Service"');
+  });
 });

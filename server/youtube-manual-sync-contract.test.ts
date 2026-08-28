@@ -25,6 +25,6 @@ describe("YouTube manual playlist sync contract", () => {
     expect(sermons).toContain('trpc.youtube.list.useQuery(SERMON_LIST_INPUT)');
     expect(sermons).toContain('return [...newSyncedSermons, ...legacySermons]');
     expect(worship).toContain('trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT)');
-    expect(worship).toContain('return [...newSyncedWorships, ...legacyWorships]');
+    expect(worship).toContain('return [...newSyncedWorships, ...refreshedLegacyWorships]');
   });
 });
