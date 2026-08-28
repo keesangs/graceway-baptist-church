@@ -25,4 +25,11 @@ describe("Home editorial sections", () => {
     expect(homeSource.match(/group-hover:scale-\[1\.045\]/g)?.length).toBeGreaterThanOrEqual(3);
     expect(homeSource).toContain("motion-reduce:transition-none");
   });
+
+  it("merges synchronized sermons into the Home archive and gives their current thumbnails priority", () => {
+    expect(homeSource).toContain("trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT)");
+    expect(homeSource).toContain("thumbnailUrl: video.thumbnailUrl");
+    expect(homeSource).toContain("sermonCards.slice(1, 4)");
+    expect(homeSource).toContain("syncedByVideoId.get(sermon.videoId)?.thumbnailUrl");
+  });
 });

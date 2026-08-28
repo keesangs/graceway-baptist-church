@@ -5,7 +5,7 @@
  * Features: fade-in hero animation, KO/EN language toggle via useLang
  */
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "wouter";
 import { Clock, MapPin, ArrowRight, Play, ChevronRight, Heart, BookOpen, Users, Music, Check, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -34,7 +34,20 @@ const STORY_HEADING_STYLE = {
 };
 
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
-const sermons = [
+type HomeSermon = {
+  title: string;
+  titleKo: string;
+  scripture: string;
+  scriptureEn: string;
+  date: string;
+  speaker: string;
+  duration: string;
+  videoId: string;
+  thumbnailUrl?: string;
+  publishedAt?: string;
+};
+
+const legacySermons: HomeSermon[] = [
   {
     title: "Filled with the Holy Spirit",
     titleKo: "성령으로 채우시다",
@@ -66,6 +79,8 @@ const sermons = [
     videoId: "AGzMGv7vuhQ",
   },
 ];
+
+const HOME_SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 
 const events = [
   { date: "Aug 10", titleEn: "Sunday Worship Service", titleKo: "주일 예배", time: "1:30 PM", tag: "Weekly" },
@@ -103,6 +118,7 @@ export default function Home() {
   // Newsletter signup — persists to the newsletter_subscribers table.
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const syncedSermonsQuery = trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT);
   const subscribeMutation = trpc.newsletter.subscribe.useMutation({
     onSuccess: () => {
       setSubscribed(true);
@@ -116,6 +132,34 @@ export default function Home() {
     if (!trimmed) return;
     subscribeMutation.mutate({ email: trimmed, lang });
   };
+
+  const sermonCards = useMemo<HomeSermon[]>(() => {
+    const syncedVideos = syncedSermonsQuery.data ?? [];
+    const syncedByVideoId = new Map(syncedVideos.map((video) => [video.videoId, video]));
+    const legacyIds = new Set(legacySermons.map((sermon) => sermon.videoId));
+    const refreshedLegacy = legacySermons.map((sermon) => ({
+      ...sermon,
+      thumbnailUrl: syncedByVideoId.get(sermon.videoId)?.thumbnailUrl,
+    }));
+    const additionalSermons = syncedVideos
+      .filter((video) => !legacyIds.has(video.videoId))
+      .map((video) => ({
+        title: video.title,
+        titleKo: video.title,
+        scripture: "",
+        scriptureEn: "",
+        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        speaker: "Pastor Hunsuk Lee",
+        duration: "New",
+        videoId: video.videoId,
+        thumbnailUrl: video.thumbnailUrl,
+        publishedAt: new Date(video.publishedAt).toISOString(),
+      }));
+
+    return [...additionalSermons, ...refreshedLegacy].sort((a, b) =>
+      new Date(b.publishedAt ?? b.date).getTime() - new Date(a.publishedAt ?? a.date).getTime(),
+    );
+  }, [syncedSermonsQuery.data]);
 
   // Hero fade-in on mount
   useEffect(() => {
@@ -584,15 +628,15 @@ export default function Home() {
 
             {/* ── LEFT: Featured video — unchanged from original ── */}
             <a
-              href={`https://www.youtube.com/watch?v=${sermons[0].videoId}`}
+              href={`https://www.youtube.com/watch?v=${sermonCards[0].videoId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="lg:col-span-3 bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer block"
             >
               <div className="relative aspect-video overflow-hidden">
                 <img
-                  src={`https://img.youtube.com/vi/${sermons[0].videoId}/maxresdefault.jpg`}
-                  alt={sermons[0].title}
+                  src={sermonCards[0].thumbnailUrl ?? `https://img.youtube.com/vi/${sermonCards[0].videoId}/maxresdefault.jpg`}
+                  alt={sermonCards[0].title}
                   className="h-full w-full object-cover will-change-transform transition-transform duration-500 ease-out group-hover:scale-[1.045] motion-reduce:transform-none motion-reduce:transition-none"
                   onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
                 />
@@ -603,14 +647,14 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-5 right-5">
-                  <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermons[0].scripture : sermons[0].scriptureEn}</p>
+                  <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermonCards[0].scripture : sermonCards[0].scriptureEn}</p>
                   <h3 className="text-white font-bold text-xl" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                    {lang === "ko" ? sermons[0].titleKo : sermons[0].title}
+                    {lang === "ko" ? sermonCards[0].titleKo : sermonCards[0].title}
                   </h3>
-                  <p className="text-white/60 text-xs mt-1">{sermons[0].speaker} · {sermons[0].date}</p>
+                  <p className="text-white/60 text-xs mt-1">{sermonCards[0].speaker} · {sermonCards[0].date}</p>
                 </div>
                 <div className="absolute top-3 right-3 bg-[#17324D]/80 text-white text-xs px-2 py-1 rounded-sm">
-                  {sermons[0].duration}
+                  {sermonCards[0].duration}
                 </div>
               </div>
             </a>
@@ -633,11 +677,11 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Sermon list rows — all 3 sermons */}
+              {/* Sermon list rows — next three latest sermons */}
               <div className="flex flex-col divide-y divide-[#E8ECF0] mb-5">
-                {sermons.map((s, i) => (
+                {sermonCards.slice(1, 4).map((s) => (
                   <a
-                    key={i}
+                    key={s.videoId}
                     href={`https://www.youtube.com/watch?v=${s.videoId}`}
                     target="_blank"
                     rel="noopener noreferrer"
