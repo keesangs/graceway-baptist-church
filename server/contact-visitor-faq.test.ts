@@ -18,5 +18,6 @@ describe("first-time visitor FAQ", () => {
   it("describes the Sunday service flow with the revised approximately-one-hour Korean duration", () => {
     expect(connectSource).toContain('qKo: "예배는 어떻게 진행되나요?"');
     expect(connectSource).toContain("예배는 약 한시간 가량 진행됩니다");
+    expect(connectSource).toContain("Services last approximately 60 minutes");
   });
 });

@@ -174,6 +174,7 @@
 - [x] Featured event detail scroll: 추천 행사 배너 클릭 시 해당 행사 상세 카드를 선택·표시하고 부드럽게 이동하도록 앵커 연결
 - [x] Featured event interaction tests: 카운트다운 계산·공유 대체 흐름·상세 카드 이동 연결의 회귀 테스트 추가
 - [x] Connect Sunday worship duration copy: 주일 예배 안내의 진행 시간을 ‘약 한시간 가량’으로 자연스럽게 수정하고 렌더링 검증
+- [x] Connect Sunday worship duration English copy: 영문 예배 안내의 진행 시간을 ‘approximately 60 minutes’로 수정하고 렌더링 검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
