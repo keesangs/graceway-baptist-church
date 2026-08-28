@@ -50,6 +50,28 @@ export const mediaFiles = mysqlTable("media_files", {
 export type MediaFile = typeof mediaFiles.$inferSelect;
 export type InsertMediaFile = typeof mediaFiles.$inferInsert;
 
+// YouTube playlist videos — persisted records discovered by an administrator-run sync.
+// A video can theoretically appear in both playlists, so its uniqueness is scoped by kind.
+export const youtubeVideos = mysqlTable("youtube_videos", {
+  id: int("id").autoincrement().primaryKey(),
+  videoKind: mysqlEnum("videoKind", ["sermon", "worship"]).notNull(),
+  videoId: varchar("videoId", { length: 32 }).notNull(),
+  playlistItemId: varchar("playlistItemId", { length: 128 }).notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  publishedAt: timestamp("publishedAt").notNull(),
+  thumbnailUrl: varchar("thumbnailUrl", { length: 1024 }).notNull(),
+  playlistPosition: int("playlistPosition").notNull(),
+  lastSyncedAt: timestamp("lastSyncedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  uniqueVideoKind: uniqueIndex("youtube_video_kind_unique").on(table.videoKind, table.videoId),
+  kindPublishedIdx: index("youtube_video_kind_published_idx").on(table.videoKind, table.publishedAt),
+}));
+
+export type YouTubeVideo = typeof youtubeVideos.$inferSelect;
+export type InsertYouTubeVideo = typeof youtubeVideos.$inferInsert;
+
 // Newsletter subscribers — collected from the Home page signup form.
 export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
   id: int("id").autoincrement().primaryKey(),

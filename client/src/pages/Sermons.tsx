@@ -3,18 +3,32 @@
  * Sections: Hero, Featured Sermon, Sermon Archive with filter
  * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Play, Clock, BookOpen, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
+import { trpc } from "@/lib/trpc";
 
 const SERMON_IMG = brandVisualAssets.sermonsCover;
 
+type SermonCard = {
+  titleEn: string;
+  titleKo: string;
+  scripture: string;
+  scriptureEn: string;
+  date: string;
+  speaker: string;
+  duration: string;
+  series: string;
+  videoId: string;
+  thumbnailUrl?: string;
+};
+
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
-const sermons = [
+const legacySermons: SermonCard[] = [
   {
     titleEn: "Filled with the Holy Spirit",
     titleKo: "성령으로 채우시다",
@@ -139,6 +153,7 @@ const sermons = [
 ];
 
 const seriesFilters = ["All", "Sunday Sermon"];
+const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 
 // YouTube thumbnail URL helper
 function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
@@ -150,13 +165,34 @@ export default function Sermons() {
   const [activeSeries, setActiveSeries] = useState("All");
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
+
+  const sermons = useMemo(() => {
+    const legacyIds = new Set(legacySermons.map((sermon) => sermon.videoId));
+    const newSyncedSermons = (syncedVideosQuery.data ?? [])
+      .filter((video) => !legacyIds.has(video.videoId))
+      .map((video) => ({
+        titleEn: video.title,
+        titleKo: video.title,
+        scripture: "",
+        scriptureEn: "",
+        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        speaker: "",
+        duration: "New",
+        series: "Sunday Sermon",
+        videoId: video.videoId,
+        thumbnailUrl: video.thumbnailUrl,
+      }));
+    return [...newSyncedSermons, ...legacySermons];
+  }, [syncedVideosQuery.data]);
 
   const filtered = sermons.filter((s) => {
     const matchSeries = activeSeries === "All" || s.series === activeSeries;
     const title = lang === "ko" ? s.titleKo : s.titleEn;
+    const scripture = lang === "ko" ? s.scripture : s.scriptureEn;
     const matchSearch =
       title.toLowerCase().includes(search.toLowerCase()) ||
-      (lang === "ko" ? s.scripture : s.scriptureEn).toLowerCase().includes(search.toLowerCase()) ||
+      scripture.toLowerCase().includes(search.toLowerCase()) ||
       s.speaker.toLowerCase().includes(search.toLowerCase());
     return matchSeries && matchSearch;
   });
@@ -217,7 +253,7 @@ export default function Sermons() {
               onClick={() => setPlayingId(featured.videoId)}
             >
               <img
-                src={ytThumb(featured.videoId, "maxresdefault")}
+                src={featured.thumbnailUrl ?? ytThumb(featured.videoId, "maxresdefault")}
                 alt={lang === "ko" ? featured.titleKo : featured.titleEn}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
@@ -247,11 +283,13 @@ export default function Sermons() {
               >
                 {lang === "ko" ? featured.titleKo : featured.titleEn}
               </h2>
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen size={14} className="text-[#B07834]" />
-                <span className="text-sm font-medium text-[#607A91]">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
-              </div>
-              <p className="text-[#242A30]/60 text-sm mb-6">{featured.speaker} · {featured.date}</p>
+              {(lang === "ko" ? featured.scripture : featured.scriptureEn) && (
+                <div className="flex items-center gap-2 mb-4">
+                  <BookOpen size={14} className="text-[#B07834]" />
+                  <span className="text-sm font-medium text-[#607A91]">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
+                </div>
+              )}
+              <p className="text-[#242A30]/60 text-sm mb-6">{[featured.speaker, featured.date].filter(Boolean).join(" · ")}</p>
               <button
                 onClick={() => setPlayingId(featured.videoId)}
                 className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#245170] active:scale-[0.97]"
@@ -307,7 +345,7 @@ export default function Sermons() {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={ytThumb(s.videoId, "mqdefault")}
+                      src={s.thumbnailUrl ?? ytThumb(s.videoId, "mqdefault")}
                     alt={lang === "ko" ? s.titleKo : s.titleEn}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
@@ -327,14 +365,16 @@ export default function Sermons() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
+                  {(lang === "ko" ? s.scripture : s.scriptureEn) && (
+                    <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
+                  )}
                   <h3
                     className="mb-1.5 text-sm font-semibold leading-snug text-[#163B59] transition-colors group-hover:text-[#607A91]"
                     style={{ fontFamily: "'Source Serif 4', serif" }}
                   >
                     {lang === "ko" ? s.titleKo : s.titleEn}
                   </h3>
-                  <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>
+                  {s.speaker && <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>}
                   <p className="text-[#242A30]/40 text-[11px]">{s.date}</p>
                 </div>
               </button>

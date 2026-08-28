@@ -41,7 +41,8 @@
 
 ## Future Enhancements — Not Yet Implemented
 - [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
-- [ ] Meditation likes feature (members only)
+- [x] Meditation likes feature (members only)
+- [x] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
 - [ ] Bible API integration for automatic scripture retrieval
 - [ ] Email subscription for new meditations
 - [ ] Sermon series categorization
@@ -135,3 +136,9 @@
 - [x] Footer brand tagline correction: Footer 태그라인을 ‘은혜 | 믿음 | 말씀 | 사랑 공동체’ 문구로 반영하고 검증
 - [x] About leadership labels: 리더십 섹션 라벨을 ‘섬기시는 분들’, 제목을 ‘교회 리더십’으로 수정
 - [x] About MyeongJe role: 조명제 목사의 한국어 직함을 ‘조명제 전도사’로 수정
+- [x] YouTube playlist manual-sync architecture: 관리자 수동 동기화 방식과 두 플레이리스트 범위·권한 방식을 확정
+- [x] YouTube Data API credential: 서버 전용 YouTube Data API 키를 안전하게 연결하고 읽기 권한을 확인
+- [x] YouTube video persistence: 영상 ID·플레이리스트 유형·제목·게시 시각·썸네일·동기화 상태를 중복 없이 저장할 구조 추가
+- [x] YouTube playlist manual sync: 두 공개 플레이리스트를 조회해 새 영상만 등록하는 관리자 실행 동기화 구현
+- [x] Dynamic sermon and worship archives: 설교·찬양 페이지를 자동 동기화 영상 데이터에 연결하고 기존 영상 연속성 유지
+- [x] YouTube sync verification: 동기화 중복 방지·실패 처리·표시 흐름을 자동 테스트와 운영 점검으로 검증

@@ -3,18 +3,29 @@
  * Sections: Hero, Featured Worship, Worship Archive with filter
  * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Play, Clock, Search, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
+import { trpc } from "@/lib/trpc";
 
 const WORSHIP_IMG = brandVisualAssets.worshipCover;
 
+type WorshipCard = {
+  titleEn: string;
+  titleKo: string;
+  date: string;
+  duration: string;
+  series: string;
+  videoId: string;
+  thumbnailUrl?: string;
+};
+
 // Sunday worship videos from YouTube @keesangs channel
-const worships = [
+const legacyWorships: WorshipCard[] = [
   {
     titleEn: "Sunday Worship",
     titleKo: "2026. 08.09 주일예배 찬양",
@@ -98,6 +109,7 @@ const worships = [
 ];
 
 const seriesFilters = ["All", "Sunday Worship"];
+const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
 
 // YouTube thumbnail URL helper
 function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
@@ -109,6 +121,23 @@ export default function Worship() {
   const [activeSeries, setActiveSeries] = useState("All");
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const syncedVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT);
+
+  const worships = useMemo(() => {
+    const legacyIds = new Set(legacyWorships.map((worship) => worship.videoId));
+    const newSyncedWorships = (syncedVideosQuery.data ?? [])
+      .filter((video) => !legacyIds.has(video.videoId))
+      .map((video) => ({
+        titleEn: video.title,
+        titleKo: video.title,
+        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        duration: "New",
+        series: "Sunday Worship",
+        videoId: video.videoId,
+        thumbnailUrl: video.thumbnailUrl,
+      }));
+    return [...newSyncedWorships, ...legacyWorships];
+  }, [syncedVideosQuery.data]);
 
   const filtered = worships.filter((w) => {
     const matchSeries = activeSeries === "All" || w.series === activeSeries;
@@ -173,7 +202,7 @@ export default function Worship() {
               onClick={() => setPlayingId(featured.videoId)}
             >
               <img
-                src={ytThumb(featured.videoId, "maxresdefault")}
+                src={featured.thumbnailUrl ?? ytThumb(featured.videoId, "maxresdefault")}
                 alt={lang === "ko" ? featured.titleKo : featured.titleEn}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
@@ -265,7 +294,7 @@ export default function Worship() {
                 >
                   <div className="relative aspect-video overflow-hidden">
                     <img
-                      src={ytThumb(w.videoId, "mqdefault")}
+                      src={w.thumbnailUrl ?? ytThumb(w.videoId, "mqdefault")}
                       alt={lang === "ko" ? w.titleKo : w.titleEn}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
