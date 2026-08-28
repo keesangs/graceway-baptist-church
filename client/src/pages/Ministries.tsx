@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual, type BrandAbstractVisualKind } from "@/components/BrandAbstractVisual";
 import { BrandPageHero } from "@/components/BrandPageHero";
+import { brandVisualAssets } from "@/lib/brandVisualAssets";
 
 const featuredMinistry = {
   icon: BookOpen,
@@ -35,7 +36,7 @@ const ministryRows = [
     title: "College Campus Ministry",
     subtitle: "Weekdays · Nearby College Campuses",
     desc: "We are passionate about reaching the next generation on campus. Our college ministry connects with students at nearby universities and community colleges throughout the week — building friendships, studying Scripture, and living out the gospel together in the places where students spend their days.",
-    visual: "sending" as BrandAbstractVisualKind,
+    visual: "campus" as BrandAbstractVisualKind,
     reverse: true,
     color: "#C9973E",
   },
@@ -67,13 +68,14 @@ export default function Ministries() {
         title="Ministries"
         description="There’s a place for everyone at Graceway. Find where you belong and how you can serve."
         visual="sending"
+        imageSrc={brandVisualAssets.ministry.sending}
       />
 
       {/* Featured Ministry — Full-width editorial */}
       <section className="py-0 bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           <div className="relative min-h-[400px] overflow-hidden">
-            <BrandAbstractVisual kind={featuredMinistry.visual} className="absolute inset-0 transition-transform duration-700 group-hover:scale-105" />
+            <BrandAbstractVisual kind={featuredMinistry.visual} imageSrc={brandVisualAssets.ministry[featuredMinistry.visual]} className="absolute inset-0 transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#17324D]/80 to-[#17324D]/30" />
             <div className="relative p-12 flex flex-col justify-end h-full min-h-[400px]">
               <div className="w-8 h-0.5 bg-[#C9973E] mb-4" />
@@ -114,7 +116,7 @@ export default function Ministries() {
             <div className={`grid grid-cols-1 lg:grid-cols-12 gap-12 items-center ${m.reverse ? "lg:flex-row-reverse" : ""}`}>
               <div className={`lg:col-span-6 ${m.reverse ? "lg:order-2" : "lg:order-1"}`}>
                 <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-xl group">
-                  <BrandAbstractVisual kind={m.visual} className="transition-transform duration-700 group-hover:scale-105" />
+                  <BrandAbstractVisual kind={m.visual} imageSrc={brandVisualAssets.ministry[m.visual]} className="transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#17324D]/40 to-transparent" />
                 </div>
               </div>

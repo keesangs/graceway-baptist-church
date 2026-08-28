@@ -13,8 +13,9 @@ import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
+import { brandVisualAssets } from "@/lib/brandVisualAssets";
 
-const HERO_BG = "/manus-storage/hero_bg_navy_a8d916a9.jpg";
+const HERO_BG = brandVisualAssets.homeHero;
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
 const HERO_VIDEO_POSTER = "/manus-storage/hero_river_poster_53c7cd5e.jpg";
 const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
@@ -369,7 +370,7 @@ export default function Home() {
             </div>
             <div className="lg:col-span-7 relative">
               <div className="aspect-[16/10] rounded-sm overflow-hidden shadow-2xl">
-                <BrandAbstractVisual kind="path" />
+                <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.homeStory} />
               </div>
               <div className="absolute -bottom-8 -left-4 lg:-left-8 bg-[#17324D] text-white p-5 rounded-sm shadow-xl max-w-[200px]">
                 <div className="w-6 h-px bg-[#C9973E] mb-3" />
@@ -663,7 +664,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 order-2 lg:order-1 relative">
               <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-                <BrandAbstractVisual kind="welcome" />
+                <BrandAbstractVisual kind="welcome" imageSrc={brandVisualAssets.homeStory} />
               </div>
               <div className="absolute -top-5 -right-5 bg-[#C9973E] text-white p-4 rounded-sm shadow-lg">
                 <p className="text-2xl font-bold" style={{ fontFamily: "'Source Serif 4', serif" }}>

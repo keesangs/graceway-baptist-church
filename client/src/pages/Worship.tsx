@@ -9,8 +9,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
+import { brandVisualAssets } from "@/lib/brandVisualAssets";
 
-const WORSHIP_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
+const WORSHIP_IMG = brandVisualAssets.worshipCover;
 
 // Sunday worship videos from YouTube @keesangs channel
 const worships = [
@@ -156,6 +157,7 @@ export default function Worship() {
         title={lang === "ko" ? "주일예배 찬양" : "Sunday Worship"}
         description={lang === "ko" ? "주일 예배 시간에 함께 드린 찬양 영상입니다." : "Worship videos from our Sunday services."}
         visual="community"
+        imageSrc={brandVisualAssets.worshipCover}
       />
 
       {/* Featured Worship */}
@@ -178,8 +180,9 @@ export default function Worship() {
                   (e.target as HTMLImageElement).src = WORSHIP_IMG;
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#163B59]/72 via-transparent to-transparent" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/55" />
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(11,44,67,0.7),rgba(86,112,138,0.18))]" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-70 transition-opacity duration-300 group-hover:opacity-100">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#B9955E] shadow-lg">
                   <Play size={24} className="text-white ml-1" fill="white" />
                 </div>
@@ -269,7 +272,8 @@ export default function Worship() {
                         (e.target as HTMLImageElement).src = WORSHIP_IMG;
                       }}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.4),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B9955E]">
                         <Play size={16} className="text-white ml-0.5" fill="white" />
                       </div>

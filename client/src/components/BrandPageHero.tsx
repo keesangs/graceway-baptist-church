@@ -5,14 +5,15 @@ type BrandPageHeroProps = {
   title: string;
   description: string;
   visual: BrandAbstractVisualKind;
+  imageSrc?: string;
 };
 
 /** A left-weighted editorial opening shared by Graceway's public subpages. */
-export function BrandPageHero({ eyebrow, title, description, visual }: BrandPageHeroProps) {
+export function BrandPageHero({ eyebrow, title, description, visual, imageSrc }: BrandPageHeroProps) {
   return (
     <section className="brand-page-hero relative isolate overflow-hidden pt-28 md:pt-32">
       <div className="pointer-events-none absolute inset-0 opacity-95">
-        <BrandAbstractVisual kind={visual} />
+        <BrandAbstractVisual kind={visual} imageSrc={imageSrc} />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(18,55,83,0.98)_0%,rgba(18,55,83,0.91)_53%,rgba(18,55,83,0.54)_100%)]" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-[linear-gradient(90deg,transparent,rgba(185,149,94,0.8),transparent)]" />
@@ -31,7 +32,7 @@ export function BrandPageHero({ eyebrow, title, description, visual }: BrandPage
         <div className="hidden md:col-span-5 md:block lg:col-span-6">
           <div className="ml-auto max-w-sm border border-white/12 bg-[#173F5D]/20 p-3 backdrop-blur-sm">
             <div className="aspect-[4/3] overflow-hidden border border-white/10">
-              <BrandAbstractVisual kind={visual} />
+              <BrandAbstractVisual kind={visual} imageSrc={imageSrc} />
             </div>
           </div>
         </div>

@@ -9,8 +9,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
+import { brandVisualAssets } from "@/lib/brandVisualAssets";
 
-const SERMON_IMG = "/manus-storage/sermon_stage_0620f4b7.jpg";
+const SERMON_IMG = brandVisualAssets.sermonsCover;
 
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const sermons = [
@@ -200,6 +201,7 @@ export default function Sermons() {
         title={lang === "ko" ? "주일예배 설교" : t("sermons.title")}
         description={t("sermons.subtitle")}
         visual="word"
+        imageSrc={brandVisualAssets.sermonsCover}
       />
 
       {/* Featured Sermon */}
@@ -220,7 +222,8 @@ export default function Sermons() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/52">
+              <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/55" />
+              <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.78),rgba(86,112,138,0.26))]">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#B9955E] shadow-lg transition-transform duration-300 group-hover:scale-110">
                   <Play size={22} className="text-white ml-1" />
                 </div>
@@ -309,7 +312,8 @@ export default function Sermons() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = SERMON_IMG; }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#163B59]/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="pointer-events-none absolute inset-2 border border-[#D8C49E]/35" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,rgba(11,44,67,0.42),rgba(86,112,138,0.16))] opacity-60 transition-opacity duration-300 group-hover:opacity-100">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B9955E]">
                       <Play size={14} className="text-white ml-0.5" />
                     </div>

@@ -4,7 +4,7 @@ import { brandLogoSources } from "@/components/BrandLogo";
 
 describe("public page brand assets", () => {
   it("uses CSS-only abstract visuals for refreshed public editorial panels", () => {
-    expect(abstractVisualKinds).toEqual(["path", "word", "community", "sending", "youth", "welcome"]);
+    expect(abstractVisualKinds).toEqual(["path", "word", "community", "campus", "sending", "youth", "welcome"]);
   });
 
   it("uses the supplied official lockup in both light and reverse variants", () => {

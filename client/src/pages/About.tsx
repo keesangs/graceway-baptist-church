@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { useLang } from "@/contexts/LanguageContext";
+import { brandVisualAssets } from "@/lib/brandVisualAssets";
 const PASTOR_IMG = "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp";
 
 const beliefs = [
@@ -46,7 +47,7 @@ export default function About() {
     <div className="min-h-screen bg-[#F4F6F7]">
       <Navbar />
 
-      <BrandPageHero eyebrow={t("about.whoWeAre")} title={t("about.title")} description={t("about.subtitle")} visual="path" />
+      <BrandPageHero eyebrow={t("about.whoWeAre")} title={t("about.title")} description={t("about.subtitle")} visual="path" imageSrc={brandVisualAssets.aboutPath} />
 
       {/* Our Story */}
       <section className="py-24 bg-white">
@@ -78,7 +79,7 @@ export default function About() {
               </p>
             </div>
             <div className="aspect-[4/3] rounded-sm overflow-hidden shadow-xl">
-              <BrandAbstractVisual kind="path" />
+              <BrandAbstractVisual kind="path" imageSrc={brandVisualAssets.aboutPath} />
             </div>
           </div>
         </div>
