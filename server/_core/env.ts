@@ -7,7 +7,7 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  googleDriveBulletinFolderId: process.env.GOOGLE_DRIVE_BULLETIN_FOLDER_ID ?? "",
   youversionApiKey: process.env.YOUVERSION_API_KEY ?? "",
 };
-
 

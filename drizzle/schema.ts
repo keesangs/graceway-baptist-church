@@ -88,6 +88,49 @@ export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
 
+// Weekly newsletter issues — public PDF copies of the church bulletin. The PDF
+// bytes live in storage; this table tracks the Drive source, public status, and
+// archive metadata needed to keep the last successful bulletin visible on sync failure.
+export const weeklyNewsletterIssues = mysqlTable("weekly_newsletter_issues", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Church-local Sunday in YYYY-MM-DD format; date-only by design to avoid timezone drift. */
+  issueDate: varchar("issueDate", { length: 10 }).notNull(),
+  titleKo: varchar("titleKo", { length: 255 }).notNull(),
+  titleEn: varchar("titleEn", { length: 255 }),
+  sourceFilename: varchar("sourceFilename", { length: 512 }).notNull(),
+  /** Stable public Google Drive file identifier, unique for idempotent syncs. */
+  driveFileId: varchar("driveFileId", { length: 128 }).unique(),
+  sourceModifiedAt: timestamp("sourceModifiedAt"),
+  /** Durable copy in the website's managed object storage. */
+  storageKey: varchar("storageKey", { length: 512 }).notNull(),
+  storageUrl: varchar("storageUrl", { length: 1024 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  status: mysqlEnum("status", ["draft", "published", "hidden"]).default("draft").notNull(),
+  publishedAt: timestamp("publishedAt"),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  issueDateIdx: index("weekly_newsletter_issue_date_idx").on(table.issueDate),
+  statusIssueDateIdx: index("weekly_newsletter_status_issue_date_idx").on(table.status, table.issueDate),
+}));
+
+export type WeeklyNewsletterIssue = typeof weeklyNewsletterIssues.$inferSelect;
+export type InsertWeeklyNewsletterIssue = typeof weeklyNewsletterIssues.$inferInsert;
+
+// Singleton configuration row for the project-level Sunday bulletin sync.
+export const weeklyNewsletterSyncSettings = mysqlTable("weekly_newsletter_sync_settings", {
+  id: int("id").primaryKey(),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }).unique(),
+  lastRunAt: timestamp("lastRunAt"),
+  lastSuccessAt: timestamp("lastSuccessAt"),
+  lastError: text("lastError"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeeklyNewsletterSyncSettings = typeof weeklyNewsletterSyncSettings.$inferSelect;
+
 // Contact form submissions from the Connect page.
 export const contactMessages = mysqlTable("contact_messages", {
   id: int("id").autoincrement().primaryKey(),

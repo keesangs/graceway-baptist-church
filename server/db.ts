@@ -11,6 +11,7 @@ import {
   InsertMediaFile,
   InsertMeditationComment,
   InsertNewsletterSubscriber,
+  InsertWeeklyNewsletterIssue,
   InsertUser,
   InsertYouTubeVideo,
   mediaFiles,
@@ -19,6 +20,8 @@ import {
   meditationLikes,
   newsletterSubscribers,
   users,
+  weeklyNewsletterIssues,
+  weeklyNewsletterSyncSettings,
   youtubeVideos,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -225,6 +228,86 @@ export async function listNewsletterSubscribers() {
     .from(newsletterSubscribers)
     .where(eq(newsletterSubscribers.isActive, 1))
     .orderBy(desc(newsletterSubscribers.createdAt));
+}
+
+// ── Weekly Newsletter Issues ─────────────────────────────────────────────────
+
+export type WeeklyNewsletterStatus = "draft" | "published" | "hidden";
+
+export async function listPublishedWeeklyNewsletterIssues(limit = 12) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(weeklyNewsletterIssues)
+    .where(eq(weeklyNewsletterIssues.status, "published"))
+    .orderBy(desc(weeklyNewsletterIssues.issueDate))
+    .limit(limit);
+}
+
+export async function getLatestPublishedWeeklyNewsletterIssue() {
+  const issues = await listPublishedWeeklyNewsletterIssues(1);
+  return issues[0] ?? null;
+}
+
+export async function listWeeklyNewsletterIssuesForAdmin(limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(weeklyNewsletterIssues).orderBy(desc(weeklyNewsletterIssues.issueDate)).limit(limit);
+}
+
+export async function getWeeklyNewsletterIssueById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [issue] = await db.select().from(weeklyNewsletterIssues).where(eq(weeklyNewsletterIssues.id, id)).limit(1);
+  return issue ?? null;
+}
+
+export async function getWeeklyNewsletterIssueByDriveFileId(driveFileId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [issue] = await db.select().from(weeklyNewsletterIssues).where(eq(weeklyNewsletterIssues.driveFileId, driveFileId)).limit(1);
+  return issue ?? null;
+}
+
+export async function getWeeklyNewsletterIssueByIssueDate(issueDate: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [issue] = await db
+    .select()
+    .from(weeklyNewsletterIssues)
+    .where(eq(weeklyNewsletterIssues.issueDate, issueDate))
+    .orderBy(desc(weeklyNewsletterIssues.updatedAt))
+    .limit(1);
+  return issue ?? null;
+}
+
+export async function createWeeklyNewsletterIssue(data: InsertWeeklyNewsletterIssue) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(weeklyNewsletterIssues).values(data);
+  return getWeeklyNewsletterIssueById(result.insertId);
+}
+
+export async function updateWeeklyNewsletterIssue(id: number, data: Partial<InsertWeeklyNewsletterIssue>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(weeklyNewsletterIssues).set(data).where(eq(weeklyNewsletterIssues.id, id));
+  return getWeeklyNewsletterIssueById(id);
+}
+
+export async function getWeeklyNewsletterSyncSettings() {
+  const db = await getDb();
+  if (!db) return null;
+  const [settings] = await db.select().from(weeklyNewsletterSyncSettings).where(eq(weeklyNewsletterSyncSettings.id, 1)).limit(1);
+  return settings ?? null;
+}
+
+export async function updateWeeklyNewsletterSyncSettings(data: Partial<typeof weeklyNewsletterSyncSettings.$inferInsert>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(weeklyNewsletterSyncSettings).values({ id: 1, ...data }).onDuplicateKeyUpdate({ set: data });
+  return getWeeklyNewsletterSyncSettings();
 }
 
 export async function insertContactMessage(data: InsertContactMessage) {

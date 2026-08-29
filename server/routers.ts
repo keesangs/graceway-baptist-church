@@ -12,6 +12,9 @@ import {
   getDailyMeditationByDate,
   getMeditationCommentById,
   getUserMeditationLike,
+  getLatestPublishedWeeklyNewsletterIssue,
+  getWeeklyNewsletterIssueById,
+  getWeeklyNewsletterSyncSettings,
   insertContactMessage,
   insertDailyMeditation,
   insertMeditationComment,
@@ -23,6 +26,8 @@ import {
   listMediaFiles,
   listNewsletterSubscribers,
   listPublishedCalendarEvents,
+  listPublishedWeeklyNewsletterIssues,
+  listWeeklyNewsletterIssuesForAdmin,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
   subscribeToNewsletter,
@@ -30,6 +35,7 @@ import {
   toggleMeditationLike,
   updateCalendarEvent,
   updateDailyMeditation,
+  updateWeeklyNewsletterIssue,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { notifyOwner } from "./_core/notification";
@@ -38,6 +44,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { storagePut } from "./storage";
 import { fetchPlaylistVideos } from "./youtube";
 import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
+import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -63,6 +70,14 @@ const calendarEventValues = {
   recurrence: z.enum(["none", "weekly"]).default("none"),
   recurrenceUntil: z.coerce.date().nullable().optional(),
 };
+
+const weeklyNewsletterStatus = z.enum(["draft", "published", "hidden"]);
+const weeklyNewsletterUpdateInput = z.object({
+  id: z.number().int().positive(),
+  titleKo: z.string().trim().min(1).max(255).optional(),
+  titleEn: z.string().trim().max(255).nullable().optional(),
+  status: weeklyNewsletterStatus.optional(),
+});
 
 const calendarEventCreateInput = z.object(calendarEventValues).superRefine((input, ctx) => {
   if (input.endAt && input.endAt < input.startAt) {
@@ -252,6 +267,37 @@ export const appRouter = router({
         await deleteCalendarEvent(input.id);
         return { success: true } as const;
       }),
+  }),
+
+  // ── Weekly Newsletter PDFs ───────────────────────────────────────────────
+  weeklyNewsletter: router({
+    /** The latest public bulletin for the Events page. */
+    latest: publicProcedure.query(() => getLatestPublishedWeeklyNewsletterIssue()),
+
+    /** Latest public bulletin archive, limited to a modest page-friendly size. */
+    list: publicProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(24).default(12) }))
+      .query(({ input }) => listPublishedWeeklyNewsletterIssues(input.limit)),
+
+    /** Administrators can inspect drafts, hidden records, and sync diagnostics. */
+    listAdmin: adminProcedure.query(() => listWeeklyNewsletterIssuesForAdmin()),
+    syncStatus: adminProcedure.query(() => getWeeklyNewsletterSyncSettings()),
+
+    /** On-demand fallback for the Sunday background sync. */
+    syncNow: adminProcedure.mutation(() => syncPublicWeeklyNewsletterArchive()),
+
+    update: adminProcedure.input(weeklyNewsletterUpdateInput).mutation(async ({ input }) => {
+      const issue = await getWeeklyNewsletterIssueById(input.id);
+      if (!issue) throw new TRPCError({ code: "NOT_FOUND", message: "Weekly newsletter not found" });
+
+      const nextStatus = input.status ?? issue.status;
+      return updateWeeklyNewsletterIssue(input.id, {
+        titleKo: input.titleKo,
+        titleEn: input.titleEn === undefined ? undefined : input.titleEn?.trim() || null,
+        status: nextStatus,
+        publishedAt: nextStatus === "published" && issue.status !== "published" ? new Date() : issue.publishedAt,
+      });
+    }),
   }),
 
   // ── Newsletter ─────────────────────────────────────────────────────

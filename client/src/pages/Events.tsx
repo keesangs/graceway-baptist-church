@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, MapPin, Sparkles } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, ExternalLink, FileText, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
@@ -36,6 +36,15 @@ type EventOccurrence = {
 
 type EventType = EventOccurrence["eventType"];
 type EventFilter = "all" | EventType;
+
+type WeeklyNewsletterIssue = {
+  id: number;
+  issueDate: string;
+  titleKo: string;
+  titleEn: string | null;
+  storageUrl: string;
+  fileSize: number;
+};
 
 function dateKey(value: Date | string) {
   const parts = Object.fromEntries(churchDateParts.formatToParts(new Date(value)).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
@@ -78,6 +87,19 @@ function formatEventDate(event: EventOccurrence, lang: "ko" | "en") {
     day: "numeric",
     weekday: "short",
   });
+}
+
+function formatNewsletterDate(issueDate: string, lang: "ko" | "en") {
+  return new Intl.DateTimeFormat(lang === "ko" ? "ko-KR" : "en-US", {
+    timeZone: CHURCH_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(`${issueDate}T12:00:00Z`));
+}
+
+function formatNewsletterFileSize(fileSize: number) {
+  return `${Math.max(1, Math.round(fileSize / 1024))} KB`;
 }
 
 function FeaturedCountdown({ startAt, lang }: { startAt: Date | string; lang: "ko" | "en" }) {
@@ -148,6 +170,9 @@ export default function Events() {
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
   const upcomingQuery = trpc.events.upcoming.useQuery();
   const featuredSpecialQuery = trpc.events.featuredSpecial.useQuery();
+  const newsletterListInput = useMemo(() => ({ limit: 12 }), []);
+  const latestNewsletterQuery = trpc.weeklyNewsletter.latest.useQuery();
+  const newsletterArchiveQuery = trpc.weeklyNewsletter.list.useQuery(newsletterListInput);
   const occurrences = (eventsQuery.data ?? []) as EventOccurrence[];
   const filteredOccurrences = useMemo(() => eventFilter === "all" ? occurrences : occurrences.filter(event => event.eventType === eventFilter), [eventFilter, occurrences]);
   const selectedKey = selectedDate ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}` : null;
@@ -172,6 +197,9 @@ export default function Events() {
     description: featuredDescription,
   }) : "";
   const featuredCardId = featuredSpecial ? `event-occurrence-${featuredSpecial.seriesId}-${dateKey(featuredSpecial.occurrenceStart)}` : "";
+  const latestNewsletter = (latestNewsletterQuery.data ?? null) as WeeklyNewsletterIssue | null;
+  const newsletterArchive = (newsletterArchiveQuery.data ?? []) as WeeklyNewsletterIssue[];
+  const priorNewsletters = latestNewsletter ? newsletterArchive.filter(issue => issue.id !== latestNewsletter.id) : newsletterArchive;
 
   const showFeaturedDate = () => {
     if (!featuredSpecial) return;
@@ -222,6 +250,48 @@ export default function Events() {
             </div>
           </section>
         )}
+
+        <section aria-labelledby="weekly-newsletter-title" className="mb-12 overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-[0_14px_32px_rgba(22,59,89,0.06)]">
+          <div className="border-b border-[#DCE4E7] bg-[linear-gradient(110deg,#F6F0E5_0%,#FFFEFB_58%,#E7EEF1_100%)] px-5 py-5 sm:px-7 sm:py-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]"><FileText className="size-3.5" />Weekly newsletter</p>
+                <h2 id="weekly-newsletter-title" className="mt-2 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "이번 주 교회 주보" : "This week’s bulletin"}</h2>
+                <p className="mt-1 text-sm text-[#607A91]">{lang === "ko" ? "주일 예배와 공동체 소식을 PDF로 확인하세요." : "Read Sunday worship and community news in PDF."}</p>
+              </div>
+              <span className="rounded-sm border border-[#B9955E]/40 bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#8A6420]">{lang === "ko" ? "매주 업데이트" : "Updated weekly"}</span>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-7">
+            {latestNewsletterQuery.isLoading ? (
+              <div className="h-32 animate-pulse rounded-lg bg-[#E7EEF1]" aria-label={lang === "ko" ? "주보를 불러오는 중" : "Loading weekly newsletter"} />
+            ) : latestNewsletter ? (
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">{formatNewsletterDate(latestNewsletter.issueDate, lang)}</p>
+                  <h3 className="mt-2 font-serif text-2xl font-semibold text-[#163B59]">{lang === "en" && latestNewsletter.titleEn ? latestNewsletter.titleEn : latestNewsletter.titleKo}</h3>
+                  <p className="mt-2 text-sm text-[#607A91]">PDF · {formatNewsletterFileSize(latestNewsletter.fileSize)}</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <a href={latestNewsletter.storageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 hover:bg-[#245170] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><ExternalLink className="size-4" />{lang === "ko" ? "주보 보기" : "View bulletin"}</a>
+                  <a href={latestNewsletter.storageUrl} download className="inline-flex items-center gap-2 rounded-sm border border-[#B9955E]/50 bg-white px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color,border-color] duration-200 hover:border-[#B9955E] hover:bg-[#F6F0E5] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Download className="size-4 text-[#B07834]" />{lang === "ko" ? "다운로드" : "Download"}</a>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-[#F4F6F7] px-5 py-8 text-center"><FileText className="mx-auto mb-3 size-7 text-[#B07834]" /><p className="font-serif text-lg font-semibold text-[#163B59]">{lang === "ko" ? "이번 주 주보를 준비 중입니다" : "This week’s bulletin is being prepared"}</p><p className="mt-2 text-sm text-[#607A91]">{lang === "ko" ? "새 주보가 게시되면 이곳에서 바로 열람할 수 있습니다." : "The new bulletin will be available here once it is published."}</p></div>
+            )}
+
+            {priorNewsletters.length > 0 && (
+              <div className="mt-7 border-t border-[#DCE4E7] pt-6">
+                <div className="mb-4 flex items-center justify-between gap-4"><h3 className="font-serif text-xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 주보" : "Previous bulletins"}</h3><span className="text-xs text-[#607A91]">{lang === "ko" ? `최근 ${priorNewsletters.length}주` : `${priorNewsletters.length} recent issue${priorNewsletters.length === 1 ? "" : "s"}`}</span></div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {priorNewsletters.map(issue => <a key={issue.id} href={issue.storageUrl} target="_blank" rel="noreferrer" className="group rounded-lg border border-[#DCE4E7] bg-white p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/60 hover:shadow-[0_10px_22px_rgba(22,59,89,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="flex items-start justify-between gap-3"><FileText className="mt-0.5 size-4 shrink-0 text-[#B07834]" /><ArrowUpRight className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none" /></div><p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</p><p className="mt-1 font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</p></a>)}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
         <div id="events-calendar" className="scroll-mt-24 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
           <section className="brand-surface rounded-xl border border-[#DCE4E7] p-4 sm:p-6">

@@ -13,6 +13,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import AdminEventsPanel from "@/components/AdminEventsPanel";
+import AdminWeeklyNewsletterPanel from "@/components/AdminWeeklyNewsletterPanel";
 import {
   Inbox,
   Mail,
@@ -24,9 +25,10 @@ import {
   RefreshCw,
   Youtube,
   CalendarDays,
+  FileText,
 } from "lucide-react";
 
-type Tab = "messages" | "subscribers" | "events";
+type Tab = "messages" | "subscribers" | "events" | "bulletins";
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
 
@@ -83,6 +85,7 @@ export default function AdminInbox() {
   const sermonVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT, { enabled: isAdmin });
   const worshipVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT, { enabled: isAdmin });
   const eventsQuery = trpc.events.listAdmin.useQuery(undefined, { enabled: isAdmin });
+  const weeklyNewsletterQuery = trpc.weeklyNewsletter.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const syncYouTubeMutation = trpc.youtube.sync.useMutation({
     onSuccess: async (result) => {
@@ -97,8 +100,8 @@ export default function AdminInbox() {
   const subscribers = subscribersQuery.data ?? [];
 
   const counts = useMemo(
-    () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0 }),
-    [messages.length, subscribers.length, eventsQuery.data?.length],
+    () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0, bulletins: weeklyNewsletterQuery.data?.length ?? 0 }),
+    [messages.length, subscribers.length, eventsQuery.data?.length, weeklyNewsletterQuery.data?.length],
   );
 
   // ── Auth gates ──────────────────────────────────────────────────────────
@@ -172,8 +175,8 @@ export default function AdminInbox() {
     );
   }
 
-  const isLoading = tab === "messages" ? messagesQuery.isLoading : tab === "subscribers" ? subscribersQuery.isLoading : false;
-  const refetch = tab === "messages" ? messagesQuery.refetch : tab === "subscribers" ? subscribersQuery.refetch : eventsQuery.refetch;
+  const isLoading = tab === "messages" ? messagesQuery.isLoading : tab === "subscribers" ? subscribersQuery.isLoading : tab === "events" ? eventsQuery.isLoading : weeklyNewsletterQuery.isLoading;
+  const refetch = tab === "messages" ? messagesQuery.refetch : tab === "subscribers" ? subscribersQuery.refetch : tab === "events" ? eventsQuery.refetch : weeklyNewsletterQuery.refetch;
 
   const handleExport = () => {
     if (tab === "messages") {
@@ -218,6 +221,7 @@ export default function AdminInbox() {
                 { key: "messages" as Tab, label: "Messages", count: counts.messages },
                 { key: "subscribers" as Tab, label: "Subscribers", count: counts.subscribers },
                 { key: "events" as Tab, label: "Events", count: counts.events },
+                { key: "bulletins" as Tab, label: "Weekly newsletter", count: counts.bulletins },
               ]
             ).map(item => (
               <button
@@ -400,7 +404,7 @@ export default function AdminInbox() {
               </tbody>
             </table>
           </div>
-        ) : <AdminEventsPanel />}
+        ) : tab === "events" ? <AdminEventsPanel /> : <AdminWeeklyNewsletterPanel />}
       </div>
 
       <Footer />

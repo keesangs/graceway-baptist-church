@@ -177,6 +177,13 @@
 - [x] Connect Sunday worship duration English copy: 영문 예배 안내의 진행 시간을 ‘approximately 60 minutes’로 수정하고 렌더링 검증
 - [x] Footer column width refinement: 브랜드·바로가기 열 너비 변경을 데스크톱과 모바일 그리드에서 검토·보완·검증
 - [x] Connect visitor FAQ copy: 방문자 안내 제목을 ‘새로 오시는 분들을 위한 안내’로 수정하고 어린이 돌봄 FAQ를 사전 연락 기반 Child care 안내로 변경·검증
+- [x] Weekly newsletter automation plan: Google Drive 주보 PDF를 행사 페이지에 자동 게시하는 연동·보안·정기 실행·실패 대응 방안 확정
+- [x] Weekly newsletter archive: 공개 주보 PDF 열람·다운로드·과거 주보 보관함과 관리자 수동 게시·재동기화 제어 구현
+- [x] Weekly newsletter public Drive source: 지정된 공개 Google Drive 폴더(1Kzse1ikqQLWLuaixtPfTOtUMPLilixpE)의 PDF를 인증 없이 안전하게 탐색·검증·동기화
+- [x] Weekly newsletter sync: 최신 PDF 선택·MIME 검증·사이트 저장소 복사·Drive 파일 ID 중복 방지·실패 시 기존 주보 유지 구현
+- [ ] Weekly newsletter scheduled publish: 매주 일요일 오전 자동 동기화 작업과 로그·수동 재실행 대체 경로 구현
+- [x] Weekly newsletter public experience: 행사 페이지의 최신 주보 열람·다운로드·12주 보관함과 관리자 게시 상태·제목 관리 구현
+- [x] Weekly newsletter test coverage: 동기화 선택·권한·중복 방지·실패 보존·공개 상태·반응형 UI 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
