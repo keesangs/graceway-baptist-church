@@ -4,9 +4,22 @@ import { sdk } from "./_core/sdk";
 import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
 
 const WEEKLY_NEWSLETTER_SYNC_PATH = "/api/scheduled/weekly-newsletter-sync";
+const CHURCH_TIME_ZONE = "America/Los_Angeles";
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown weekly newsletter sync error";
+}
+
+/** The heartbeat runs at 16:00 and 17:00 UTC; this keeps the actual work at 9 AM PT across DST. */
+export function isSundayMorningNewsletterSyncTime(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: CHURCH_TIME_ZONE,
+    weekday: "short",
+    hour: "numeric",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+  return values.weekday === "Sun" && values.hour === "09";
 }
 
 /**
@@ -25,6 +38,10 @@ export function registerWeeklyNewsletterScheduledHandler(app: Express) {
       const settings = await getWeeklyNewsletterSyncSettings();
       if (!settings?.scheduleCronTaskUid || settings.scheduleCronTaskUid !== user.taskUid) {
         return res.status(403).json({ error: "unrecognized-weekly-newsletter-sync-task" });
+      }
+
+      if (!isSundayMorningNewsletterSyncTime(new Date())) {
+        return res.json({ ok: true, skipped: "outside-sunday-9am-church-time", timestamp: new Date().toISOString() });
       }
 
       const result = await syncPublicWeeklyNewsletterArchive();

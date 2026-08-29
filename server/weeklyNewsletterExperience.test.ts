@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { isSundayMorningNewsletterSyncTime } from "./weeklyNewsletterScheduledHandler";
 
 const eventsPage = readFileSync(new URL("../client/src/pages/Events.tsx", import.meta.url), "utf8");
 const adminPanel = readFileSync(new URL("../client/src/components/AdminWeeklyNewsletterPanel.tsx", import.meta.url), "utf8");
@@ -29,5 +30,11 @@ describe("weekly newsletter experience", () => {
     expect(scheduledHandler).toContain("user.isCron");
     expect(scheduledHandler).toContain("settings.scheduleCronTaskUid !== user.taskUid");
     expect(scheduledHandler).toContain("syncPublicWeeklyNewsletterArchive");
+  });
+
+  it("runs only at Sunday 9 AM in church time across daylight saving changes", () => {
+    expect(isSundayMorningNewsletterSyncTime(new Date("2026-08-30T16:00:00.000Z"))).toBe(true);
+    expect(isSundayMorningNewsletterSyncTime(new Date("2026-11-01T17:00:00.000Z"))).toBe(true);
+    expect(isSundayMorningNewsletterSyncTime(new Date("2026-08-30T15:00:00.000Z"))).toBe(false);
   });
 });
