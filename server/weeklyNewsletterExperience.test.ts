@@ -6,15 +6,28 @@ const eventsPage = readFileSync(new URL("../client/src/pages/Events.tsx", import
 const adminPanel = readFileSync(new URL("../client/src/components/AdminWeeklyNewsletterPanel.tsx", import.meta.url), "utf8");
 const adminInbox = readFileSync(new URL("../client/src/pages/AdminInbox.tsx", import.meta.url), "utf8");
 const scheduledHandler = readFileSync(new URL("./weeklyNewsletterScheduledHandler.ts", import.meta.url), "utf8");
+const pdfPreview = readFileSync(new URL("../client/src/components/WeeklyNewsletterPdfPreview.tsx", import.meta.url), "utf8");
 
 describe("weekly newsletter experience", () => {
-  it("shows the latest bulletin, download link, and public archive on Events", () => {
+  it("shows the latest bulletin as a left preview with the previous archive as a right-hand list", () => {
     expect(eventsPage).toContain("trpc.weeklyNewsletter.latest.useQuery()");
     expect(eventsPage).toContain("trpc.weeklyNewsletter.list.useQuery(newsletterListInput)");
     expect(eventsPage).toContain("이번 주 교회 주보");
-    expect(eventsPage).toContain("주보 보기");
+    expect(eventsPage).toContain("aspect-[3/4]");
+    expect(eventsPage).toContain("지난 교회 주보");
+    expect(eventsPage).toContain("lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)]");
+    expect(eventsPage).toContain("https://drive.google.com/thumbnail?id=${latestNewsletter.driveFileId}&sz=w1000");
+    expect(eventsPage).toContain("setPreviewIssue(latestNewsletter)");
+    expect(eventsPage).toContain("setPreviewIssue(issue)");
     expect(eventsPage).toContain("다운로드");
-    expect(eventsPage).toContain("지난 주보");
+  });
+
+  it("opens the selected bulletin in an accessible in-page PDF preview", () => {
+    expect(eventsPage).toContain("WeeklyNewsletterPdfPreview");
+    expect(pdfPreview).toContain("<Dialog open={Boolean(issue)}");
+    expect(pdfPreview).toContain("PDF 미리보기");
+    expect(pdfPreview).toContain("https://drive.google.com/file/d/${issue.driveFileId}/preview");
+    expect(pdfPreview).toContain("주보 미리보기 닫기");
   });
 
   it("provides a staff-only sync retry and publishing controls in Admin", () => {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, ExternalLink, FileText, MapPin, Sparkles } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, ExternalLink, Eye, FileText, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { createGoogleCalendarUrl } from "@/lib/googleCalendar";
 import { getCountdownParts } from "@/lib/eventCountdown";
 import { VideoShareButton } from "@/components/VideoShareButton";
+import { WeeklyNewsletterPdfPreview } from "@/components/WeeklyNewsletterPdfPreview";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 const churchDateParts = new Intl.DateTimeFormat("en-US", {
@@ -42,6 +43,7 @@ type WeeklyNewsletterIssue = {
   issueDate: string;
   titleKo: string;
   titleEn: string | null;
+  driveFileId: string;
   storageUrl: string;
   fileSize: number;
 };
@@ -165,6 +167,7 @@ export default function Events() {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
+  const [previewIssue, setPreviewIssue] = useState<WeeklyNewsletterIssue | null>(null);
   const range = useMemo(() => monthRange(month), [month]);
   const rangeInput = useMemo(() => ({ start: range.start, end: range.end }), [range]);
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
@@ -265,30 +268,35 @@ export default function Events() {
 
           <div className="p-5 sm:p-7">
             {latestNewsletterQuery.isLoading ? (
-              <div className="h-32 animate-pulse rounded-lg bg-[#E7EEF1]" aria-label={lang === "ko" ? "주보를 불러오는 중" : "Loading weekly newsletter"} />
+              <div className="h-80 animate-pulse rounded-lg bg-[#E7EEF1]" aria-label={lang === "ko" ? "주보를 불러오는 중" : "Loading weekly newsletter"} />
             ) : latestNewsletter ? (
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">{formatNewsletterDate(latestNewsletter.issueDate, lang)}</p>
-                  <h3 className="mt-2 font-serif text-2xl font-semibold text-[#163B59]">{lang === "en" && latestNewsletter.titleEn ? latestNewsletter.titleEn : latestNewsletter.titleKo}</h3>
-                  <p className="mt-2 text-sm text-[#607A91]">PDF · {formatNewsletterFileSize(latestNewsletter.fileSize)}</p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <a href={latestNewsletter.storageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 hover:bg-[#245170] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><ExternalLink className="size-4" />{lang === "ko" ? "주보 보기" : "View bulletin"}</a>
-                  <a href={latestNewsletter.storageUrl} download className="inline-flex items-center gap-2 rounded-sm border border-[#B9955E]/50 bg-white px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color,border-color] duration-200 hover:border-[#B9955E] hover:bg-[#F6F0E5] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Download className="size-4 text-[#B07834]" />{lang === "ko" ? "다운로드" : "Download"}</a>
-                </div>
+              <div className="grid gap-7 lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)] lg:items-start">
+                <article className="overflow-hidden rounded-lg border border-[#DCE4E7] bg-[#F4F6F7] shadow-[0_14px_28px_rgba(22,59,89,0.08)]">
+                  <div className="relative aspect-[3/4] overflow-hidden border-b border-[#DCE4E7] bg-[#E7EEF1]">
+                    <img src={`https://drive.google.com/thumbnail?id=${latestNewsletter.driveFileId}&sz=w1000`} alt="" className="h-full w-full object-cover object-top" />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#163B59]/55 to-transparent" />
+                    <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-sm bg-[#163B59]/92 px-3 py-1.5 text-xs font-semibold text-white shadow-lg"><FileText className="size-3.5 text-[#E5C484]" />PDF preview</span>
+                  </div>
+                  <div className="p-5 sm:p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">{formatNewsletterDate(latestNewsletter.issueDate, lang)}</p>
+                    <h3 className="mt-2 font-serif text-2xl font-semibold text-[#163B59]">{lang === "en" && latestNewsletter.titleEn ? latestNewsletter.titleEn : latestNewsletter.titleKo}</h3>
+                    <p className="mt-2 text-sm text-[#607A91]">PDF · {formatNewsletterFileSize(latestNewsletter.fileSize)}</p>
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      <button type="button" onClick={() => setPreviewIssue(latestNewsletter)} className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 hover:bg-[#245170] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Eye className="size-4" />{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</button>
+                      <a href={latestNewsletter.storageUrl} download className="inline-flex items-center gap-2 rounded-sm border border-[#B9955E]/50 bg-white px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color,border-color] duration-200 hover:border-[#B9955E] hover:bg-[#F6F0E5] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Download className="size-4 text-[#B07834]" />{lang === "ko" ? "다운로드" : "Download"}</a>
+                    </div>
+                  </div>
+                </article>
+
+                <aside aria-labelledby="previous-newsletters-title" className="min-w-0">
+                  <div className="mb-4 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">Archive</p><h3 id="previous-newsletters-title" className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 교회 주보" : "Previous bulletins"}</h3></div><span className="text-xs text-[#607A91]">{lang === "ko" ? `최근 ${priorNewsletters.length}주` : `${priorNewsletters.length} recent issue${priorNewsletters.length === 1 ? "" : "s"}`}</span></div>
+                  {priorNewsletters.length > 0 ? <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                    {priorNewsletters.map(issue => <button key={issue.id} type="button" onClick={() => setPreviewIssue(issue)} className="group flex w-full items-center gap-4 rounded-lg border border-[#DCE4E7] bg-white p-3 text-left transition-[transform,border-color,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/65 hover:bg-[#FFFEFB] hover:shadow-[0_8px_18px_rgba(22,59,89,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="grid size-11 shrink-0 place-items-center rounded-sm bg-[#F6F0E5] text-[#B07834]"><FileText className="size-5" /></div><span className="min-w-0 flex-1"><span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</span><span className="mt-0.5 block truncate font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</span><span className="mt-1 block text-xs text-[#607A91]">{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</span></span><Eye className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:scale-110 group-hover:text-[#B07834] motion-reduce:transform-none" /></button>)}
+                  </div> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "지난 주보가 게시되면 이곳에서 볼 수 있습니다." : "Previous bulletins will appear here once published."}</div>}
+                </aside>
               </div>
             ) : (
               <div className="rounded-lg bg-[#F4F6F7] px-5 py-8 text-center"><FileText className="mx-auto mb-3 size-7 text-[#B07834]" /><p className="font-serif text-lg font-semibold text-[#163B59]">{lang === "ko" ? "이번 주 주보를 준비 중입니다" : "This week’s bulletin is being prepared"}</p><p className="mt-2 text-sm text-[#607A91]">{lang === "ko" ? "새 주보가 게시되면 이곳에서 바로 열람할 수 있습니다." : "The new bulletin will be available here once it is published."}</p></div>
-            )}
-
-            {priorNewsletters.length > 0 && (
-              <div className="mt-7 border-t border-[#DCE4E7] pt-6">
-                <div className="mb-4 flex items-center justify-between gap-4"><h3 className="font-serif text-xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 주보" : "Previous bulletins"}</h3><span className="text-xs text-[#607A91]">{lang === "ko" ? `최근 ${priorNewsletters.length}주` : `${priorNewsletters.length} recent issue${priorNewsletters.length === 1 ? "" : "s"}`}</span></div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {priorNewsletters.map(issue => <a key={issue.id} href={issue.storageUrl} target="_blank" rel="noreferrer" className="group rounded-lg border border-[#DCE4E7] bg-white p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/60 hover:shadow-[0_10px_22px_rgba(22,59,89,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="flex items-start justify-between gap-3"><FileText className="mt-0.5 size-4 shrink-0 text-[#B07834]" /><ArrowUpRight className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none" /></div><p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</p><p className="mt-1 font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</p></a>)}
-                </div>
-              </div>
             )}
           </div>
         </section>
@@ -342,6 +350,7 @@ export default function Events() {
           {upcomingQuery.isLoading ? <p className="text-sm text-[#607A91]">{lang === "ko" ? "다가오는 일정을 불러오는 중입니다…" : "Loading upcoming events…"}</p> : filteredUpcoming.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filteredUpcoming.map(event => <EventCard key={`${event.seriesId}-${new Date(event.occurrenceStart).toISOString()}`} event={event} lang={lang} />)}</div> : <div className="rounded-xl border border-dashed border-[#C8D4D9] bg-[#FFFEFB] px-6 py-12 text-center"><p className="font-serif text-xl font-semibold text-[#163B59]">{upcoming.length ? (lang === "ko" ? "선택한 유형의 다가오는 일정이 없습니다." : "No upcoming events match this filter.") : (lang === "ko" ? "등록된 공개 일정이 아직 없습니다." : "No published events yet.")}</p><p className="mt-2 text-sm text-[#607A91]">{lang === "ko" ? "새 일정이 공개되면 이곳에 자동으로 표시됩니다." : "Published events will appear here automatically."}</p></div>}
         </section>
       </main>
+      <WeeklyNewsletterPdfPreview issue={previewIssue} lang={lang} onOpenChange={open => { if (!open) setPreviewIssue(null); }} />
       <Footer />
     </div>
   );
