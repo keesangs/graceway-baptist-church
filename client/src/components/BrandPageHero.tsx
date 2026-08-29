@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { BrandAbstractVisual, type BrandAbstractVisualKind } from "@/components/BrandAbstractVisual";
 
 type BrandPageHeroProps = {
@@ -6,10 +7,11 @@ type BrandPageHeroProps = {
   description: string;
   visual: BrandAbstractVisualKind;
   imageSrc?: string;
+  footerContent?: ReactNode;
 };
 
 /** A left-weighted editorial opening shared by Graceway's public subpages. */
-export function BrandPageHero({ eyebrow, title, description, visual, imageSrc }: BrandPageHeroProps) {
+export function BrandPageHero({ eyebrow, title, description, visual, imageSrc, footerContent }: BrandPageHeroProps) {
   return (
     <section className="brand-page-hero relative isolate overflow-hidden pt-28 md:pt-32">
       <div className="pointer-events-none absolute inset-0 opacity-95">
@@ -28,6 +30,7 @@ export function BrandPageHero({ eyebrow, title, description, visual, imageSrc }:
             {title}
           </h1>
           <p className="mt-6 max-w-xl text-sm leading-7 text-[#D7E1E7] md:text-base">{description}</p>
+          {footerContent && <div className="mt-7">{footerContent}</div>}
         </div>
         <div className="hidden md:col-span-5 md:block lg:col-span-6">
           <div className="ml-auto max-w-sm border border-white/12 bg-[#173F5D]/20 p-3 backdrop-blur-sm">

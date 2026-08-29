@@ -8,16 +8,20 @@ const adminInbox = readFileSync(new URL("../client/src/pages/AdminInbox.tsx", im
 const scheduledHandler = readFileSync(new URL("./weeklyNewsletterScheduledHandler.ts", import.meta.url), "utf8");
 const pdfPreview = readFileSync(new URL("../client/src/components/WeeklyNewsletterPdfPreview.tsx", import.meta.url), "utf8");
 const weeklyNewsletterRouter = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
+const brandPageHero = readFileSync(new URL("../client/src/components/BrandPageHero.tsx", import.meta.url), "utf8");
 
 describe("weekly newsletter experience", () => {
-  it("shows the latest bulletin as a left preview with the previous archive as a right-hand list", () => {
+  it("shows the latest bulletin thumbnail at the bottom of the left page header with the previous archive on the right", () => {
     expect(eventsPage).toContain("trpc.weeklyNewsletter.latest.useQuery()");
     expect(eventsPage).toContain("trpc.weeklyNewsletter.list.useQuery(newsletterListInput)");
     expect(eventsPage).toContain("이번 주 교회 주보");
-    expect(eventsPage).toContain("aspect-[3/4]");
+    expect(eventsPage).toContain("footerContent={latestNewsletter ?");
+    expect(eventsPage).toContain("h-20 w-15");
+    expect(eventsPage).toContain("https://drive.google.com/thumbnail?id=${latestNewsletter.driveFileId}&sz=w360");
+    expect(brandPageHero).toContain("footerContent?: ReactNode");
+    expect(brandPageHero).toContain("{footerContent && <div className=\"mt-7\">{footerContent}</div>}");
     expect(eventsPage).toContain("지난 교회 주보");
     expect(eventsPage).toContain("lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)]");
-    expect(eventsPage).toContain("https://drive.google.com/thumbnail?id=${latestNewsletter.driveFileId}&sz=w1000");
     expect(eventsPage).toContain("setPreviewIssue(latestNewsletter)");
     expect(eventsPage).toContain("setPreviewIssue(issue)");
     expect(eventsPage).toContain("다운로드");
