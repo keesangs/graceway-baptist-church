@@ -181,7 +181,7 @@
 - [x] Weekly newsletter archive: 공개 주보 PDF 열람·다운로드·과거 주보 보관함과 관리자 수동 게시·재동기화 제어 구현
 - [x] Weekly newsletter public Drive source: 지정된 공개 Google Drive 폴더(1Kzse1ikqQLWLuaixtPfTOtUMPLilixpE)의 PDF를 인증 없이 안전하게 탐색·검증·동기화
 - [x] Weekly newsletter sync: 최신 PDF 선택·MIME 검증·사이트 저장소 복사·Drive 파일 ID 중복 방지·실패 시 기존 주보 유지 구현
-- [ ] Weekly newsletter scheduled publish: 매주 일요일 오전 자동 동기화 작업과 로그·수동 재실행 대체 경로 구현
+- [x] Weekly newsletter scheduled publish: 매주 일요일 오전 자동 동기화 작업과 로그·수동 재실행 대체 경로 구현
 - [x] Weekly newsletter public experience: 행사 페이지의 최신 주보 열람·다운로드·12주 보관함과 관리자 게시 상태·제목 관리 구현
 - [x] Weekly newsletter test coverage: 동기화 선택·권한·중복 방지·실패 보존·공개 상태·반응형 UI 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
