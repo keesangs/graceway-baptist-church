@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { createGoogleCalendarUrl } from "@/lib/googleCalendar";
@@ -104,6 +105,15 @@ function formatNewsletterFileSize(fileSize: number) {
   return `${Math.max(1, Math.round(fileSize / 1024))} KB`;
 }
 
+function newsletterYearMonth(issueDate: string) {
+  const [year = "", month = ""] = issueDate.split("-");
+  return { year, month };
+}
+
+function newsletterMonthLabel(month: string, lang: "ko" | "en") {
+  return new Intl.DateTimeFormat(lang === "ko" ? "ko-KR" : "en-US", { month: "long" }).format(new Date(Date.UTC(2026, Number(month) - 1, 1)));
+}
+
 function FeaturedCountdown({ startAt, lang }: { startAt: Date | string; lang: "ko" | "en" }) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -168,12 +178,14 @@ export default function Events() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
   const [previewIssue, setPreviewIssue] = useState<WeeklyNewsletterIssue | null>(null);
+  const [newsletterYearFilter, setNewsletterYearFilter] = useState("all");
+  const [newsletterMonthFilter, setNewsletterMonthFilter] = useState("all");
   const range = useMemo(() => monthRange(month), [month]);
   const rangeInput = useMemo(() => ({ start: range.start, end: range.end }), [range]);
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
   const upcomingQuery = trpc.events.upcoming.useQuery();
   const featuredSpecialQuery = trpc.events.featuredSpecial.useQuery();
-  const newsletterListInput = useMemo(() => ({ limit: 12 }), []);
+  const newsletterListInput = useMemo(() => ({ limit: 100 }), []);
   const latestNewsletterQuery = trpc.weeklyNewsletter.latest.useQuery();
   const newsletterArchiveQuery = trpc.weeklyNewsletter.list.useQuery(newsletterListInput);
   const occurrences = (eventsQuery.data ?? []) as EventOccurrence[];
@@ -203,6 +215,12 @@ export default function Events() {
   const latestNewsletter = (latestNewsletterQuery.data ?? null) as WeeklyNewsletterIssue | null;
   const newsletterArchive = (newsletterArchiveQuery.data ?? []) as WeeklyNewsletterIssue[];
   const priorNewsletters = latestNewsletter ? newsletterArchive.filter(issue => issue.id !== latestNewsletter.id) : newsletterArchive;
+  const newsletterYears = useMemo(() => Array.from(new Set(priorNewsletters.map(issue => newsletterYearMonth(issue.issueDate).year).filter(Boolean))).sort((a, b) => b.localeCompare(a)), [priorNewsletters]);
+  const newsletterMonths = useMemo(() => Array.from(new Set(priorNewsletters.filter(issue => newsletterYearFilter === "all" || newsletterYearMonth(issue.issueDate).year === newsletterYearFilter).map(issue => newsletterYearMonth(issue.issueDate).month).filter(Boolean))).sort((a, b) => Number(b) - Number(a)), [newsletterYearFilter, priorNewsletters]);
+  const filteredPriorNewsletters = useMemo(() => priorNewsletters.filter(issue => {
+    const { year, month: issueMonth } = newsletterYearMonth(issue.issueDate);
+    return (newsletterYearFilter === "all" || year === newsletterYearFilter) && (newsletterMonthFilter === "all" || issueMonth === newsletterMonthFilter);
+  }), [newsletterMonthFilter, newsletterYearFilter, priorNewsletters]);
 
   const showFeaturedDate = () => {
     if (!featuredSpecial) return;
@@ -289,10 +307,16 @@ export default function Events() {
                 </article>
 
                 <aside aria-labelledby="previous-newsletters-title" className="min-w-0">
-                  <div className="mb-4 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">Archive</p><h3 id="previous-newsletters-title" className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 교회 주보" : "Previous bulletins"}</h3></div><span className="text-xs text-[#607A91]">{lang === "ko" ? `최근 ${priorNewsletters.length}주` : `${priorNewsletters.length} recent issue${priorNewsletters.length === 1 ? "" : "s"}`}</span></div>
-                  {priorNewsletters.length > 0 ? <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
-                    {priorNewsletters.map(issue => <button key={issue.id} type="button" onClick={() => setPreviewIssue(issue)} className="group flex w-full items-center gap-4 rounded-lg border border-[#DCE4E7] bg-white p-3 text-left transition-[transform,border-color,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/65 hover:bg-[#FFFEFB] hover:shadow-[0_8px_18px_rgba(22,59,89,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="grid size-11 shrink-0 place-items-center rounded-sm bg-[#F6F0E5] text-[#B07834]"><FileText className="size-5" /></div><span className="min-w-0 flex-1"><span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</span><span className="mt-0.5 block truncate font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</span><span className="mt-1 block text-xs text-[#607A91]">{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</span></span><Eye className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:scale-110 group-hover:text-[#B07834] motion-reduce:transform-none" /></button>)}
-                  </div> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "지난 주보가 게시되면 이곳에서 볼 수 있습니다." : "Previous bulletins will appear here once published."}</div>}
+                  <div className="mb-4 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">Archive</p><h3 id="previous-newsletters-title" className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 교회 주보" : "Previous bulletins"}</h3></div><span aria-live="polite" className="text-xs text-[#607A91]">{lang === "ko" ? `${filteredPriorNewsletters.length}개 보기` : `${filteredPriorNewsletters.length} issue${filteredPriorNewsletters.length === 1 ? "" : "s"}`}</span></div>
+                  {priorNewsletters.length > 0 ? <>
+                    <div aria-label={lang === "ko" ? "지난 주보 필터" : "Previous bulletin filters"} className="mb-4 grid grid-cols-2 gap-2">
+                      <Select value={newsletterYearFilter} onValueChange={value => { setNewsletterYearFilter(value); setNewsletterMonthFilter("all"); }}><SelectTrigger className="w-full border-[#C8D4D9] bg-white text-[#163B59] focus-visible:ring-[#607A91]"><SelectValue placeholder={lang === "ko" ? "연도 전체" : "All years"} /></SelectTrigger><SelectContent><SelectItem value="all">{lang === "ko" ? "연도 전체" : "All years"}</SelectItem>{newsletterYears.map(year => <SelectItem key={year} value={year}>{year}</SelectItem>)}</SelectContent></Select>
+                      <Select value={newsletterMonthFilter} onValueChange={setNewsletterMonthFilter}><SelectTrigger className="w-full border-[#C8D4D9] bg-white text-[#163B59] focus-visible:ring-[#607A91]"><SelectValue placeholder={lang === "ko" ? "월 전체" : "All months"} /></SelectTrigger><SelectContent><SelectItem value="all">{lang === "ko" ? "월 전체" : "All months"}</SelectItem>{newsletterMonths.map(issueMonth => <SelectItem key={issueMonth} value={issueMonth}>{newsletterMonthLabel(issueMonth, lang)}</SelectItem>)}</SelectContent></Select>
+                    </div>
+                    {filteredPriorNewsletters.length > 0 ? <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                      {filteredPriorNewsletters.map(issue => <button key={issue.id} type="button" onClick={() => setPreviewIssue(issue)} className="group flex w-full items-center gap-4 rounded-lg border border-[#DCE4E7] bg-white p-3 text-left transition-[transform,border-color,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/65 hover:bg-[#FFFEFB] hover:shadow-[0_8px_18px_rgba(22,59,89,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="grid size-11 shrink-0 place-items-center rounded-sm bg-[#F6F0E5] text-[#B07834]"><FileText className="size-5" /></div><span className="min-w-0 flex-1"><span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</span><span className="mt-0.5 block truncate font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</span><span className="mt-1 block text-xs text-[#607A91]">{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</span></span><Eye className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:scale-110 group-hover:text-[#B07834] motion-reduce:transform-none" /></button>)}
+                    </div> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "선택한 연도와 월에 해당하는 주보가 없습니다." : "No bulletins match the selected year and month."}</div>}
+                  </> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "지난 주보가 게시되면 이곳에서 볼 수 있습니다." : "Previous bulletins will appear here once published."}</div>}
                 </aside>
               </div>
             ) : (

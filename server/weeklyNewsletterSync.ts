@@ -11,7 +11,7 @@ import { storagePut } from "./storage";
 const PUBLIC_DRIVE_BASE_URL = "https://drive.google.com/drive/folders";
 const PUBLIC_DRIVE_DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MAX_BULLETIN_BYTES = 20 * 1024 * 1024;
-const BULLETIN_ARCHIVE_LIMIT = 12;
+const BULLETIN_ARCHIVE_LIMIT = 100;
 
 export type PublicDriveBulletin = {
   driveFileId: string;

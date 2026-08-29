@@ -274,9 +274,9 @@ export const appRouter = router({
     /** The latest public bulletin for the Events page. */
     latest: publicProcedure.query(() => getLatestPublishedWeeklyNewsletterIssue()),
 
-    /** Latest public bulletin archive, limited to a modest page-friendly size. */
+    /** Public bulletin archive, capped to protect response size while supporting year/month browsing. */
     list: publicProcedure
-      .input(z.object({ limit: z.number().int().min(1).max(24).default(12) }))
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(12) }))
       .query(({ input }) => listPublishedWeeklyNewsletterIssues(input.limit)),
 
     /** Administrators can inspect drafts, hidden records, and sync diagnostics. */

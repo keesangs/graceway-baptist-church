@@ -7,6 +7,7 @@ const adminPanel = readFileSync(new URL("../client/src/components/AdminWeeklyNew
 const adminInbox = readFileSync(new URL("../client/src/pages/AdminInbox.tsx", import.meta.url), "utf8");
 const scheduledHandler = readFileSync(new URL("./weeklyNewsletterScheduledHandler.ts", import.meta.url), "utf8");
 const pdfPreview = readFileSync(new URL("../client/src/components/WeeklyNewsletterPdfPreview.tsx", import.meta.url), "utf8");
+const weeklyNewsletterRouter = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 
 describe("weekly newsletter experience", () => {
   it("shows the latest bulletin as a left preview with the previous archive as a right-hand list", () => {
@@ -28,6 +29,17 @@ describe("weekly newsletter experience", () => {
     expect(pdfPreview).toContain("PDF 미리보기");
     expect(pdfPreview).toContain("https://drive.google.com/file/d/${issue.driveFileId}/preview");
     expect(pdfPreview).toContain("주보 미리보기 닫기");
+  });
+
+  it("filters the previous bulletin archive by year and month without limiting long-lived archives to one year", () => {
+    expect(eventsPage).toContain('const [newsletterYearFilter, setNewsletterYearFilter] = useState("all")');
+    expect(eventsPage).toContain('const [newsletterMonthFilter, setNewsletterMonthFilter] = useState("all")');
+    expect(eventsPage).toContain("const filteredPriorNewsletters");
+    expect(eventsPage).toContain("연도 전체");
+    expect(eventsPage).toContain("월 전체");
+    expect(eventsPage).toContain("선택한 연도와 월에 해당하는 주보가 없습니다.");
+    expect(eventsPage).toContain("({ limit: 100 })");
+    expect(weeklyNewsletterRouter).toContain("max(100).default(12)");
   });
 
   it("provides a staff-only sync retry and publishing controls in Admin", () => {
