@@ -189,6 +189,7 @@
 - [x] Weekly newsletter layout tests: 주보 선택·썸네일·목록·PDF 미리보기·반응형 레이아웃 회귀 테스트 추가
 - [x] Weekly newsletter archive filters: 이전 주보 목록에 연도·월 필터와 선택 결과·빈 상태를 추가하고 반응형 접근성 검증
 - [x] Weekly newsletter header thumbnail: 이번 주 주보 첫 페이지 썸네일을 행사 페이지 좌측 헤더 하단으로 재배치하고 반응형 검증
+- [x] Weekly newsletter tile thumbnail correction: 이번 주 주보 좌측 타일의 발행 날짜 바로 아래에 첫 페이지 썸네일을 배치하고 헤더 중복을 제거·검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
