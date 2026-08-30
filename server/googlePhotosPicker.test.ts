@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { decryptGooglePhotosRefreshToken, encryptGooglePhotosRefreshToken, getGooglePhotosRedirectUri } from "./googlePhotos";
+import { decryptGooglePhotosRefreshToken, encryptGooglePhotosRefreshToken, getGooglePhotosFilename, getGooglePhotosRedirectUri, resolveGooglePhotosImageMimeType } from "./googlePhotos";
 
 const googlePhotosModule = readFileSync(new URL("./googlePhotos.ts", import.meta.url), "utf8");
 const googlePhotosRoutes = readFileSync(new URL("./googlePhotosRoutes.ts", import.meta.url), "utf8");
@@ -33,6 +33,14 @@ describe("Google Photos Picker import", () => {
     expect(googlePhotosModule).toContain('status: "draft"');
     expect(googlePhotosModule).toContain("=w2048-h2048");
     expect(googlePhotosModule).toContain("MAX_IMPORTED_FILE_SIZE");
+  });
+
+  it("accepts standard Picker image MIME aliases and photos without an original filename", () => {
+    expect(resolveGooglePhotosImageMimeType({ responseMimeType: "image/jpg; charset=binary" })).toBe("image/jpeg");
+    expect(resolveGooglePhotosImageMimeType({ declaredMimeType: "image/x-png" })).toBe("image/png");
+    expect(resolveGooglePhotosImageMimeType({ filename: "church-gathering.webp" })).toBe("image/webp");
+    expect(resolveGooglePhotosImageMimeType({ declaredMimeType: "image/gif" })).toBe("image/gif");
+    expect(getGooglePhotosFilename("selected-photo-1", undefined, "image/jpeg")).toBe("google-photo-selected-photo-1.jpg");
   });
 
   it("exposes the authorization, picker session, and selected import flow only to admins", () => {

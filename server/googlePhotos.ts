@@ -17,7 +17,35 @@ const GOOGLE_PICKER_BASE_URL = "https://photospicker.googleapis.com/v1";
 const OAUTH_STATE_TTL_MILLISECONDS = 10 * 60 * 1000;
 const MAX_IMPORTED_PHOTOS = 100;
 const MAX_IMPORTED_FILE_SIZE = 20 * 1024 * 1024;
-const supportedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const supportedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
+type SupportedGooglePhotosMimeType = "image/jpeg" | "image/png" | "image/webp" | "image/avif" | "image/gif";
+
+const filenameMimeTypes: Record<string, SupportedGooglePhotosMimeType> = {
+  avif: "image/avif", gif: "image/gif", jpeg: "image/jpeg", jpe: "image/jpeg", jpg: "image/jpeg", png: "image/png", webp: "image/webp",
+};
+
+function normalizedMimeType(value?: string | null) {
+  const normalized = value?.split(";")[0]?.trim().toLowerCase() ?? "";
+  if (normalized === "image/jpg" || normalized === "image/pjpeg") return "image/jpeg";
+  if (normalized === "image/x-png") return "image/png";
+  if (normalized === "image/x-webp") return "image/webp";
+  return normalized;
+}
+
+export function resolveGooglePhotosImageMimeType(values: { responseMimeType?: string | null; declaredMimeType?: string | null; filename?: string | null }): SupportedGooglePhotosMimeType | null {
+  for (const candidate of [normalizedMimeType(values.responseMimeType), normalizedMimeType(values.declaredMimeType)]) {
+    if (supportedMimeTypes.has(candidate)) return candidate as SupportedGooglePhotosMimeType;
+  }
+  const extension = values.filename?.split(".").pop()?.toLowerCase() ?? "";
+  return filenameMimeTypes[extension] ?? null;
+}
+
+export function getGooglePhotosFilename(itemId: string, filename?: string | null, mimeType?: string | null) {
+  const supplied = filename?.trim();
+  if (supplied) return supplied;
+  const extension = resolveGooglePhotosImageMimeType({ declaredMimeType: mimeType })?.split("/")[1] ?? "jpg";
+  return `google-photo-${itemId}.${extension === "jpeg" ? "jpg" : extension}`;
+}
 
 type GoogleTokenResponse = { access_token?: string; refresh_token?: string; scope?: string; error?: string; error_description?: string };
 type PickedMediaItem = { id: string; type: "PHOTO" | "VIDEO" | string; mediaFile?: { baseUrl?: string; mimeType?: string; filename?: string } };
@@ -149,18 +177,21 @@ export async function importGooglePhotosSelection(userId: number, albumId: numbe
   let unsupported = 0;
   for (const item of pickedItems) {
     const mediaFile = item.mediaFile;
-    if (item.type !== "PHOTO" || !mediaFile?.baseUrl || !mediaFile.filename) { unsupported += 1; continue; }
+    if (item.type !== "PHOTO" || !mediaFile?.baseUrl) { unsupported += 1; continue; }
     if (await getGalleryPhotoByGooglePhotosSourceItemId(item.id)) { skipped += 1; continue; }
     const source = await fetch(`${mediaFile.baseUrl}=w2048-h2048`);
-    const mimeType = source.headers.get("content-type")?.split(";")[0].toLowerCase() ?? mediaFile.mimeType?.toLowerCase() ?? "";
+    const filename = getGooglePhotosFilename(item.id, mediaFile.filename, mediaFile.mimeType);
+    const mimeType = resolveGooglePhotosImageMimeType({
+      responseMimeType: source.headers.get("content-type"), declaredMimeType: mediaFile.mimeType, filename,
+    });
     const expectedSize = Number(source.headers.get("content-length") ?? 0);
-    if (!source.ok || !supportedMimeTypes.has(mimeType) || (expectedSize && expectedSize > MAX_IMPORTED_FILE_SIZE)) { unsupported += 1; continue; }
+    if (!source.ok || !mimeType || (expectedSize && expectedSize > MAX_IMPORTED_FILE_SIZE)) { unsupported += 1; continue; }
     const buffer = Buffer.from(await source.arrayBuffer());
     if (!buffer.byteLength || buffer.byteLength > MAX_IMPORTED_FILE_SIZE) { unsupported += 1; continue; }
-    const safeFilename = mediaFile.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
     const { key, url } = await storagePut(`church-gallery/${albumId}/google-${item.id}-${safeFilename}`, buffer, mimeType);
     await createGalleryPhoto({
-      albumId, filename: mediaFile.filename, storageKey: key, storageUrl: url, mimeType, fileSize: buffer.byteLength,
+      albumId, filename, storageKey: key, storageUrl: url, mimeType, fileSize: buffer.byteLength,
       captionKo: null, captionEn: null, altTextKo: null, altTextEn: null, source: "google_photos", sourceItemId: item.id,
       sortOrder: imported, status: "draft", uploadedBy: userId,
     });
