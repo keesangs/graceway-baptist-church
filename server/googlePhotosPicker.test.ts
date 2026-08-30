@@ -32,6 +32,7 @@ describe("Google Photos Picker import", () => {
     expect(googlePhotosModule).toContain("source: \"google_photos\"");
     expect(googlePhotosModule).toContain('status: "draft"');
     expect(googlePhotosModule).toContain("=w2048-h2048");
+    expect(googlePhotosModule).toMatch(/const source = await fetch\([\s\S]*Authorization: `Bearer \$\{accessToken\}`/);
     expect(googlePhotosModule).toContain("MAX_IMPORTED_FILE_SIZE");
   });
 

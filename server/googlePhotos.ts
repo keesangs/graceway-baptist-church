@@ -179,7 +179,12 @@ export async function importGooglePhotosSelection(userId: number, albumId: numbe
     const mediaFile = item.mediaFile;
     if (item.type !== "PHOTO" || !mediaFile?.baseUrl) { unsupported += 1; continue; }
     if (await getGalleryPhotoByGooglePhotosSourceItemId(item.id)) { skipped += 1; continue; }
-    const source = await fetch(`${mediaFile.baseUrl}=w2048-h2048`);
+    // Picker media URLs are temporary resources associated with the selected
+    // session. Include the same OAuth token used for the Picker API so Google
+    // returns image bytes instead of an unauthenticated HTML/error response.
+    const source = await fetch(`${mediaFile.baseUrl}=w2048-h2048`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     const filename = getGooglePhotosFilename(item.id, mediaFile.filename, mediaFile.mimeType);
     const mimeType = resolveGooglePhotosImageMimeType({
       responseMimeType: source.headers.get("content-type"), declaredMimeType: mediaFile.mimeType, filename,
