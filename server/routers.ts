@@ -57,6 +57,8 @@ import { storagePut } from "./storage";
 import { fetchPlaylistVideos } from "./youtube";
 import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
+import { beginGooglePhotosAuthorization, createGooglePhotosPickerSession, getGooglePhotosPickerSession, importGooglePhotosSelection } from "./googlePhotos";
+import { deleteGooglePhotosConnectionForUser, getGooglePhotosConnectionForUser } from "./db";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -433,6 +435,36 @@ export const appRouter = router({
         if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Gallery photo not found" });
         await deleteGalleryPhoto(input.id);
         return { success: true } as const;
+      }),
+  }),
+
+  // ── Google Photos Picker ──────────────────────────────────────────────────
+  // Google allows access only to photos an administrator explicitly selects.
+  googlePhotos: router({
+    connectionStatus: adminProcedure.query(async ({ ctx }) => {
+      const connection = await getGooglePhotosConnectionForUser(ctx.user.id);
+      return connection ? { connected: true, connectedAt: connection.connectedAt, googleAccountEmail: connection.googleAccountEmail } : { connected: false, connectedAt: null, googleAccountEmail: null };
+    }),
+
+    beginAuthorization: adminProcedure.mutation(({ ctx }) => beginGooglePhotosAuthorization(ctx.user.id)),
+
+    disconnect: adminProcedure.mutation(async ({ ctx }) => {
+      await deleteGooglePhotosConnectionForUser(ctx.user.id);
+      return { success: true } as const;
+    }),
+
+    createPickerSession: adminProcedure.mutation(({ ctx }) => createGooglePhotosPickerSession(ctx.user.id)),
+
+    getPickerSession: adminProcedure
+      .input(z.object({ sessionId: z.string().trim().min(1).max(255) }))
+      .query(({ input, ctx }) => getGooglePhotosPickerSession(ctx.user.id, input.sessionId)),
+
+    importSelection: adminProcedure
+      .input(z.object({ albumId: z.number().int().positive(), sessionId: z.string().trim().min(1).max(255) }))
+      .mutation(async ({ input, ctx }) => {
+        const album = await getPhotoAlbumById(input.albumId);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        return importGooglePhotosSelection(ctx.user.id, input.albumId, input.sessionId);
       }),
   }),
 

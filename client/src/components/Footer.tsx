@@ -107,7 +107,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
           <p className="text-xs text-white/40">{t("footer.copyright").replace("2026", String(new Date().getFullYear()))}</p>
-          <p className="text-xs text-white/40">{t("footer.brandValues")}</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-white/40"><p>{t("footer.brandValues")}</p><span aria-hidden="true" className="text-white/20">|</span><Link href="/privacy" className="transition-colors hover:text-[#D9B87A]">{lang === "ko" ? "개인정보 처리방침" : "Privacy"}</Link><Link href="/terms" className="transition-colors hover:text-[#D9B87A]">{lang === "ko" ? "이용약관" : "Terms"}</Link></div>
         </div>
       </div>
     </footer>

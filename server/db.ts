@@ -9,6 +9,7 @@ import {
   InsertContactMessage,
   InsertDailyMeditation,
   InsertGalleryPhoto,
+  InsertGooglePhotosConnection,
   InsertMediaFile,
   InsertMeditationComment,
   InsertNewsletterSubscriber,
@@ -17,6 +18,8 @@ import {
   InsertUser,
   InsertYouTubeVideo,
   galleryPhotos,
+  googlePhotosConnections,
+  googlePhotosOAuthStates,
   mediaFiles,
   meditationCommentLikes,
   meditationComments,
@@ -537,6 +540,71 @@ export async function deleteGalleryPhoto(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(galleryPhotos).where(eq(galleryPhotos.id, id));
+}
+
+export async function getGalleryPhotoByGooglePhotosSourceItemId(sourceItemId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [photo] = await db
+    .select()
+    .from(galleryPhotos)
+    .where(and(eq(galleryPhotos.source, "google_photos"), eq(galleryPhotos.sourceItemId, sourceItemId)))
+    .limit(1);
+  return photo ?? null;
+}
+
+// ── Google Photos OAuth connection ─────────────────────────────────────────
+
+export async function getGooglePhotosConnectionForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [connection] = await db
+    .select()
+    .from(googlePhotosConnections)
+    .where(eq(googlePhotosConnections.userId, userId))
+    .limit(1);
+  return connection ?? null;
+}
+
+export async function saveGooglePhotosConnection(data: InsertGooglePhotosConnection) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(googlePhotosConnections).values(data).onDuplicateKeyUpdate({
+    set: {
+      googleAccountEmail: data.googleAccountEmail,
+      encryptedRefreshToken: data.encryptedRefreshToken,
+      scope: data.scope,
+      connectedAt: new Date(),
+    },
+  });
+  return getGooglePhotosConnectionForUser(data.userId);
+}
+
+export async function deleteGooglePhotosConnectionForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(googlePhotosConnections).where(eq(googlePhotosConnections.userId, userId));
+}
+
+export async function createGooglePhotosOAuthState(state: string, userId: number, expiresAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(googlePhotosOAuthStates).values({ state, userId, expiresAt });
+}
+
+/** Reads and removes a single-use OAuth CSRF state token. */
+export async function consumeGooglePhotosOAuthState(state: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [record] = await db
+    .select()
+    .from(googlePhotosOAuthStates)
+    .where(eq(googlePhotosOAuthStates.state, state))
+    .limit(1);
+  if (!record) return null;
+  await db.delete(googlePhotosOAuthStates).where(eq(googlePhotosOAuthStates.state, state));
+  if (record.expiresAt.getTime() < Date.now()) return null;
+  return record;
 }
 
 // Meditation comment queries

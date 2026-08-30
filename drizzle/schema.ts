@@ -321,3 +321,31 @@ export const galleryPhotos = mysqlTable("gallery_photos", {
 
 export type GalleryPhoto = typeof galleryPhotos.$inferSelect;
 export type InsertGalleryPhoto = typeof galleryPhotos.$inferInsert;
+
+// Per-admin Google Photos OAuth connection. Refresh tokens are encrypted before
+// persistence; no raw access token or selected photo URL is stored in this table.
+export const googlePhotosConnections = mysqlTable("google_photos_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  googleAccountEmail: varchar("googleAccountEmail", { length: 320 }),
+  encryptedRefreshToken: text("encryptedRefreshToken").notNull(),
+  scope: varchar("scope", { length: 1024 }).notNull(),
+  connectedAt: timestamp("connectedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GooglePhotosConnection = typeof googlePhotosConnections.$inferSelect;
+export type InsertGooglePhotosConnection = typeof googlePhotosConnections.$inferInsert;
+
+// Short-lived, single-use CSRF state records for the Google OAuth callback.
+// This is separate from Picker sessions and contains no Google credential.
+export const googlePhotosOAuthStates = mysqlTable("google_photos_oauth_states", {
+  state: varchar("state", { length: 128 }).primaryKey(),
+  userId: int("userId").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  expiresIdx: index("google_photos_oauth_state_expires_idx").on(table.expiresAt),
+}));
+
+export type GooglePhotosOAuthState = typeof googlePhotosOAuthStates.$inferSelect;

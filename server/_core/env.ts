@@ -8,6 +8,7 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   googleDriveBulletinFolderId: process.env.GOOGLE_DRIVE_BULLETIN_FOLDER_ID ?? "",
+  googlePhotosClientId: process.env.GOOGLE_PHOTOS_CLIENT_ID ?? "",
+  googlePhotosClientSecret: process.env.GOOGLE_PHOTOS_CLIENT_SECRET ?? "",
   youversionApiKey: process.env.YOUVERSION_API_KEY ?? "",
 };
-

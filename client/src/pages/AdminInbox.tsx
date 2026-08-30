@@ -78,7 +78,10 @@ function downloadCsv(filename: string, rows: string[][]) {
 
 export default function AdminInbox() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const [tab, setTab] = useState<Tab>("messages");
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window === "undefined") return "messages";
+    return new URLSearchParams(window.location.search).get("tab") === "gallery" ? "gallery" : "messages";
+  });
 
   const isAdmin = user?.role === "admin";
 

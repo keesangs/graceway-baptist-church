@@ -16,6 +16,8 @@ import Connect from "./pages/Connect";
 import MediaLibrary from "./pages/MediaLibrary";
 import Events from "./pages/Events";
 import Gallery from "./pages/Gallery";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import AdminInbox from "@/pages/AdminInbox";
 import AdminDailyBible from "@/pages/AdminDailyBible";
 import { scrollPageToTop } from "@/lib/navigation";
@@ -44,6 +46,8 @@ function Router() {
       <Route path="/media" component={MediaLibrary} />
       <Route path="/events" component={Events} />
       <Route path="/gallery" component={Gallery} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfService} />
       <Route path="/admin" component={AdminInbox} />
       <Route path="/admin/daily-bible" component={AdminDailyBible} />
       <Route path="/404" component={NotFound} />

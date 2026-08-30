@@ -25,12 +25,14 @@ vi.mock("./db", () => ({
   createPhotoAlbum: (...args: unknown[]) => createPhotoAlbum(...args),
   deleteCalendarEvent: (...args: unknown[]) => deleteCalendarEvent(...args),
   deleteGalleryPhoto: (...args: unknown[]) => deleteGalleryPhoto(...args),
+  deleteGooglePhotosConnectionForUser: vi.fn(),
   deletePhotoAlbum: (...args: unknown[]) => deletePhotoAlbum(...args),
   deleteMeditationComment: vi.fn(),
   deleteMediaFile: vi.fn(),
   deleteDailyMeditation: vi.fn(),
   getCalendarEventById: (...args: unknown[]) => getCalendarEventById(...args),
   getGalleryPhotoById: (...args: unknown[]) => getGalleryPhotoById(...args),
+  getGooglePhotosConnectionForUser: vi.fn(),
   getPhotoAlbumById: (...args: unknown[]) => getPhotoAlbumById(...args),
   getPublishedPhotoAlbum: (...args: unknown[]) => getPublishedPhotoAlbum(...args),
   getDailyMeditationByDate: vi.fn(),
@@ -219,5 +221,11 @@ describe("gallery router", () => {
     expect(createPhotoAlbum).toHaveBeenCalledWith(expect.objectContaining({
       titleKo: "여름 연합 예배", titleEn: null, descriptionKo: null, albumDate: null, createdBy: 9, status: "draft",
     }));
+  });
+});
+
+describe("Google Photos router", () => {
+  it("denies non-admin users before Google Photos authorization can start", async () => {
+    await expect(appRouter.createCaller(makeContext("user")).googlePhotos.beginAuthorization()).rejects.toThrow();
   });
 });
