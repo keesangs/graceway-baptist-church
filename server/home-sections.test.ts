@@ -36,6 +36,8 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("unsyncedLegacySermons");
     expect(homeSource).toContain("(b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0)");
     expect(homeSource).toContain('titleKo: "성령으로 채우시다"');
+    expect(homeSource).toContain('titleKo: "성령이 임하시다"');
+    expect(homeSource).toContain('scripture: "사도행전 2:1–13"');
     expect(homeSource).toContain('titleKo: "하나님을 따라간다는 것"');
   });
 
