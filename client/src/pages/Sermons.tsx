@@ -3,7 +3,7 @@
  * Sections: Hero, Featured Sermon, Sermon Archive with filter
  * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Clock, BookOpen, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -167,12 +167,22 @@ const legacySermons: SermonCard[] = [
 
 const seriesFilters = ["All", "Sunday Sermon"];
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
+const ARCHIVE_FADE_DURATION_MS = 160;
 
 export function getResponsiveSermonsPerPage(viewportWidth: number) {
   if (viewportWidth >= 1280) return 8; // xl: 4 columns × 2 rows
   if (viewportWidth >= 1024) return 6; // lg: 3 columns × 2 rows
   if (viewportWidth >= 640) return 4; // sm: 2 columns × 2 rows
   return 2; // mobile: 1 column × 2 rows
+}
+
+function getPageNumbers(totalPages: number, currentPage: number) {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  return Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
 }
 
 function useResponsiveSermonsPerPage() {
@@ -201,6 +211,8 @@ export default function Sermons() {
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isArchiveTransitioning, setIsArchiveTransitioning] = useState(false);
+  const archiveTransitionTimer = useRef<number | null>(null);
   const sermonsPerPage = useResponsiveSermonsPerPage();
   const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
 
@@ -248,6 +260,32 @@ export default function Sermons() {
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
   }, [totalPages]);
+
+  useEffect(() => {
+    return () => {
+      if (archiveTransitionTimer.current !== null) {
+        window.clearTimeout(archiveTransitionTimer.current);
+      }
+    };
+  }, []);
+
+  const changeArchivePage = (nextPage: number) => {
+    const boundedPage = Math.min(totalPages, Math.max(1, nextPage));
+    if (boundedPage === visiblePage || isArchiveTransitioning) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCurrentPage(boundedPage);
+      return;
+    }
+
+    setIsArchiveTransitioning(true);
+    archiveTransitionTimer.current = window.setTimeout(() => {
+      setCurrentPage(boundedPage);
+      window.requestAnimationFrame(() => setIsArchiveTransitioning(false));
+    }, ARCHIVE_FADE_DURATION_MS);
+  };
+
+  const visiblePageNumbers = getPageNumbers(totalPages, visiblePage);
 
   const featured = sermons[0];
   const playingSermon = playingId ? sermons.find((sermon) => sermon.videoId === playingId) : null;
@@ -418,7 +456,10 @@ export default function Sermons() {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div
+            aria-busy={isArchiveTransitioning}
+            className={`grid grid-cols-1 gap-5 transition-opacity duration-[160ms] motion-reduce:transition-none sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${isArchiveTransitioning ? "opacity-0" : "opacity-100"}`}
+          >
             {paginatedSermons.map((s) => (
               <article key={s.videoId} className="group overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-sm transition-shadow duration-300 hover:shadow-md">
                 <button
@@ -494,19 +535,33 @@ export default function Sermons() {
               <div className="flex items-center gap-2" role="group" aria-label={lang === "ko" ? "페이지 이동" : "Page controls"}>
                 <button
                   type="button"
-                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  disabled={visiblePage === 1}
+                  onClick={() => changeArchivePage(visiblePage - 1)}
+                  disabled={visiblePage === 1 || isArchiveTransitioning}
                   className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={15} /> {lang === "ko" ? "이전" : "Previous"}
                 </button>
-                <span className="min-w-16 text-center text-xs font-semibold text-[#163B59]" aria-current="page">
-                  {lang === "ko" ? `${visiblePage} / ${totalPages}쪽` : `${visiblePage} / ${totalPages}`}
-                </span>
+                {visiblePageNumbers.map((page, index) => (
+                  <span key={page} className="contents">
+                    {index > 0 && page - visiblePageNumbers[index - 1] > 1 && (
+                      <span className="px-0.5 text-xs text-[#607A91]" aria-hidden="true">…</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => changeArchivePage(page)}
+                      disabled={isArchiveTransitioning}
+                      aria-current={page === visiblePage ? "page" : undefined}
+                      aria-label={lang === "ko" ? `${page}쪽으로 이동` : `Go to page ${page}`}
+                      className={`flex h-10 min-w-10 items-center justify-center rounded-sm px-2 text-xs font-semibold transition-colors ${page === visiblePage ? "bg-[#163B59] text-white" : "border border-[#C8D4D9] bg-[#FFFEFB] text-[#163B59] hover:border-[#607A91]"} disabled:cursor-not-allowed disabled:opacity-50`}
+                    >
+                      {page}
+                    </button>
+                  </span>
+                ))}
                 <button
                   type="button"
-                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                  disabled={visiblePage === totalPages}
+                  onClick={() => changeArchivePage(visiblePage + 1)}
+                  disabled={visiblePage === totalPages || isArchiveTransitioning}
                   className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {lang === "ko" ? "다음" : "Next"} <ChevronRight size={15} />

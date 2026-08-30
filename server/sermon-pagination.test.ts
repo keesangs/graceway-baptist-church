@@ -27,7 +27,23 @@ describe("sermon archive pagination", () => {
   it("provides labelled previous and next controls with boundary protection", () => {
     const source = sermonsSource();
     expect(source).toContain('aria-label={lang === "ko" ? "설교 목록 페이지 탐색"');
-    expect(source).toContain("disabled={visiblePage === 1}");
-    expect(source).toContain("disabled={visiblePage === totalPages}");
+    expect(source).toContain("disabled={visiblePage === 1 || isArchiveTransitioning}");
+    expect(source).toContain("disabled={visiblePage === totalPages || isArchiveTransitioning}");
+  });
+
+  it("fades the archive briefly before changing pages and respects reduced motion", () => {
+    const source = sermonsSource();
+    expect(source).toContain("const ARCHIVE_FADE_DURATION_MS = 160");
+    expect(source).toContain('window.matchMedia("(prefers-reduced-motion: reduce)").matches');
+    expect(source).toContain("setIsArchiveTransitioning(true);");
+    expect(source).toContain("transition-opacity duration-[160ms] motion-reduce:transition-none");
+    expect(source).toContain('aria-busy={isArchiveTransitioning}');
+  });
+
+  it("offers direct page number selection alongside previous and next controls", () => {
+    const source = sermonsSource();
+    expect(source).toContain("const visiblePageNumbers = getPageNumbers(totalPages, visiblePage)");
+    expect(source).toContain("{visiblePageNumbers.map((page, index) => (");
+    expect(source).toContain("onClick={() => changeArchivePage(page)}");
   });
 });
