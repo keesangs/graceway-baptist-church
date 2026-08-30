@@ -167,7 +167,28 @@ const legacySermons: SermonCard[] = [
 
 const seriesFilters = ["All", "Sunday Sermon"];
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
-const SERMONS_PER_PAGE = 6;
+
+export function getResponsiveSermonsPerPage(viewportWidth: number) {
+  if (viewportWidth >= 1280) return 8; // xl: 4 columns × 2 rows
+  if (viewportWidth >= 1024) return 6; // lg: 3 columns × 2 rows
+  if (viewportWidth >= 640) return 4; // sm: 2 columns × 2 rows
+  return 2; // mobile: 1 column × 2 rows
+}
+
+function useResponsiveSermonsPerPage() {
+  const [sermonsPerPage, setSermonsPerPage] = useState(() =>
+    getResponsiveSermonsPerPage(typeof window === "undefined" ? 1280 : window.innerWidth),
+  );
+
+  useEffect(() => {
+    const updateSermonsPerPage = () => setSermonsPerPage(getResponsiveSermonsPerPage(window.innerWidth));
+    updateSermonsPerPage();
+    window.addEventListener("resize", updateSermonsPerPage);
+    return () => window.removeEventListener("resize", updateSermonsPerPage);
+  }, []);
+
+  return sermonsPerPage;
+}
 
 // YouTube thumbnail URL helper
 function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
@@ -180,6 +201,7 @@ export default function Sermons() {
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const sermonsPerPage = useResponsiveSermonsPerPage();
   const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
 
   const sermons = useMemo(() => {
@@ -218,10 +240,10 @@ export default function Sermons() {
     return matchSeries && matchSearch;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / SERMONS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / sermonsPerPage));
   const visiblePage = Math.min(currentPage, totalPages);
-  const pageStart = (visiblePage - 1) * SERMONS_PER_PAGE;
-  const paginatedSermons = filtered.slice(pageStart, pageStart + SERMONS_PER_PAGE);
+  const pageStart = (visiblePage - 1) * sermonsPerPage;
+  const paginatedSermons = filtered.slice(pageStart, pageStart + sermonsPerPage);
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
@@ -466,8 +488,8 @@ export default function Sermons() {
             <nav aria-label={lang === "ko" ? "설교 목록 페이지 탐색" : "Sermon archive pagination"} className="mt-9 flex flex-col items-center justify-between gap-4 border-t border-[#D7E1E5] pt-6 sm:flex-row">
               <p className="text-xs text-[#607A91]" aria-live="polite">
                 {lang === "ko"
-                  ? `${pageStart + 1}–${Math.min(pageStart + SERMONS_PER_PAGE, filtered.length)} / ${filtered.length}편`
-                  : `${pageStart + 1}–${Math.min(pageStart + SERMONS_PER_PAGE, filtered.length)} of ${filtered.length} messages`}
+                  ? `${pageStart + 1}–${Math.min(pageStart + sermonsPerPage, filtered.length)} / ${filtered.length}편`
+                  : `${pageStart + 1}–${Math.min(pageStart + sermonsPerPage, filtered.length)} of ${filtered.length} messages`}
               </p>
               <div className="flex items-center gap-2" role="group" aria-label={lang === "ko" ? "페이지 이동" : "Page controls"}>
                 <button

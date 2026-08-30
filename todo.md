@@ -214,6 +214,7 @@
 - [x] Sermon title prefix removal: 모든 설교 카드에서 ‘제목:’ 접두어를 제거하고 날짜·제목·본문 표기를 간결하게 유지·검증
 - [x] Home sermon metadata parity: Home 최근 설교 카드가 설교 페이지와 동일한 날짜·제목·본문 메타데이터를 모든 최신 영상에 표시하도록 보완·검증
 - [x] Sermon archive pagination: 설교 아카이브에 페이지 단위 탐색을 추가해 데스크톱에서 카드가 최대 두 줄로 표시되고 검색·필터 변경 시 첫 페이지로 초기화되도록 구현·검증
+- [x] Sermon responsive pagination: 브라우저 폭별 그리드 열 수에 맞춰 4열은 8개·3열은 6개 카드로 최대 두 줄이 보이도록 동적 페이지네이션 구현·검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

@@ -1,15 +1,19 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { getResponsiveSermonsPerPage } from "../client/src/pages/Sermons";
 
 const sermonsSource = () =>
   readFileSync(resolve(process.cwd(), "client/src/pages/Sermons.tsx"), "utf8");
 
 describe("sermon archive pagination", () => {
-  it("limits each archive page to six sermon cards", () => {
+  it("keeps archive cards within two rows at each grid breakpoint", () => {
     const source = sermonsSource();
-    expect(source).toContain("const SERMONS_PER_PAGE = 6");
-    expect(source).toContain("const paginatedSermons = filtered.slice(pageStart, pageStart + SERMONS_PER_PAGE)");
+    expect(getResponsiveSermonsPerPage(1440)).toBe(8);
+    expect(getResponsiveSermonsPerPage(1100)).toBe(6);
+    expect(getResponsiveSermonsPerPage(800)).toBe(4);
+    expect(getResponsiveSermonsPerPage(390)).toBe(2);
+    expect(source).toContain("const paginatedSermons = filtered.slice(pageStart, pageStart + sermonsPerPage)");
     expect(source).toContain("{paginatedSermons.map((s) => (");
   });
 
