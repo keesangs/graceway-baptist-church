@@ -175,10 +175,11 @@ export async function importGooglePhotosSelection(userId: number, albumId: numbe
   let imported = 0;
   let skipped = 0;
   let unsupported = 0;
+  const diagnostics = { nonPhoto: 0, duplicate: 0, downloadFailed: 0, unsupportedFormat: 0, tooLarge: 0 };
   for (const item of pickedItems) {
     const mediaFile = item.mediaFile;
-    if (item.type !== "PHOTO" || !mediaFile?.baseUrl) { unsupported += 1; continue; }
-    if (await getGalleryPhotoByGooglePhotosSourceItemId(item.id)) { skipped += 1; continue; }
+    if (item.type !== "PHOTO" || !mediaFile?.baseUrl) { unsupported += 1; diagnostics.nonPhoto += 1; continue; }
+    if (await getGalleryPhotoByGooglePhotosSourceItemId(item.id)) { skipped += 1; diagnostics.duplicate += 1; continue; }
     // Picker media URLs are temporary resources associated with the selected
     // session. Include the same OAuth token used for the Picker API so Google
     // returns image bytes instead of an unauthenticated HTML/error response.
@@ -190,9 +191,12 @@ export async function importGooglePhotosSelection(userId: number, albumId: numbe
       responseMimeType: source.headers.get("content-type"), declaredMimeType: mediaFile.mimeType, filename,
     });
     const expectedSize = Number(source.headers.get("content-length") ?? 0);
-    if (!source.ok || !mimeType || (expectedSize && expectedSize > MAX_IMPORTED_FILE_SIZE)) { unsupported += 1; continue; }
+    if (!source.ok) { unsupported += 1; diagnostics.downloadFailed += 1; continue; }
+    if (!mimeType) { unsupported += 1; diagnostics.unsupportedFormat += 1; continue; }
+    if (expectedSize && expectedSize > MAX_IMPORTED_FILE_SIZE) { unsupported += 1; diagnostics.tooLarge += 1; continue; }
     const buffer = Buffer.from(await source.arrayBuffer());
-    if (!buffer.byteLength || buffer.byteLength > MAX_IMPORTED_FILE_SIZE) { unsupported += 1; continue; }
+    if (!buffer.byteLength) { unsupported += 1; diagnostics.downloadFailed += 1; continue; }
+    if (buffer.byteLength > MAX_IMPORTED_FILE_SIZE) { unsupported += 1; diagnostics.tooLarge += 1; continue; }
     const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
     const { key, url } = await storagePut(`church-gallery/${albumId}/google-${item.id}-${safeFilename}`, buffer, mimeType);
     await createGalleryPhoto({
@@ -202,5 +206,5 @@ export async function importGooglePhotosSelection(userId: number, albumId: numbe
     });
     imported += 1;
   }
-  return { imported, skipped, unsupported, totalSelected: pickedItems.length };
+  return { imported, skipped, unsupported, totalSelected: pickedItems.length, diagnostics };
 }

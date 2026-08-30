@@ -194,15 +194,15 @@
 - [x] Church photo gallery data model: 앨범·사진 메타데이터·공개 상태·촬영일·가져온 출처를 저장하는 스키마와 마이그레이션 추가
 - [x] Church photo gallery manual upload: 관리자 앨범 생성·사진 수동 업로드·캡션·정렬·공개 상태 관리 구현
 - [x] Church photo gallery public page: 필터 가능한 공개 갤러리·앨범 보기·접근 가능한 전체 화면 사진 뷰어 구현
-- [ ] Google Photos selected import: Google Photos Picker의 관리자 명시적 선택·사이트 저장소 복사·중복 방지 가져오기 구현
-- [ ] Google Photos MIME compatibility fix: Picker가 제공하는 실제 사진 MIME·파일명·응답 헤더를 허용하고 지원 불가 항목만 명확히 안내
-- [ ] Google Photos import response diagnostics: 선택 사진의 안전한 유형·크기·다운로드 응답 통계를 기록해 실제 거부 원인 확인
-- [ ] Gallery deployment quota recovery: 갤러리 변경 배포 시 발생한 서비스 생성 할당량 제한을 해소하고 최신 체크포인트 운영 반영 확인
+- [x] Google Photos selected import: Google Photos Picker의 관리자 명시적 선택·사이트 저장소 복사·중복 방지 가져오기 구현
+- [x] Google Photos MIME compatibility fix: Picker가 제공하는 실제 사진 MIME·파일명·응답 헤더를 허용하고 지원 불가 항목만 명확히 안내
+- [x] Google Photos import response diagnostics: 선택 사진의 안전한 유형·크기·다운로드 응답 통계를 기록해 실제 거부 원인 확인
+- [x] Gallery deployment quota recovery: 갤러리 변경 배포 시 발생한 서비스 생성 할당량 제한을 해소하고 최신 체크포인트 운영 반영 확인
 - [x] Google Photos OAuth redirect registration: Google Cloud OAuth 클라이언트에 https://graceway-baptist.org/api/google-photos/callback 리디렉션 URI를 등록하고 실제 연결 검증
 - [x] Google Photos OAuth retry diagnosis: 계정 선택·동의 후 콜백 실패 원인을 확인하고 재시도 가능한 연결 상태·오류 안내 보완
 - [x] Google Photos OAuth test user registration: Google Cloud OAuth 동의 화면의 테스트 사용자에 keesang@gmail.com을 등록하고 실제 권한 승인 검증
 - [x] OAuth public policy pages: Google OAuth 동의 화면에 연결할 공개 개인정보 처리방침·이용약관 페이지를 작성·라우팅·검증
-- [ ] Church photo gallery test coverage: 공개 상태·관리자 권한·업로드·가져오기·뷰어·반응형 회귀 테스트 추가
+- [x] Church photo gallery test coverage: 공개 상태·관리자 권한·업로드·가져오기·뷰어·반응형 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

@@ -99,7 +99,14 @@ export default function AdminGalleryPanel() {
   });
   const importGooglePhotosSelection = trpc.googlePhotos.importSelection.useMutation({
     onSuccess: async (result) => {
-      setGooglePhotosMessage(`${result.imported}장을 초안으로 가져왔습니다.${result.skipped ? ` ${result.skipped}장은 이미 가져온 사진입니다.` : ""}${result.unsupported ? ` ${result.unsupported}장은 지원하지 않는 형식 또는 크기입니다.` : ""}`);
+      const details = [
+        result.diagnostics.duplicate ? `이미 가져온 사진 ${result.diagnostics.duplicate}장` : null,
+        result.diagnostics.nonPhoto ? `사진이 아닌 항목 ${result.diagnostics.nonPhoto}개` : null,
+        result.diagnostics.unsupportedFormat ? `지원하지 않는 형식 ${result.diagnostics.unsupportedFormat}장` : null,
+        result.diagnostics.tooLarge ? `20MB 초과 ${result.diagnostics.tooLarge}장` : null,
+        result.diagnostics.downloadFailed ? `다운로드 실패 ${result.diagnostics.downloadFailed}장` : null,
+      ].filter(Boolean);
+      setGooglePhotosMessage(`${result.imported}장을 초안으로 가져왔습니다.${details.length ? ` 처리하지 못한 항목: ${details.join(", ")}.` : ""}`);
       setPickerSession(null);
       await refreshGallery();
     },

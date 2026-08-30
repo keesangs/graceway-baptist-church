@@ -34,6 +34,7 @@ describe("Google Photos Picker import", () => {
     expect(googlePhotosModule).toContain("=w2048-h2048");
     expect(googlePhotosModule).toMatch(/const source = await fetch\([\s\S]*Authorization: `Bearer \$\{accessToken\}`/);
     expect(googlePhotosModule).toContain("MAX_IMPORTED_FILE_SIZE");
+    expect(googlePhotosModule).toContain("diagnostics = { nonPhoto: 0, duplicate: 0, downloadFailed: 0, unsupportedFormat: 0, tooLarge: 0 }");
   });
 
   it("accepts standard Picker image MIME aliases and photos without an original filename", () => {
@@ -53,5 +54,6 @@ describe("Google Photos Picker import", () => {
     expect(adminGalleryPanel).toContain("사진 선택");
     expect(adminGalleryPanel).toContain("선택한 사진 가져오기");
     expect(adminGalleryPanel).toContain("전체 앨범은 자동으로 동기화하지 않습니다.");
+    expect(adminGalleryPanel).toContain("처리하지 못한 항목:");
   });
 });
