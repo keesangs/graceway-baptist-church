@@ -42,4 +42,11 @@ describe("church photo gallery experience", () => {
     expect(galleryRouter).toContain("createAlbum: adminProcedure");
     expect(galleryRouter).toContain("uploadPhoto: adminProcedure");
   });
+
+  it("provides bulk draft publishing and a live Google Photos import progress indicator for administrators", () => {
+    expect(galleryRouter).toContain("publishDraftPhotos: adminProcedure");
+    expect(adminGalleryPanel).toContain('role="progressbar"');
+    expect(adminGalleryPanel).toContain("Google Photos 가져오기 진행 상태");
+    expect(adminGalleryPanel).toContain("초안 사진 {activeAlbum.photos.filter((photo) => photo.status === \"draft\").length}장 모두 공개");
+  });
 });

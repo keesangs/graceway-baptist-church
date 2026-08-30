@@ -37,6 +37,7 @@ import {
   listPublishedPhotoAlbums,
   listPublishedWeeklyNewsletterIssues,
   listPhotoAlbumsForAdmin,
+  publishDraftGalleryPhotos,
   listWeeklyNewsletterIssuesForAdmin,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
@@ -426,6 +427,15 @@ export const appRouter = router({
         const existing = await getGalleryPhotoById(input.id);
         if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Gallery photo not found" });
         return updateGalleryPhoto(input.id, mapGalleryPhotoValues(input.photo));
+      }),
+
+    publishDraftPhotos: adminProcedure
+      .input(z.object({ albumId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const album = await getPhotoAlbumById(input.albumId);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        const published = await publishDraftGalleryPhotos(input.albumId);
+        return { published };
       }),
 
     deletePhoto: adminProcedure

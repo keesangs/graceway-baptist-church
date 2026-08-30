@@ -203,6 +203,9 @@
 - [x] Google Photos OAuth test user registration: Google Cloud OAuth 동의 화면의 테스트 사용자에 keesang@gmail.com을 등록하고 실제 권한 승인 검증
 - [x] OAuth public policy pages: Google OAuth 동의 화면에 연결할 공개 개인정보 처리방침·이용약관 페이지를 작성·라우팅·검증
 - [x] Church photo gallery test coverage: 공개 상태·관리자 권한·업로드·가져오기·뷰어·반응형 회귀 테스트 추가
+- [x] Gallery bulk publish: 관리자 앨범의 초안 사진 전체를 확인 후 일괄 공개하고 개별 사진·앨범 공개 규칙을 유지
+- [x] Google Photos import progress: 사진 선택 확인·가져오기 처리·완료·오류 단계의 접근 가능한 진행 표시와 로딩 애니메이션 추가
+- [x] Gallery bulk and progress tests: 일괄 공개 권한·상태 전환·가져오기 진행·오류 안내의 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

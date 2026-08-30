@@ -15,6 +15,7 @@ const listCalendarEvents = vi.fn();
 const listGalleryPhotosForAdmin = vi.fn();
 const listPublishedCalendarEvents = vi.fn();
 const listPublishedPhotoAlbums = vi.fn();
+const publishDraftGalleryPhotos = vi.fn();
 const updateCalendarEvent = vi.fn();
 const updateGalleryPhoto = vi.fn();
 const updatePhotoAlbum = vi.fn();
@@ -52,6 +53,7 @@ vi.mock("./db", () => ({
   listPublishedCalendarEvents: (...args: unknown[]) => listPublishedCalendarEvents(...args),
   listPublishedPhotoAlbums: (...args: unknown[]) => listPublishedPhotoAlbums(...args),
   listPhotoAlbumsForAdmin: vi.fn(),
+  publishDraftGalleryPhotos: (...args: unknown[]) => publishDraftGalleryPhotos(...args),
   listYouTubeVideos: vi.fn(),
   saveYouTubePlaylistVideos: vi.fn(),
   subscribeToNewsletter: vi.fn(),
@@ -221,6 +223,21 @@ describe("gallery router", () => {
     expect(createPhotoAlbum).toHaveBeenCalledWith(expect.objectContaining({
       titleKo: "여름 연합 예배", titleEn: null, descriptionKo: null, albumDate: null, createdBy: 9, status: "draft",
     }));
+  });
+
+  it("publishes only an existing album's draft photos for administrators", async () => {
+    getPhotoAlbumById.mockResolvedValue({ id: 7, status: "draft" });
+    publishDraftGalleryPhotos.mockResolvedValue(58);
+
+    const result = await appRouter.createCaller(makeContext("admin")).gallery.publishDraftPhotos({ albumId: 7 });
+
+    expect(result).toEqual({ published: 58 });
+    expect(publishDraftGalleryPhotos).toHaveBeenCalledWith(7);
+  });
+
+  it("denies non-admin users before a bulk photo status update", async () => {
+    await expect(appRouter.createCaller(makeContext("user")).gallery.publishDraftPhotos({ albumId: 7 })).rejects.toThrow();
+    expect(publishDraftGalleryPhotos).not.toHaveBeenCalled();
   });
 });
 

@@ -536,6 +536,17 @@ export async function updateGalleryPhoto(id: number, data: Partial<InsertGallery
   return getGalleryPhotoById(id);
 }
 
+/** Publishes only draft photos in the requested album; hidden photos remain hidden. */
+export async function publishDraftGalleryPhotos(albumId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db
+    .update(galleryPhotos)
+    .set({ status: "published" })
+    .where(and(eq(galleryPhotos.albumId, albumId), eq(galleryPhotos.status, "draft")));
+  return Number(result.affectedRows ?? 0);
+}
+
 export async function deleteGalleryPhoto(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
