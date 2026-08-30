@@ -3,8 +3,8 @@
  * Sections: Hero, Featured Sermon, Sermon Archive with filter
  * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
-import { useMemo, useState } from "react";
-import { Play, Clock, BookOpen, Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Play, Clock, BookOpen, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
@@ -167,6 +167,7 @@ const legacySermons: SermonCard[] = [
 
 const seriesFilters = ["All", "Sunday Sermon"];
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
+const SERMONS_PER_PAGE = 6;
 
 // YouTube thumbnail URL helper
 function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
@@ -178,6 +179,7 @@ export default function Sermons() {
   const [activeSeries, setActiveSeries] = useState("All");
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
 
   const sermons = useMemo(() => {
@@ -215,6 +217,15 @@ export default function Sermons() {
       s.speaker.toLowerCase().includes(search.toLowerCase());
     return matchSeries && matchSearch;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / SERMONS_PER_PAGE));
+  const visiblePage = Math.min(currentPage, totalPages);
+  const pageStart = (visiblePage - 1) * SERMONS_PER_PAGE;
+  const paginatedSermons = filtered.slice(pageStart, pageStart + SERMONS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   const featured = sermons[0];
   const playingSermon = playingId ? sermons.find((sermon) => sermon.videoId === playingId) : null;
@@ -357,7 +368,10 @@ export default function Sermons() {
                 placeholder={t("sermons.searchPlaceholder")}
                 aria-label={t("sermons.searchPlaceholder")}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full rounded-md border border-[#C8D4D9] bg-[#FFFEFB] py-2.5 pl-9 pr-4 text-sm transition-colors focus:border-[#607A91] focus:outline-none"
               />
             </div>
@@ -365,7 +379,10 @@ export default function Sermons() {
               {seriesFilters.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setActiveSeries(s)}
+                  onClick={() => {
+                    setActiveSeries(s);
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-all duration-200 ${
                     activeSeries === s
                       ? "bg-[#163B59] text-white"
@@ -380,7 +397,7 @@ export default function Sermons() {
 
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map((s) => (
+            {paginatedSermons.map((s) => (
               <article key={s.videoId} className="group overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-sm transition-shadow duration-300 hover:shadow-md">
                 <button
                   onClick={() => setPlayingId(s.videoId)}
@@ -443,6 +460,37 @@ export default function Sermons() {
                 {lang === "ko" ? "검색 결과가 없습니다." : "No sermons found matching your search."}
               </p>
             </div>
+          )}
+
+          {filtered.length > 0 && (
+            <nav aria-label={lang === "ko" ? "설교 목록 페이지 탐색" : "Sermon archive pagination"} className="mt-9 flex flex-col items-center justify-between gap-4 border-t border-[#D7E1E5] pt-6 sm:flex-row">
+              <p className="text-xs text-[#607A91]" aria-live="polite">
+                {lang === "ko"
+                  ? `${pageStart + 1}–${Math.min(pageStart + SERMONS_PER_PAGE, filtered.length)} / ${filtered.length}편`
+                  : `${pageStart + 1}–${Math.min(pageStart + SERMONS_PER_PAGE, filtered.length)} of ${filtered.length} messages`}
+              </p>
+              <div className="flex items-center gap-2" role="group" aria-label={lang === "ko" ? "페이지 이동" : "Page controls"}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={visiblePage === 1}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={15} /> {lang === "ko" ? "이전" : "Previous"}
+                </button>
+                <span className="min-w-16 text-center text-xs font-semibold text-[#163B59]" aria-current="page">
+                  {lang === "ko" ? `${visiblePage} / ${totalPages}쪽` : `${visiblePage} / ${totalPages}`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={visiblePage === totalPages}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {lang === "ko" ? "다음" : "Next"} <ChevronRight size={15} />
+                </button>
+              </div>
+            </nav>
           )}
         </div>
       </section>
