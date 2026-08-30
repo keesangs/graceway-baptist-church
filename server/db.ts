@@ -158,7 +158,9 @@ export async function listYouTubeVideos(videoKind: YouTubeVideoKind) {
     .select()
     .from(youtubeVideos)
     .where(eq(youtubeVideos.videoKind, videoKind))
-    .orderBy(desc(youtubeVideos.publishedAt));
+    // Playlist position is the church-curated newest-first source of truth.
+    // Video upload timestamps can differ from the Sunday sermon date.
+    .orderBy(asc(youtubeVideos.playlistPosition), desc(youtubeVideos.publishedAt));
 }
 
 /**

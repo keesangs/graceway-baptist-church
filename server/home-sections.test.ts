@@ -26,11 +26,14 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("motion-reduce:transition-none");
   });
 
-  it("merges synchronized sermons into the Home archive and gives their current thumbnails priority", () => {
+  it("uses synchronized sermons as the Home archive source of truth and preserves playlist order", () => {
     expect(homeSource).toContain("trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT)");
     expect(homeSource).toContain("thumbnailUrl: video.thumbnailUrl");
     expect(homeSource).toContain("sermonCards.slice(1, 4)");
-    expect(homeSource).toContain("syncedByVideoId.get(sermon.videoId)?.thumbnailUrl");
+    expect(homeSource).toContain("if (syncedVideos.length === 0) return legacySermons");
+    expect(homeSource).toContain("legacyByVideoId.get(video.videoId)");
+    expect(homeSource).toContain("playlistPosition: video.playlistPosition");
+    expect(homeSource).toContain("(a.playlistPosition ?? Number.MAX_SAFE_INTEGER) - (b.playlistPosition ?? Number.MAX_SAFE_INTEGER)");
   });
 
   it("uses the public upcoming-events query rather than fixed calendar dates and links to the full calendar", () => {

@@ -208,6 +208,7 @@
 - [x] Gallery bulk and progress tests: 일괄 공개 권한·상태 전환·가져오기 진행·오류 안내의 회귀 테스트 추가
 - [x] Gallery bulk hide and delete: 관리자 사진 카드의 다중 선택·일괄 숨김·확인형 일괄 삭제와 선택 해제 제어 구현
 - [x] Gallery bulk hide and delete tests: 앨범 소속 검증·관리자 권한·숨김·삭제·선택 상태 회귀 테스트 추가
+- [x] Home recent sermons sync display: Home 최근 설교 목록이 최신 YouTube 동기화 데이터의 날짜·썸네일·링크를 최신순으로 표시하도록 진단·수정·검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

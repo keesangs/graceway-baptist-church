@@ -46,6 +46,7 @@ type HomeSermon = {
   videoId: string;
   thumbnailUrl?: string;
   publishedAt?: string;
+  playlistPosition?: number;
 };
 
 const legacySermons: HomeSermon[] = [
@@ -157,30 +158,29 @@ export default function Home() {
 
   const sermonCards = useMemo<HomeSermon[]>(() => {
     const syncedVideos = syncedSermonsQuery.data ?? [];
-    const syncedByVideoId = new Map(syncedVideos.map((video) => [video.videoId, video]));
-    const legacyIds = new Set(legacySermons.map((sermon) => sermon.videoId));
-    const refreshedLegacy = legacySermons.map((sermon) => ({
-      ...sermon,
-      thumbnailUrl: syncedByVideoId.get(sermon.videoId)?.thumbnailUrl,
-    }));
-    const additionalSermons = syncedVideos
-      .filter((video) => !legacyIds.has(video.videoId))
-      .map((video) => ({
-        title: video.title,
-        titleKo: video.title,
-        scripture: "",
-        scriptureEn: "",
-        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-        speaker: "Pastor Hunsuk Lee",
-        duration: "New",
-        videoId: video.videoId,
-        thumbnailUrl: video.thumbnailUrl,
-        publishedAt: new Date(video.publishedAt).toISOString(),
-      }));
-
-    return [...additionalSermons, ...refreshedLegacy].sort((a, b) =>
-      new Date(b.publishedAt ?? b.date).getTime() - new Date(a.publishedAt ?? a.date).getTime(),
-    );
+    // The persisted playlist is the live source of truth once a sync has run.
+    // Legacy data only enriches matching video IDs with manually supplied Korean
+    // titles/scripture, and remains a safe fallback while the database is empty.
+    if (syncedVideos.length === 0) return legacySermons;
+    const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
+    return syncedVideos
+      .map((video) => {
+        const legacy = legacyByVideoId.get(video.videoId);
+        return {
+          title: legacy?.title ?? video.title,
+          titleKo: legacy?.titleKo ?? video.title,
+          scripture: legacy?.scripture ?? "",
+          scriptureEn: legacy?.scriptureEn ?? "",
+          date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+          speaker: legacy?.speaker ?? "Pastor Hunsuk Lee",
+          duration: legacy?.duration ?? "New",
+          videoId: video.videoId,
+          thumbnailUrl: video.thumbnailUrl,
+          publishedAt: new Date(video.publishedAt).toISOString(),
+          playlistPosition: video.playlistPosition,
+        };
+      })
+      .sort((a, b) => (a.playlistPosition ?? Number.MAX_SAFE_INTEGER) - (b.playlistPosition ?? Number.MAX_SAFE_INTEGER));
   }, [syncedSermonsQuery.data]);
 
   const upcomingEvents = (upcomingEventsQuery.data ?? []) as UpcomingEvent[];
