@@ -8,17 +8,21 @@ import {
   InsertCalendarEvent,
   InsertContactMessage,
   InsertDailyMeditation,
+  InsertGalleryPhoto,
   InsertMediaFile,
   InsertMeditationComment,
   InsertNewsletterSubscriber,
+  InsertPhotoAlbum,
   InsertWeeklyNewsletterIssue,
   InsertUser,
   InsertYouTubeVideo,
+  galleryPhotos,
   mediaFiles,
   meditationCommentLikes,
   meditationComments,
   meditationLikes,
   newsletterSubscribers,
+  photoAlbums,
   users,
   weeklyNewsletterIssues,
   weeklyNewsletterSyncSettings,
@@ -415,6 +419,124 @@ export async function deleteCalendarEvent(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
+}
+
+// ── Church Photo Gallery ────────────────────────────────────────────────────
+
+export type PhotoGalleryCategory = "worship" | "prayer" | "fellowship" | "ministry" | "special" | "community" | "other";
+
+export async function getPhotoAlbumById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [album] = await db.select().from(photoAlbums).where(eq(photoAlbums.id, id)).limit(1);
+  return album ?? null;
+}
+
+export async function listPhotoAlbumsForAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(photoAlbums).orderBy(desc(photoAlbums.albumDate), desc(photoAlbums.createdAt));
+}
+
+export async function listGalleryPhotosForAdmin(albumId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(galleryPhotos)
+    .where(eq(galleryPhotos.albumId, albumId))
+    .orderBy(asc(galleryPhotos.sortOrder), asc(galleryPhotos.id));
+}
+
+/** Public cards only include explicitly published albums and photos. */
+export async function listPublishedPhotoAlbums(category?: PhotoGalleryCategory) {
+  const db = await getDb();
+  if (!db) return [];
+  const condition = category
+    ? and(eq(photoAlbums.status, "published"), eq(photoAlbums.category, category))
+    : eq(photoAlbums.status, "published");
+  const albums = await db
+    .select()
+    .from(photoAlbums)
+    .where(condition)
+    .orderBy(desc(photoAlbums.albumDate), desc(photoAlbums.createdAt));
+
+  return Promise.all(albums.map(async (album) => {
+    const photos = await db
+      .select()
+      .from(galleryPhotos)
+      .where(and(eq(galleryPhotos.albumId, album.id), eq(galleryPhotos.status, "published")))
+      .orderBy(asc(galleryPhotos.sortOrder), asc(galleryPhotos.id));
+    const coverPhoto = (album.coverPhotoId ? photos.find((photo) => photo.id === album.coverPhotoId) : undefined) ?? photos[0] ?? null;
+    return { ...album, coverPhoto, photoCount: photos.length };
+  }));
+}
+
+/** A public album is readable only when the album itself and its photos are published. */
+export async function getPublishedPhotoAlbum(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [album] = await db
+    .select()
+    .from(photoAlbums)
+    .where(and(eq(photoAlbums.id, id), eq(photoAlbums.status, "published")))
+    .limit(1);
+  if (!album) return null;
+  const photos = await db
+    .select()
+    .from(galleryPhotos)
+    .where(and(eq(galleryPhotos.albumId, id), eq(galleryPhotos.status, "published")))
+    .orderBy(asc(galleryPhotos.sortOrder), asc(galleryPhotos.id));
+  return { ...album, photos };
+}
+
+export async function createPhotoAlbum(data: InsertPhotoAlbum) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(photoAlbums).values(data);
+  return getPhotoAlbumById(Number(result.insertId));
+}
+
+export async function updatePhotoAlbum(id: number, data: Partial<InsertPhotoAlbum>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(photoAlbums).set(data).where(eq(photoAlbums.id, id));
+  return getPhotoAlbumById(id);
+}
+
+/** Deletes metadata only; unreferenced storage files become inaccessible. */
+export async function deletePhotoAlbum(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(galleryPhotos).where(eq(galleryPhotos.albumId, id));
+  await db.delete(photoAlbums).where(eq(photoAlbums.id, id));
+}
+
+export async function getGalleryPhotoById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [photo] = await db.select().from(galleryPhotos).where(eq(galleryPhotos.id, id)).limit(1);
+  return photo ?? null;
+}
+
+export async function createGalleryPhoto(data: InsertGalleryPhoto) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(galleryPhotos).values(data);
+  return getGalleryPhotoById(Number(result.insertId));
+}
+
+export async function updateGalleryPhoto(id: number, data: Partial<InsertGalleryPhoto>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(galleryPhotos).set(data).where(eq(galleryPhotos.id, id));
+  return getGalleryPhotoById(id);
+}
+
+export async function deleteGalleryPhoto(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(galleryPhotos).where(eq(galleryPhotos.id, id));
 }
 
 // Meditation comment queries

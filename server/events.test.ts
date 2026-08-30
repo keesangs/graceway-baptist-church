@@ -3,19 +3,36 @@ import type { TrpcContext } from "./_core/context";
 import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 
 const createCalendarEvent = vi.fn();
+const createPhotoAlbum = vi.fn();
 const deleteCalendarEvent = vi.fn();
+const deleteGalleryPhoto = vi.fn();
+const deletePhotoAlbum = vi.fn();
 const getCalendarEventById = vi.fn();
+const getGalleryPhotoById = vi.fn();
+const getPhotoAlbumById = vi.fn();
+const getPublishedPhotoAlbum = vi.fn();
 const listCalendarEvents = vi.fn();
+const listGalleryPhotosForAdmin = vi.fn();
 const listPublishedCalendarEvents = vi.fn();
+const listPublishedPhotoAlbums = vi.fn();
 const updateCalendarEvent = vi.fn();
+const updateGalleryPhoto = vi.fn();
+const updatePhotoAlbum = vi.fn();
 
 vi.mock("./db", () => ({
   createCalendarEvent: (...args: unknown[]) => createCalendarEvent(...args),
+  createGalleryPhoto: vi.fn(),
+  createPhotoAlbum: (...args: unknown[]) => createPhotoAlbum(...args),
   deleteCalendarEvent: (...args: unknown[]) => deleteCalendarEvent(...args),
+  deleteGalleryPhoto: (...args: unknown[]) => deleteGalleryPhoto(...args),
+  deletePhotoAlbum: (...args: unknown[]) => deletePhotoAlbum(...args),
   deleteMeditationComment: vi.fn(),
   deleteMediaFile: vi.fn(),
   deleteDailyMeditation: vi.fn(),
   getCalendarEventById: (...args: unknown[]) => getCalendarEventById(...args),
+  getGalleryPhotoById: (...args: unknown[]) => getGalleryPhotoById(...args),
+  getPhotoAlbumById: (...args: unknown[]) => getPhotoAlbumById(...args),
+  getPublishedPhotoAlbum: (...args: unknown[]) => getPublishedPhotoAlbum(...args),
   getDailyMeditationByDate: vi.fn(),
   getDailyMeditationById: vi.fn(),
   getMeditationCommentById: vi.fn(),
@@ -26,16 +43,21 @@ vi.mock("./db", () => ({
   listCalendarEvents: (...args: unknown[]) => listCalendarEvents(...args),
   listContactMessages: vi.fn(),
   listDailyMeditations: vi.fn(),
+  listGalleryPhotosForAdmin: (...args: unknown[]) => listGalleryPhotosForAdmin(...args),
   listMeditationComments: vi.fn(),
   listMediaFiles: vi.fn(),
   listNewsletterSubscribers: vi.fn(),
   listPublishedCalendarEvents: (...args: unknown[]) => listPublishedCalendarEvents(...args),
+  listPublishedPhotoAlbums: (...args: unknown[]) => listPublishedPhotoAlbums(...args),
+  listPhotoAlbumsForAdmin: vi.fn(),
   listYouTubeVideos: vi.fn(),
   saveYouTubePlaylistVideos: vi.fn(),
   subscribeToNewsletter: vi.fn(),
   toggleMeditationCommentLike: vi.fn(),
   updateCalendarEvent: (...args: unknown[]) => updateCalendarEvent(...args),
   updateDailyMeditation: vi.fn(),
+  updateGalleryPhoto: (...args: unknown[]) => updateGalleryPhoto(...args),
+  updatePhotoAlbum: (...args: unknown[]) => updatePhotoAlbum(...args),
 }));
 
 const { appRouter } = await import("./routers");
@@ -163,6 +185,39 @@ describe("events router", () => {
       recurrenceUntil: null,
       createdBy: 9,
       status: "published",
+    }));
+  });
+});
+
+describe("gallery router", () => {
+  it("uses the published-only album source and forwards an optional category filter", async () => {
+    listPublishedPhotoAlbums.mockResolvedValue([{ id: 7, titleKo: "봄 교제", photoCount: 3 }]);
+
+    const allAlbums = await appRouter.createCaller(makeContext()).gallery.listAlbums();
+    const fellowshipAlbums = await appRouter.createCaller(makeContext()).gallery.listAlbums({ category: "fellowship" });
+
+    expect(allAlbums).toHaveLength(1);
+    expect(fellowshipAlbums).toHaveLength(1);
+    expect(listPublishedPhotoAlbums).toHaveBeenNthCalledWith(1, undefined);
+    expect(listPublishedPhotoAlbums).toHaveBeenNthCalledWith(2, "fellowship");
+  });
+
+  it("denies non-admin users before an album can be created", async () => {
+    await expect(appRouter.createCaller(makeContext("user")).gallery.createAlbum({
+      titleKo: "청년 교제", albumDate: "2026-08-30", category: "community", status: "draft",
+    })).rejects.toThrow();
+    expect(createPhotoAlbum).not.toHaveBeenCalled();
+  });
+
+  it("records the admin and normalizes blank optional album fields", async () => {
+    createPhotoAlbum.mockResolvedValue({ id: 8 });
+
+    await appRouter.createCaller(makeContext("admin", 9)).gallery.createAlbum({
+      titleKo: "여름 연합 예배", titleEn: "", descriptionKo: "", albumDate: null, category: "worship", status: "draft", coverPhotoId: null,
+    });
+
+    expect(createPhotoAlbum).toHaveBeenCalledWith(expect.objectContaining({
+      titleKo: "여름 연합 예배", titleEn: null, descriptionKo: null, albumDate: null, createdBy: 9, status: "draft",
     }));
   });
 });

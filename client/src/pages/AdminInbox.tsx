@@ -13,6 +13,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import AdminEventsPanel from "@/components/AdminEventsPanel";
+import AdminGalleryPanel from "@/components/AdminGalleryPanel";
 import AdminWeeklyNewsletterPanel from "@/components/AdminWeeklyNewsletterPanel";
 import {
   Inbox,
@@ -26,9 +27,10 @@ import {
   Youtube,
   CalendarDays,
   FileText,
+  Images,
 } from "lucide-react";
 
-type Tab = "messages" | "subscribers" | "events" | "bulletins";
+type Tab = "messages" | "subscribers" | "events" | "gallery" | "bulletins";
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
 
@@ -85,6 +87,7 @@ export default function AdminInbox() {
   const sermonVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT, { enabled: isAdmin });
   const worshipVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT, { enabled: isAdmin });
   const eventsQuery = trpc.events.listAdmin.useQuery(undefined, { enabled: isAdmin });
+  const galleryQuery = trpc.gallery.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const weeklyNewsletterQuery = trpc.weeklyNewsletter.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const syncYouTubeMutation = trpc.youtube.sync.useMutation({
@@ -100,8 +103,8 @@ export default function AdminInbox() {
   const subscribers = subscribersQuery.data ?? [];
 
   const counts = useMemo(
-    () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0, bulletins: weeklyNewsletterQuery.data?.length ?? 0 }),
-    [messages.length, subscribers.length, eventsQuery.data?.length, weeklyNewsletterQuery.data?.length],
+    () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0, gallery: galleryQuery.data?.length ?? 0, bulletins: weeklyNewsletterQuery.data?.length ?? 0 }),
+    [messages.length, subscribers.length, eventsQuery.data?.length, galleryQuery.data?.length, weeklyNewsletterQuery.data?.length],
   );
 
   // ── Auth gates ──────────────────────────────────────────────────────────
@@ -175,8 +178,8 @@ export default function AdminInbox() {
     );
   }
 
-  const isLoading = tab === "messages" ? messagesQuery.isLoading : tab === "subscribers" ? subscribersQuery.isLoading : tab === "events" ? eventsQuery.isLoading : weeklyNewsletterQuery.isLoading;
-  const refetch = tab === "messages" ? messagesQuery.refetch : tab === "subscribers" ? subscribersQuery.refetch : tab === "events" ? eventsQuery.refetch : weeklyNewsletterQuery.refetch;
+  const isLoading = tab === "messages" ? messagesQuery.isLoading : tab === "subscribers" ? subscribersQuery.isLoading : tab === "events" ? eventsQuery.isLoading : tab === "gallery" ? galleryQuery.isLoading : weeklyNewsletterQuery.isLoading;
+  const refetch = tab === "messages" ? messagesQuery.refetch : tab === "subscribers" ? subscribersQuery.refetch : tab === "events" ? eventsQuery.refetch : tab === "gallery" ? galleryQuery.refetch : weeklyNewsletterQuery.refetch;
 
   const handleExport = () => {
     if (tab === "messages") {
@@ -221,6 +224,7 @@ export default function AdminInbox() {
                 { key: "messages" as Tab, label: "Messages", count: counts.messages },
                 { key: "subscribers" as Tab, label: "Subscribers", count: counts.subscribers },
                 { key: "events" as Tab, label: "Events", count: counts.events },
+                { key: "gallery" as Tab, label: "Gallery", count: counts.gallery },
                 { key: "bulletins" as Tab, label: "Weekly newsletter", count: counts.bulletins },
               ]
             ).map(item => (
@@ -261,7 +265,7 @@ export default function AdminInbox() {
             >
               <RefreshCw size={15} /> Refresh
             </button>
-            {tab !== "events" && (
+            {(tab === "messages" || tab === "subscribers") && (
               <button
                 onClick={handleExport}
                 className="inline-flex items-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97]"
@@ -404,7 +408,7 @@ export default function AdminInbox() {
               </tbody>
             </table>
           </div>
-        ) : tab === "events" ? <AdminEventsPanel /> : <AdminWeeklyNewsletterPanel />}
+        ) : tab === "events" ? <AdminEventsPanel /> : tab === "gallery" ? <AdminGalleryPanel /> : <AdminWeeklyNewsletterPanel />}
       </div>
 
       <Footer />

@@ -34,6 +34,7 @@ export default function Navbar() {
     { href: "/sermons", label: t("nav.sermons") },
     { href: "/worship", label: lang === "ko" ? "찬양" : "Worship" },
     { href: "/events", label: t("nav.events") },
+    { href: "/gallery", label: lang === "ko" ? "갤러리" : "Gallery" },
     { href: "/meditation", label: lang === "ko" ? "묵상" : "Daily Bible" },
     { href: "/ministries", label: t("nav.ministries") },
     { href: "/connect", label: t("nav.connect") },

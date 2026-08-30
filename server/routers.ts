@@ -3,11 +3,18 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   createCalendarEvent,
+  createGalleryPhoto,
+  createPhotoAlbum,
   deleteCalendarEvent,
+  deleteGalleryPhoto,
+  deletePhotoAlbum,
   deleteMeditationComment,
   deleteMediaFile,
   deleteDailyMeditation,
   getCalendarEventById,
+  getGalleryPhotoById,
+  getPhotoAlbumById,
+  getPublishedPhotoAlbum,
   getDailyMeditationById,
   getDailyMeditationByDate,
   getMeditationCommentById,
@@ -22,11 +29,14 @@ import {
   listContactMessages,
   listCalendarEvents,
   listDailyMeditations,
+  listGalleryPhotosForAdmin,
   listMeditationComments,
   listMediaFiles,
   listNewsletterSubscribers,
   listPublishedCalendarEvents,
+  listPublishedPhotoAlbums,
   listPublishedWeeklyNewsletterIssues,
+  listPhotoAlbumsForAdmin,
   listWeeklyNewsletterIssuesForAdmin,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
@@ -35,6 +45,8 @@ import {
   toggleMeditationLike,
   updateCalendarEvent,
   updateDailyMeditation,
+  updateGalleryPhoto,
+  updatePhotoAlbum,
   updateWeeklyNewsletterIssue,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -79,6 +91,30 @@ const weeklyNewsletterUpdateInput = z.object({
   status: weeklyNewsletterStatus.optional(),
 });
 
+const photoGalleryCategory = z.enum(["worship", "prayer", "fellowship", "ministry", "special", "community", "other"]);
+const photoGalleryStatus = z.enum(["draft", "published", "hidden"]);
+const imageMimeType = z.enum(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const photoAlbumValues = {
+  titleKo: z.string().trim().min(1).max(255),
+  titleEn: z.string().trim().max(255).nullable().optional(),
+  descriptionKo: z.string().trim().max(4000).nullable().optional(),
+  descriptionEn: z.string().trim().max(4000).nullable().optional(),
+  albumDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  category: photoGalleryCategory.default("other"),
+  status: photoGalleryStatus.default("draft"),
+  coverPhotoId: z.number().int().positive().nullable().optional(),
+};
+const photoAlbumInput = z.object(photoAlbumValues);
+const galleryPhotoValues = {
+  captionKo: z.string().trim().max(500).nullable().optional(),
+  captionEn: z.string().trim().max(500).nullable().optional(),
+  altTextKo: z.string().trim().max(500).nullable().optional(),
+  altTextEn: z.string().trim().max(500).nullable().optional(),
+  sortOrder: z.number().int().min(0).max(100000).optional(),
+  status: photoGalleryStatus.optional(),
+};
+const galleryPhotoInput = z.object(galleryPhotoValues);
+
 const calendarEventCreateInput = z.object(calendarEventValues).superRefine((input, ctx) => {
   if (input.endAt && input.endAt < input.startAt) {
     ctx.addIssue({ code: "custom", path: ["endAt"], message: "End time must be after start time" });
@@ -92,6 +128,31 @@ const calendarEventCreateInput = z.object(calendarEventValues).superRefine((inpu
 });
 
 const nullableText = (value: string | null | undefined) => value?.trim() || null;
+
+function mapPhotoAlbumInput(input: z.infer<typeof photoAlbumInput>) {
+  return {
+    titleKo: input.titleKo,
+    titleEn: nullableText(input.titleEn),
+    descriptionKo: nullableText(input.descriptionKo),
+    descriptionEn: nullableText(input.descriptionEn),
+    albumDate: input.albumDate ?? null,
+    category: input.category,
+    status: input.status,
+    coverPhotoId: input.coverPhotoId ?? null,
+    publishedAt: input.status === "published" ? new Date() : null,
+  } as const;
+}
+
+function mapGalleryPhotoValues(input: z.infer<typeof galleryPhotoInput>) {
+  return {
+    captionKo: nullableText(input.captionKo),
+    captionEn: nullableText(input.captionEn),
+    altTextKo: nullableText(input.altTextKo),
+    altTextEn: nullableText(input.altTextEn),
+    ...(input.sortOrder === undefined ? {} : { sortOrder: input.sortOrder }),
+    ...(input.status === undefined ? {} : { status: input.status }),
+  };
+}
 
 function mapCalendarEventInput(input: z.infer<typeof calendarEventCreateInput>) {
   return {
@@ -265,6 +326,112 @@ export const appRouter = router({
         const existing = await getCalendarEventById(input.id);
         if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
         await deleteCalendarEvent(input.id);
+        return { success: true } as const;
+      }),
+  }),
+
+  // ── Church Photo Gallery ─────────────────────────────────────────────────
+  gallery: router({
+    /** Public index deliberately returns only albums and photos approved for public display. */
+    listAlbums: publicProcedure
+      .input(z.object({ category: photoGalleryCategory.optional() }).optional())
+      .query(({ input }) => listPublishedPhotoAlbums(input?.category)),
+
+    getAlbum: publicProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .query(({ input }) => getPublishedPhotoAlbum(input.id)),
+
+    listAdmin: adminProcedure.query(() => listPhotoAlbumsForAdmin()),
+
+    getAdminAlbum: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        const album = await getPhotoAlbumById(input.id);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        return { ...album, photos: await listGalleryPhotosForAdmin(input.id) };
+      }),
+
+    createAlbum: adminProcedure.input(photoAlbumInput).mutation(({ input, ctx }) => {
+      return createPhotoAlbum({ ...mapPhotoAlbumInput(input), createdBy: ctx.user.id });
+    }),
+
+    updateAlbum: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), album: photoAlbumInput }))
+      .mutation(async ({ input }) => {
+        const existing = await getPhotoAlbumById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        if (input.album.coverPhotoId) {
+          const coverPhoto = await getGalleryPhotoById(input.album.coverPhotoId);
+          if (!coverPhoto || coverPhoto.albumId !== existing.id) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Cover photo must belong to this album" });
+          }
+        }
+        const mapped = mapPhotoAlbumInput(input.album);
+        return updatePhotoAlbum(input.id, {
+          ...mapped,
+          publishedAt: input.album.status === "published" && existing.status !== "published" ? new Date() : existing.publishedAt,
+        });
+      }),
+
+    deleteAlbum: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const existing = await getPhotoAlbumById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        await deletePhotoAlbum(input.id);
+        return { success: true } as const;
+      }),
+
+    uploadPhoto: adminProcedure
+      .input(z.object({
+        albumId: z.number().int().positive(),
+        filename: z.string().trim().min(1).max(255),
+        mimeType: imageMimeType,
+        fileSize: z.number().int().positive().max(20 * 1024 * 1024),
+        data: z.string().min(1),
+        photo: galleryPhotoInput,
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const album = await getPhotoAlbumById(input.albumId);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        const buffer = Buffer.from(input.data, "base64");
+        if (!buffer.byteLength || buffer.byteLength > 20 * 1024 * 1024 || buffer.byteLength !== input.fileSize) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Photo data is invalid or exceeds the 20 MB limit" });
+        }
+        const safeFilename = input.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const { key, url } = await storagePut(`church-gallery/${input.albumId}/${Date.now()}-${safeFilename}`, buffer, input.mimeType);
+        const existingPhotos = await listGalleryPhotosForAdmin(input.albumId);
+        const sortOrder = input.photo.sortOrder ?? (existingPhotos.reduce((max, photo) => Math.max(max, photo.sortOrder), -1) + 1);
+        return createGalleryPhoto({
+          albumId: input.albumId,
+          filename: input.filename,
+          storageKey: key,
+          storageUrl: url,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          source: "manual",
+          sourceItemId: null,
+          sortOrder,
+          status: input.photo.status ?? "draft",
+          uploadedBy: ctx.user.id,
+          ...mapGalleryPhotoValues(input.photo),
+        });
+      }),
+
+    updatePhoto: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), photo: galleryPhotoInput }))
+      .mutation(async ({ input }) => {
+        const existing = await getGalleryPhotoById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Gallery photo not found" });
+        return updateGalleryPhoto(input.id, mapGalleryPhotoValues(input.photo));
+      }),
+
+    deletePhoto: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const existing = await getGalleryPhotoById(input.id);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Gallery photo not found" });
+        await deleteGalleryPhoto(input.id);
         return { success: true } as const;
       }),
   }),

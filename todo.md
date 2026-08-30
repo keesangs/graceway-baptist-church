@@ -190,6 +190,12 @@
 - [x] Weekly newsletter archive filters: 이전 주보 목록에 연도·월 필터와 선택 결과·빈 상태를 추가하고 반응형 접근성 검증
 - [x] Weekly newsletter header thumbnail: 이번 주 주보 첫 페이지 썸네일을 행사 페이지 좌측 헤더 하단으로 재배치하고 반응형 검증
 - [x] Weekly newsletter tile thumbnail correction: 이번 주 주보 좌측 타일의 발행 날짜 바로 아래에 첫 페이지 썸네일을 배치하고 헤더 중복을 제거·검증
+- [x] Church photo gallery experience plan: Graceway 브랜드에 맞는 앨범·사진·라이트박스 탐색 구조와 사진 보호·운영 원칙 확정
+- [x] Church photo gallery data model: 앨범·사진 메타데이터·공개 상태·촬영일·가져온 출처를 저장하는 스키마와 마이그레이션 추가
+- [x] Church photo gallery manual upload: 관리자 앨범 생성·사진 수동 업로드·캡션·정렬·공개 상태 관리 구현
+- [x] Church photo gallery public page: 필터 가능한 공개 갤러리·앨범 보기·접근 가능한 전체 화면 사진 뷰어 구현
+- [ ] Google Photos selected import: Google Photos Picker의 관리자 명시적 선택·사이트 저장소 복사·중복 방지 가져오기 구현
+- [ ] Church photo gallery test coverage: 공개 상태·관리자 권한·업로드·가져오기·뷰어·반응형 회귀 테스트 추가
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

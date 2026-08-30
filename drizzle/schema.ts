@@ -264,3 +264,60 @@ export const calendarEvents = mysqlTable("calendar_events", {
 
 export type CalendarEvent = typeof calendarEvents.$inferSelect;
 export type InsertCalendarEvent = typeof calendarEvents.$inferInsert;
+
+// Church photo albums — editorial groups of approved photos from worship,
+// gatherings, ministries, and special events. An album and each photo have a
+// distinct public state so staff can safely review content before publishing.
+export const photoAlbums = mysqlTable("photo_albums", {
+  id: int("id").autoincrement().primaryKey(),
+  titleKo: varchar("titleKo", { length: 255 }).notNull(),
+  titleEn: varchar("titleEn", { length: 255 }),
+  descriptionKo: text("descriptionKo"),
+  descriptionEn: text("descriptionEn"),
+  /** Church-local event date in YYYY-MM-DD format; null for an undated album. */
+  albumDate: varchar("albumDate", { length: 10 }),
+  category: mysqlEnum("category", ["worship", "prayer", "fellowship", "ministry", "special", "community", "other"]).default("other").notNull(),
+  status: mysqlEnum("status", ["draft", "published", "hidden"]).default("draft").notNull(),
+  /** References gallery_photos.id after a cover photo is selected; no DB FK to avoid a circular creation dependency. */
+  coverPhotoId: int("coverPhotoId"),
+  createdBy: int("createdBy").notNull(),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  statusDateIdx: index("photo_album_status_date_idx").on(table.status, table.albumDate),
+  categoryStatusIdx: index("photo_album_category_status_idx").on(table.category, table.status),
+}));
+
+export type PhotoAlbum = typeof photoAlbums.$inferSelect;
+export type InsertPhotoAlbum = typeof photoAlbums.$inferInsert;
+
+// Church gallery photos — original bytes remain in storage; the database only
+// contains display metadata and the storage reference. Google Photos imported
+// records retain a stable source ID for idempotent staff-authorized imports.
+export const galleryPhotos = mysqlTable("gallery_photos", {
+  id: int("id").autoincrement().primaryKey(),
+  albumId: int("albumId").notNull(),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  storageKey: varchar("storageKey", { length: 512 }).notNull(),
+  storageUrl: varchar("storageUrl", { length: 1024 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  captionKo: varchar("captionKo", { length: 500 }),
+  captionEn: varchar("captionEn", { length: 500 }),
+  altTextKo: varchar("altTextKo", { length: 500 }),
+  altTextEn: varchar("altTextEn", { length: 500 }),
+  source: mysqlEnum("source", ["manual", "google_photos"]).default("manual").notNull(),
+  sourceItemId: varchar("sourceItemId", { length: 255 }),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  status: mysqlEnum("status", ["draft", "published", "hidden"]).default("draft").notNull(),
+  uploadedBy: int("uploadedBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  albumStatusOrderIdx: index("gallery_photo_album_status_order_idx").on(table.albumId, table.status, table.sortOrder),
+  uniqueSourceItem: uniqueIndex("gallery_photo_source_item_unique").on(table.source, table.sourceItemId),
+}));
+
+export type GalleryPhoto = typeof galleryPhotos.$inferSelect;
+export type InsertGalleryPhoto = typeof galleryPhotos.$inferInsert;
