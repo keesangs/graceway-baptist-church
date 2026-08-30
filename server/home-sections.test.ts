@@ -26,14 +26,16 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("motion-reduce:transition-none");
   });
 
-  it("uses synchronized sermons as the Home archive source of truth and preserves playlist order", () => {
+  it("merges synchronized and pending legacy sermons by their actual Sunday date", () => {
     expect(homeSource).toContain("trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT)");
     expect(homeSource).toContain("thumbnailUrl: video.thumbnailUrl");
     expect(homeSource).toContain("sermonCards.slice(1, 4)");
-    expect(homeSource).toContain("if (syncedVideos.length === 0) return legacySermons");
     expect(homeSource).toContain("legacyByVideoId.get(video.videoId)");
-    expect(homeSource).toContain("playlistPosition: video.playlistPosition");
-    expect(homeSource).toContain("(a.playlistPosition ?? Number.MAX_SAFE_INTEGER) - (b.playlistPosition ?? Number.MAX_SAFE_INTEGER)");
+    expect(homeSource).toContain("getSermonDateTimestamp");
+    expect(homeSource).toContain("unsyncedLegacySermons");
+    expect(homeSource).toContain("(b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0)");
+    expect(homeSource).toContain('titleKo: "성령으로 채우시다"');
+    expect(homeSource).toContain('titleKo: "하나님을 따라간다는 것"');
   });
 
   it("uses the public upcoming-events query rather than fixed calendar dates and links to the full calendar", () => {

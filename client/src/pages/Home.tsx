@@ -47,6 +47,7 @@ type HomeSermon = {
   thumbnailUrl?: string;
   publishedAt?: string;
   playlistPosition?: number;
+  sermonDateTimestamp?: number;
 };
 
 const legacySermons: HomeSermon[] = [
@@ -83,6 +84,16 @@ const legacySermons: HomeSermon[] = [
 ];
 
 const HOME_SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
+
+/** Uses the Sunday embedded in the playlist title when available, instead of the upload date. */
+function getSermonDateTimestamp(title: string, fallback: Date | string) {
+  const koreanDate = title.match(/(20\d{2})\.\s*(\d{1,2})\.(\d{1,2})/);
+  if (koreanDate) {
+    return Date.UTC(Number(koreanDate[1]), Number(koreanDate[2]) - 1, Number(koreanDate[3]));
+  }
+  const parsed = new Date(fallback).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 type UpcomingEvent = {
@@ -159,11 +170,11 @@ export default function Home() {
   const sermonCards = useMemo<HomeSermon[]>(() => {
     const syncedVideos = syncedSermonsQuery.data ?? [];
     // The persisted playlist is the live source of truth once a sync has run.
-    // Legacy data only enriches matching video IDs with manually supplied Korean
-    // titles/scripture, and remains a safe fallback while the database is empty.
+    // Known legacy entries enrich matching videos, while an entry not yet present
+    // in the playlist remains visible until the next administrator-run sync.
     if (syncedVideos.length === 0) return legacySermons;
     const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
-    return syncedVideos
+    const syncedSermons = syncedVideos
       .map((video) => {
         const legacy = legacyByVideoId.get(video.videoId);
         return {
@@ -178,9 +189,17 @@ export default function Home() {
           thumbnailUrl: video.thumbnailUrl,
           publishedAt: new Date(video.publishedAt).toISOString(),
           playlistPosition: video.playlistPosition,
+          sermonDateTimestamp: legacy
+            ? getSermonDateTimestamp(legacy.date, video.publishedAt)
+            : getSermonDateTimestamp(video.title, video.publishedAt),
         };
-      })
-      .sort((a, b) => (a.playlistPosition ?? Number.MAX_SAFE_INTEGER) - (b.playlistPosition ?? Number.MAX_SAFE_INTEGER));
+      });
+    const unsyncedLegacySermons = legacySermons
+      .filter((sermon) => !legacyByVideoId.has(sermon.videoId) || !syncedVideos.some((video) => video.videoId === sermon.videoId))
+      .map((sermon) => ({ ...sermon, sermonDateTimestamp: getSermonDateTimestamp(sermon.date, sermon.date) }));
+
+    return [...syncedSermons, ...unsyncedLegacySermons]
+      .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
   }, [syncedSermonsQuery.data]);
 
   const upcomingEvents = (upcomingEventsQuery.data ?? []) as UpcomingEvent[];
