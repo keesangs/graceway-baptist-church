@@ -37,7 +37,7 @@ export function getSermonMetadataLines(sermon: SermonDisplayData, lang: "ko" | "
   if (lang === "ko") {
     return {
       date: formatSermonServiceDate(sermon, lang),
-      title: `제목: ${sermon.titleKo}`,
+      title: sermon.titleKo,
       scripture: `본문: ${sermon.scripture}`,
     };
   }

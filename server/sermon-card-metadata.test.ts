@@ -13,7 +13,7 @@ describe("sermon card metadata display", () => {
   it("formats the requested Korean date, title, and scripture lines", () => {
     expect(getSermonMetadataLines(latestSermon, "ko")).toEqual({
       date: "2026. 08.23 주일예배 말씀",
-      title: "제목: 기적이 아니라 예수입니다",
+      title: "기적이 아니라 예수입니다",
       scripture: "본문: 사도행전 3장 1절 ~ 16절",
     });
   });
