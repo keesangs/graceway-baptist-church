@@ -210,6 +210,7 @@
 - [x] Gallery bulk hide and delete tests: 앨범 소속 검증·관리자 권한·숨김·삭제·선택 상태 회귀 테스트 추가
 - [x] Home recent sermons sync display: Home 최근 설교 목록이 최신 YouTube 동기화 데이터의 날짜·썸네일·링크를 최신순으로 표시하도록 진단·수정·검증
 - [x] Home sermon list date ordering: 우측 최근 설교 목록에 8월 16일·8월 2일 설교를 포함하고 실제 주일 날짜 기준 최신순으로 대표 카드와 분리 표시
+- [x] Sermon card metadata format: Home과 설교 페이지의 모든 설교 영상 카드에 ‘날짜 / 제목 / 본문’ 표기를 통일하고 최신 설교 메타데이터 보완·검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인

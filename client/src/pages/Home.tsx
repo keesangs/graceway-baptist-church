@@ -15,6 +15,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
+import { getSermonDateTimestamp, getSermonMetadataLines } from "@/lib/sermonDisplay";
 
 const HERO_BG = brandVisualAssets.homeHero;
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
@@ -52,6 +53,16 @@ type HomeSermon = {
 
 const legacySermons: HomeSermon[] = [
   {
+    title: "Jesus, Not a Miracle",
+    titleKo: "기적이 아니라 예수입니다",
+    scripture: "사도행전 3장 1절 ~ 16절",
+    scriptureEn: "Acts 3:1–16",
+    date: "August 23, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "New",
+    videoId: "JRYyUcCiMbM",
+  },
+  {
     title: "Filled with the Holy Spirit",
     titleKo: "성령으로 채우시다",
     scripture: "사도행전 2:22–36",
@@ -84,16 +95,6 @@ const legacySermons: HomeSermon[] = [
 ];
 
 const HOME_SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
-
-/** Uses the Sunday embedded in the playlist title when available, instead of the upload date. */
-function getSermonDateTimestamp(title: string, fallback: Date | string) {
-  const koreanDate = title.match(/(20\d{2})\.\s*(\d{1,2})\.(\d{1,2})/);
-  if (koreanDate) {
-    return Date.UTC(Number(koreanDate[1]), Number(koreanDate[2]) - 1, Number(koreanDate[3]));
-  }
-  const parsed = new Date(fallback).getTime();
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 type UpcomingEvent = {
@@ -691,11 +692,14 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="absolute bottom-4 left-5 right-5">
-                    <p className="text-[#C9973E] text-xs font-medium mb-1">{lang === "ko" ? sermonCards[0].scripture : sermonCards[0].scriptureEn}</p>
-                    <h3 className="text-white font-bold text-xl" style={{ fontFamily: "'Source Serif 4', serif" }}>
-                      {lang === "ko" ? sermonCards[0].titleKo : sermonCards[0].title}
-                    </h3>
-                    <p className="text-white/60 text-xs mt-1">{sermonCards[0].speaker} · {sermonCards[0].date}</p>
+                    {(() => {
+                      const metadata = getSermonMetadataLines(sermonCards[0], lang);
+                      return <>
+                        <p className="text-[#D9B87A] text-xs font-semibold tracking-wide">{metadata.date}</p>
+                        <h3 className="mt-1 text-white text-base font-bold leading-snug" style={{ fontFamily: "'Source Serif 4', serif" }}>{metadata.title}</h3>
+                        <p className="mt-1 text-white/75 text-xs leading-snug">{metadata.scripture}</p>
+                      </>;
+                    })()}
                   </div>
                   <div className="absolute top-3 right-3 bg-[#17324D]/80 text-white text-xs px-2 py-1 rounded-sm">
                     {sermonCards[0].duration}
@@ -744,14 +748,23 @@ export default function Home() {
                         <Play size={11} className="text-[#17324D] group-hover:text-[#C9973E] ml-0.5 transition-colors duration-150" fill="currentColor" />
                       </div>
                       <div className="flex-1 min-w-0">
+                        {(() => {
+                          const metadata = getSermonMetadataLines(s, lang);
+                          return <>
                         <p
-                          className="text-[#17324D] font-semibold text-sm leading-snug group-hover:text-[#2F6F9F] transition-colors duration-150"
+                          className="text-[#C9973E] text-[10px] font-semibold tracking-wide"
+                        >
+                          {metadata.date}
+                        </p>
+                        <p
+                          className="mt-1 text-[#17324D] font-semibold text-sm leading-snug group-hover:text-[#2F6F9F] transition-colors duration-150"
                           style={{ fontFamily: "'Source Serif 4', serif" }}
                         >
-                          {lang === "ko" ? s.titleKo : s.title}
+                          {metadata.title}
                         </p>
-                        <p className="text-[#C9973E] text-xs mt-0.5">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
-                        <p className="text-[#242A30]/50 text-[11px] mt-0.5">{s.date}</p>
+                        <p className="text-[#242A30]/55 text-[11px] mt-0.5 leading-snug">{metadata.scripture}</p>
+                          </>;
+                        })()}
                       </div>
                     </a>
                     <VideoShareButton

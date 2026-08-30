@@ -32,6 +32,7 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("sermonCards.slice(1, 4)");
     expect(homeSource).toContain("legacyByVideoId.get(video.videoId)");
     expect(homeSource).toContain("getSermonDateTimestamp");
+    expect(homeSource).toContain("getSermonMetadataLines");
     expect(homeSource).toContain("unsyncedLegacySermons");
     expect(homeSource).toContain("(b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0)");
     expect(homeSource).toContain('titleKo: "성령으로 채우시다"');

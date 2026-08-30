@@ -12,6 +12,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
+import { getSermonDateTimestamp, getSermonMetadataLines } from "@/lib/sermonDisplay";
 
 const SERMON_IMG = brandVisualAssets.sermonsCover;
 
@@ -30,6 +31,17 @@ type SermonCard = {
 
 // Real sermon videos from YouTube @keesangs channel — titles & scripture supplied by church
 const legacySermons: SermonCard[] = [
+  {
+    titleEn: "Jesus, Not a Miracle",
+    titleKo: "기적이 아니라 예수입니다",
+    scripture: "사도행전 3장 1절 ~ 16절",
+    scriptureEn: "Acts 3:1–16",
+    date: "August 23, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "New",
+    series: "Sunday Sermon",
+    videoId: "JRYyUcCiMbM",
+  },
   {
     titleEn: "Filled with the Holy Spirit",
     titleKo: "성령으로 채우시다",
@@ -169,22 +181,28 @@ export default function Sermons() {
   const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
 
   const sermons = useMemo(() => {
-    const legacyIds = new Set(legacySermons.map((sermon) => sermon.videoId));
-    const newSyncedSermons = (syncedVideosQuery.data ?? [])
-      .filter((video) => !legacyIds.has(video.videoId))
+    const syncedVideos = syncedVideosQuery.data ?? [];
+    if (syncedVideos.length === 0) return legacySermons;
+    const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
+    const syncedSermons = syncedVideos
       .map((video) => ({
-        titleEn: video.title,
-        titleKo: video.title,
-        scripture: "",
-        scriptureEn: "",
-        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-        speaker: "",
-        duration: "New",
+        titleEn: legacyByVideoId.get(video.videoId)?.titleEn ?? video.title,
+        titleKo: legacyByVideoId.get(video.videoId)?.titleKo ?? video.title,
+        scripture: legacyByVideoId.get(video.videoId)?.scripture ?? "",
+        scriptureEn: legacyByVideoId.get(video.videoId)?.scriptureEn ?? "",
+        date: legacyByVideoId.get(video.videoId)?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        speaker: legacyByVideoId.get(video.videoId)?.speaker ?? "Pastor Hunsuk Lee",
+        duration: legacyByVideoId.get(video.videoId)?.duration ?? "New",
         series: "Sunday Sermon",
         videoId: video.videoId,
         thumbnailUrl: video.thumbnailUrl,
+        sermonDateTimestamp: getSermonDateTimestamp(legacyByVideoId.get(video.videoId)?.date ?? video.title, video.publishedAt),
       }));
-    return [...newSyncedSermons, ...legacySermons];
+    const pendingLegacy = legacySermons
+      .filter((sermon) => !syncedVideos.some((video) => video.videoId === sermon.videoId))
+      .map((sermon) => ({ ...sermon, sermonDateTimestamp: getSermonDateTimestamp(sermon.date, sermon.date) }));
+    return [...syncedSermons, ...pendingLegacy]
+      .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
   }, [syncedVideosQuery.data]);
 
   const filtered = sermons.filter((s) => {
@@ -200,6 +218,13 @@ export default function Sermons() {
 
   const featured = sermons[0];
   const playingSermon = playingId ? sermons.find((sermon) => sermon.videoId === playingId) : null;
+  const featuredMetadata = getSermonMetadataLines({
+    date: featured.date,
+    title: featured.titleEn,
+    titleKo: featured.titleKo,
+    scripture: featured.scripture,
+    scriptureEn: featured.scriptureEn,
+  }, lang);
 
   return (
     <div className="min-h-screen bg-[#F4F6F7]">
@@ -288,19 +313,20 @@ export default function Sermons() {
               <span className="mb-4 inline-block rounded-sm bg-[#E7EEF1] px-3 py-1 text-xs font-medium tracking-wide text-[#163B59]">
                 {featured.series}
               </span>
+              <p className="mb-2 text-xs font-semibold tracking-wide text-[#B07834]">{featuredMetadata.date}</p>
               <h2
                 className="mb-3 text-[#163B59]"
                 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 700, lineHeight: 1.2 }}
               >
-                {lang === "ko" ? featured.titleKo : featured.titleEn}
+                {featuredMetadata.title}
               </h2>
-              {(lang === "ko" ? featured.scripture : featured.scriptureEn) && (
+              {featuredMetadata.scripture && (
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen size={14} className="text-[#B07834]" />
-                  <span className="text-sm font-medium text-[#607A91]">{lang === "ko" ? featured.scripture : featured.scriptureEn}</span>
+                  <span className="text-sm font-medium text-[#607A91]">{featuredMetadata.scripture}</span>
                 </div>
               )}
-              <p className="text-[#242A30]/60 text-sm mb-6">{[featured.speaker, featured.date].filter(Boolean).join(" · ")}</p>
+              <p className="text-[#242A30]/60 text-sm mb-6">{featured.speaker}</p>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setPlayingId(featured.videoId)}
@@ -382,17 +408,20 @@ export default function Sermons() {
                     </div>
                   </div>
                   <div className="p-4">
-                    {(lang === "ko" ? s.scripture : s.scriptureEn) && (
-                      <p className="mb-1 text-[10px] font-medium tracking-wide text-[#B07834]">{lang === "ko" ? s.scripture : s.scriptureEn}</p>
-                    )}
+                    {(() => {
+                      const metadata = getSermonMetadataLines({ date: s.date, title: s.titleEn, titleKo: s.titleKo, scripture: s.scripture, scriptureEn: s.scriptureEn }, lang);
+                      return <>
+                    <p className="mb-1 text-[10px] font-semibold tracking-wide text-[#B07834]">{metadata.date}</p>
                     <h3
                       className="mb-1.5 text-sm font-semibold leading-snug text-[#163B59] transition-colors group-hover:text-[#607A91]"
                       style={{ fontFamily: "'Source Serif 4', serif" }}
                     >
-                      {lang === "ko" ? s.titleKo : s.titleEn}
+                      {metadata.title}
                     </h3>
+                    <p className="mb-1 text-xs leading-snug text-[#607A91]">{metadata.scripture}</p>
                     {s.speaker && <p className="text-[#242A30]/45 text-[11px]">{s.speaker}</p>}
-                    <p className="text-[#242A30]/40 text-[11px]">{s.date}</p>
+                      </>;
+                    })()}
                   </div>
                 </button>
                 <div className="border-t border-[#DCE4E7] px-4 py-2.5">
