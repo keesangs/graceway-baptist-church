@@ -7,6 +7,7 @@ import {
   createPhotoAlbum,
   deleteCalendarEvent,
   deleteGalleryPhoto,
+  deleteGalleryPhotosInAlbum,
   deletePhotoAlbum,
   deleteMeditationComment,
   deleteMediaFile,
@@ -15,6 +16,7 @@ import {
   getGalleryPhotoById,
   getPhotoAlbumById,
   getPublishedPhotoAlbum,
+  hideGalleryPhotosInAlbum,
   getDailyMeditationById,
   getDailyMeditationByDate,
   getMeditationCommentById,
@@ -436,6 +438,30 @@ export const appRouter = router({
         if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
         const published = await publishDraftGalleryPhotos(input.albumId);
         return { published };
+      }),
+
+    hidePhotos: adminProcedure
+      .input(z.object({ albumId: z.number().int().positive(), photoIds: z.array(z.number().int().positive()).min(1).max(100) }))
+      .mutation(async ({ input }) => {
+        const album = await getPhotoAlbumById(input.albumId);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        const albumPhotoIds = new Set((await listGalleryPhotosForAdmin(input.albumId)).map((photo) => photo.id));
+        if (input.photoIds.some((id) => !albumPhotoIds.has(id))) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Selected photos must belong to this album" });
+        }
+        return { hidden: await hideGalleryPhotosInAlbum(input.albumId, input.photoIds) };
+      }),
+
+    deletePhotos: adminProcedure
+      .input(z.object({ albumId: z.number().int().positive(), photoIds: z.array(z.number().int().positive()).min(1).max(100) }))
+      .mutation(async ({ input }) => {
+        const album = await getPhotoAlbumById(input.albumId);
+        if (!album) throw new TRPCError({ code: "NOT_FOUND", message: "Photo album not found" });
+        const albumPhotoIds = new Set((await listGalleryPhotosForAdmin(input.albumId)).map((photo) => photo.id));
+        if (input.photoIds.some((id) => !albumPhotoIds.has(id))) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Selected photos must belong to this album" });
+        }
+        return { deleted: await deleteGalleryPhotosInAlbum(input.albumId, input.photoIds) };
       }),
 
     deletePhoto: adminProcedure

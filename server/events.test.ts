@@ -6,11 +6,13 @@ const createCalendarEvent = vi.fn();
 const createPhotoAlbum = vi.fn();
 const deleteCalendarEvent = vi.fn();
 const deleteGalleryPhoto = vi.fn();
+const deleteGalleryPhotosInAlbum = vi.fn();
 const deletePhotoAlbum = vi.fn();
 const getCalendarEventById = vi.fn();
 const getGalleryPhotoById = vi.fn();
 const getPhotoAlbumById = vi.fn();
 const getPublishedPhotoAlbum = vi.fn();
+const hideGalleryPhotosInAlbum = vi.fn();
 const listCalendarEvents = vi.fn();
 const listGalleryPhotosForAdmin = vi.fn();
 const listPublishedCalendarEvents = vi.fn();
@@ -26,6 +28,7 @@ vi.mock("./db", () => ({
   createPhotoAlbum: (...args: unknown[]) => createPhotoAlbum(...args),
   deleteCalendarEvent: (...args: unknown[]) => deleteCalendarEvent(...args),
   deleteGalleryPhoto: (...args: unknown[]) => deleteGalleryPhoto(...args),
+  deleteGalleryPhotosInAlbum: (...args: unknown[]) => deleteGalleryPhotosInAlbum(...args),
   deleteGooglePhotosConnectionForUser: vi.fn(),
   deletePhotoAlbum: (...args: unknown[]) => deletePhotoAlbum(...args),
   deleteMeditationComment: vi.fn(),
@@ -36,6 +39,7 @@ vi.mock("./db", () => ({
   getGooglePhotosConnectionForUser: vi.fn(),
   getPhotoAlbumById: (...args: unknown[]) => getPhotoAlbumById(...args),
   getPublishedPhotoAlbum: (...args: unknown[]) => getPublishedPhotoAlbum(...args),
+  hideGalleryPhotosInAlbum: (...args: unknown[]) => hideGalleryPhotosInAlbum(...args),
   getDailyMeditationByDate: vi.fn(),
   getDailyMeditationById: vi.fn(),
   getMeditationCommentById: vi.fn(),
@@ -238,6 +242,27 @@ describe("gallery router", () => {
   it("denies non-admin users before a bulk photo status update", async () => {
     await expect(appRouter.createCaller(makeContext("user")).gallery.publishDraftPhotos({ albumId: 7 })).rejects.toThrow();
     expect(publishDraftGalleryPhotos).not.toHaveBeenCalled();
+  });
+
+  it("hides or deletes only selected photos confirmed to belong to the chosen album", async () => {
+    getPhotoAlbumById.mockResolvedValue({ id: 7, status: "published" });
+    listGalleryPhotosForAdmin.mockResolvedValue([{ id: 31 }, { id: 32 }, { id: 33 }]);
+    hideGalleryPhotosInAlbum.mockResolvedValue(2);
+    deleteGalleryPhotosInAlbum.mockResolvedValue(1);
+    const caller = appRouter.createCaller(makeContext("admin"));
+
+    await expect(caller.gallery.hidePhotos({ albumId: 7, photoIds: [31, 32] })).resolves.toEqual({ hidden: 2 });
+    await expect(caller.gallery.deletePhotos({ albumId: 7, photoIds: [33] })).resolves.toEqual({ deleted: 1 });
+    expect(hideGalleryPhotosInAlbum).toHaveBeenCalledWith(7, [31, 32]);
+    expect(deleteGalleryPhotosInAlbum).toHaveBeenCalledWith(7, [33]);
+  });
+
+  it("rejects bulk requests containing photos from another album", async () => {
+    getPhotoAlbumById.mockResolvedValue({ id: 7, status: "published" });
+    listGalleryPhotosForAdmin.mockResolvedValue([{ id: 31 }]);
+
+    await expect(appRouter.createCaller(makeContext("admin")).gallery.hidePhotos({ albumId: 7, photoIds: [31, 99] })).rejects.toThrow("Selected photos must belong to this album");
+    expect(hideGalleryPhotosInAlbum).not.toHaveBeenCalled();
   });
 });
 

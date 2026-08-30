@@ -547,6 +547,27 @@ export async function publishDraftGalleryPhotos(albumId: number) {
   return Number(result.affectedRows ?? 0);
 }
 
+/** Updates only the selected photos belonging to one album. */
+export async function hideGalleryPhotosInAlbum(albumId: number, photoIds: number[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db
+    .update(galleryPhotos)
+    .set({ status: "hidden" })
+    .where(and(eq(galleryPhotos.albumId, albumId), inArray(galleryPhotos.id, photoIds)));
+  return Number(result.affectedRows ?? 0);
+}
+
+/** Deletes metadata only for the selected photos belonging to one album. */
+export async function deleteGalleryPhotosInAlbum(albumId: number, photoIds: number[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db
+    .delete(galleryPhotos)
+    .where(and(eq(galleryPhotos.albumId, albumId), inArray(galleryPhotos.id, photoIds)));
+  return Number(result.affectedRows ?? 0);
+}
+
 export async function deleteGalleryPhoto(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

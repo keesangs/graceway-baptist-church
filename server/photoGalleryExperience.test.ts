@@ -49,4 +49,13 @@ describe("church photo gallery experience", () => {
     expect(adminGalleryPanel).toContain("Google Photos 가져오기 진행 상태");
     expect(adminGalleryPanel).toContain("초안 사진 {activeAlbum.photos.filter((photo) => photo.status === \"draft\").length}장 모두 공개");
   });
+
+  it("allows multiple photo selection before confirming bulk hide or irreversible deletion", () => {
+    expect(galleryRouter).toContain("hidePhotos: adminProcedure");
+    expect(galleryRouter).toContain("deletePhotos: adminProcedure");
+    expect(adminGalleryPanel).toContain("선택 사진 숨김");
+    expect(adminGalleryPanel).toContain("선택 사진 삭제");
+    expect(adminGalleryPanel).toContain("이 작업은 되돌릴 수 없습니다.");
+    expect(adminGalleryPanel).toContain("selectedPhotoIds");
+  });
 });
