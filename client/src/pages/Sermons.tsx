@@ -12,7 +12,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
-import { getSermonDateTimestamp, getSermonMetadataLines } from "@/lib/sermonDisplay";
+import { getCanonicalSermonCards, getSermonMetadataLines } from "@/lib/sermonDisplay";
 
 const SERMON_IMG = brandVisualAssets.sermonsCover;
 
@@ -217,28 +217,14 @@ export default function Sermons() {
   const syncedVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT);
 
   const sermons = useMemo(() => {
-    const syncedVideos = syncedVideosQuery.data ?? [];
-    if (syncedVideos.length === 0) return legacySermons;
-    const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
-    const syncedSermons = syncedVideos
-      .map((video) => ({
-        titleEn: legacyByVideoId.get(video.videoId)?.titleEn ?? video.title,
-        titleKo: legacyByVideoId.get(video.videoId)?.titleKo ?? video.title,
-        scripture: legacyByVideoId.get(video.videoId)?.scripture ?? "",
-        scriptureEn: legacyByVideoId.get(video.videoId)?.scriptureEn ?? "",
-        date: legacyByVideoId.get(video.videoId)?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-        speaker: legacyByVideoId.get(video.videoId)?.speaker ?? "Pastor Hunsuk Lee",
-        duration: legacyByVideoId.get(video.videoId)?.duration ?? "New",
-        series: "Sunday Sermon",
-        videoId: video.videoId,
-        thumbnailUrl: video.thumbnailUrl,
-        sermonDateTimestamp: getSermonDateTimestamp(legacyByVideoId.get(video.videoId)?.date ?? video.title, video.publishedAt),
-      }));
-    const pendingLegacy = legacySermons
-      .filter((sermon) => !syncedVideos.some((video) => video.videoId === sermon.videoId))
-      .map((sermon) => ({ ...sermon, sermonDateTimestamp: getSermonDateTimestamp(sermon.date, sermon.date) }));
-    return [...syncedSermons, ...pendingLegacy]
-      .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
+    const legacyCards = legacySermons.map(({ titleEn, ...sermon }) => ({
+      ...sermon,
+      title: titleEn,
+    }));
+    return getCanonicalSermonCards(legacyCards, syncedVideosQuery.data ?? []).map((sermon) => ({
+      ...sermon,
+      titleEn: sermon.title,
+    }));
   }, [syncedVideosQuery.data]);
 
   const filtered = sermons.filter((s) => {

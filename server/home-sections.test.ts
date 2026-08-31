@@ -26,15 +26,11 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain("motion-reduce:transition-none");
   });
 
-  it("merges synchronized and pending legacy sermons by their actual Sunday date", () => {
+  it("uses the shared canonical sermon source so Home recent cards show distinct service dates", () => {
     expect(homeSource).toContain("trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT)");
-    expect(homeSource).toContain("thumbnailUrl: video.thumbnailUrl");
     expect(homeSource).toContain("sermonCards.slice(1, 4)");
-    expect(homeSource).toContain("legacyByVideoId.get(video.videoId)");
-    expect(homeSource).toContain("getSermonDateTimestamp");
+    expect(homeSource).toContain("getCanonicalSermonCards(legacySermons, syncedSermonsQuery.data ?? [])");
     expect(homeSource).toContain("getSermonMetadataLines");
-    expect(homeSource).toContain("unsyncedLegacySermons");
-    expect(homeSource).toContain("(b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0)");
     expect(homeSource).toContain('titleKo: "성령으로 채우시다"');
     expect(homeSource).toContain('titleKo: "성령이 임하시다"');
     expect(homeSource).toContain('scripture: "사도행전 2:1–13"');

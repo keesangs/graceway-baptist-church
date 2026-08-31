@@ -15,7 +15,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
-import { getSermonDateTimestamp, getSermonMetadataLines } from "@/lib/sermonDisplay";
+import { getCanonicalSermonCards, getSermonMetadataLines } from "@/lib/sermonDisplay";
 
 const HERO_BG = brandVisualAssets.homeHero;
 const HERO_VIDEO = "/manus-storage/hero_river_web_95c0082f.mp4";
@@ -46,7 +46,7 @@ type HomeSermon = {
   duration: string;
   videoId: string;
   thumbnailUrl?: string;
-  publishedAt?: string;
+  publishedAt?: Date | string;
   playlistPosition?: number;
   sermonDateTimestamp?: number;
 };
@@ -249,38 +249,7 @@ export default function Home() {
   };
 
   const sermonCards = useMemo<HomeSermon[]>(() => {
-    const syncedVideos = syncedSermonsQuery.data ?? [];
-    // The persisted playlist is the live source of truth once a sync has run.
-    // Known legacy entries enrich matching videos, while an entry not yet present
-    // in the playlist remains visible until the next administrator-run sync.
-    if (syncedVideos.length === 0) return legacySermons;
-    const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
-    const syncedSermons = syncedVideos
-      .map((video) => {
-        const legacy = legacyByVideoId.get(video.videoId);
-        return {
-          title: legacy?.title ?? video.title,
-          titleKo: legacy?.titleKo ?? video.title,
-          scripture: legacy?.scripture ?? "",
-          scriptureEn: legacy?.scriptureEn ?? "",
-          date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-          speaker: legacy?.speaker ?? "Pastor Hunsuk Lee",
-          duration: legacy?.duration ?? "New",
-          videoId: video.videoId,
-          thumbnailUrl: video.thumbnailUrl,
-          publishedAt: new Date(video.publishedAt).toISOString(),
-          playlistPosition: video.playlistPosition,
-          sermonDateTimestamp: legacy
-            ? getSermonDateTimestamp(legacy.date, video.publishedAt)
-            : getSermonDateTimestamp(video.title, video.publishedAt),
-        };
-      });
-    const unsyncedLegacySermons = legacySermons
-      .filter((sermon) => !legacyByVideoId.has(sermon.videoId) || !syncedVideos.some((video) => video.videoId === sermon.videoId))
-      .map((sermon) => ({ ...sermon, sermonDateTimestamp: getSermonDateTimestamp(sermon.date, sermon.date) }));
-
-    return [...syncedSermons, ...unsyncedLegacySermons]
-      .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
+    return getCanonicalSermonCards(legacySermons, syncedSermonsQuery.data ?? []);
   }, [syncedSermonsQuery.data]);
 
   const upcomingEvents = (upcomingEventsQuery.data ?? []) as UpcomingEvent[];

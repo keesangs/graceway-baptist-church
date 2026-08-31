@@ -16,16 +16,14 @@ describe("YouTube manual playlist sync contract", () => {
     expect(routers).toContain('fetchPlaylistVideos("worship")');
   });
 
-  it("uses a video-kind unique key and merges synced records with legacy metadata by Sunday date", () => {
+  it("uses a video-kind unique key and canonicalizes synced sermon cards by Sunday date", () => {
     const schema = projectFile("drizzle/schema.ts");
     const sermons = projectFile("client/src/pages/Sermons.tsx");
     const worship = projectFile("client/src/pages/Worship.tsx");
 
     expect(schema).toContain('uniqueIndex("youtube_video_kind_unique").on(table.videoKind, table.videoId)');
     expect(sermons).toContain('trpc.youtube.list.useQuery(SERMON_LIST_INPUT)');
-    expect(sermons).toContain('const legacyByVideoId = new Map');
-    expect(sermons).toContain('return [...syncedSermons, ...pendingLegacy]');
-    expect(sermons).toContain('getSermonDateTimestamp');
+    expect(sermons).toContain('getCanonicalSermonCards(legacyCards, syncedVideosQuery.data ?? [])');
     expect(worship).toContain('trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT)');
     expect(worship).toContain('return [...newSyncedWorships, ...refreshedLegacyWorships]');
   });
