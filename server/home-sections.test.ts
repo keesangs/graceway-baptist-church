@@ -42,4 +42,13 @@ describe("Home editorial sections", () => {
     expect(homeSource).toContain('href="/events"');
     expect(homeSource).not.toContain('titleEn: "Sunday Worship Service"');
   });
+
+  it("shows each upcoming event location beside its scheduled time when a location is provided", () => {
+    expect(homeSource).toContain("venueKo: string | null");
+    expect(homeSource).toContain("venueEn: string | null");
+    expect(homeSource).toContain("const venue = lang === \"en\" && event.venueEn ? event.venueEn : event.venueKo;");
+    expect(homeSource).toContain("venue ?");
+    expect(homeSource).toContain("<MapPin size={10} />");
+    expect(homeSource).toContain("{venue}");
+  });
 });

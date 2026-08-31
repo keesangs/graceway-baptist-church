@@ -161,6 +161,7 @@
 - [x] Admin event CRUD: 관리자 Events 탭에서 일정 추가·수정·취소·공개 상태 전환·반복 일정 입력 기능 구현
 - [x] Public event calendar: 월간·목록 보기와 이벤트 상세를 갖춘 공개 /events 페이지 추가
 - [x] Home upcoming events data: Home의 정적 다음 일정 카드를 공개 일정 쿼리의 다음 4–6개 항목으로 교체
+- [x] Home upcoming event location display: 다가오는 행사 카드에서 시간 옆에 행사 장소를 표시하고 반응형·회귀 테스트·운영 화면을 검증
 - [x] Event recurrence and access tests: 반복 일정 계산·공개 상태 필터·관리자 권한·날짜 범위 조회 테스트 추가
 - [x] Events page hero visual refresh: 공개 일정·행사 페이지 우측 브랜드 추상 이미지를 Graceway 팔레트에 맞는 새로운 비주얼로 생성·적용·반응형 검증
 - [x] Events card hover motion: 일정·행사 카드에 브랜드에 맞는 부드러운 호버·키보드 포커스 모션 추가

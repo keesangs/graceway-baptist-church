@@ -191,6 +191,8 @@ type UpcomingEvent = {
   seriesId: number;
   titleKo: string;
   titleEn: string | null;
+  venueKo: string | null;
+  venueEn: string | null;
   occurrenceStart: Date | string;
   allDay: number;
   eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
@@ -986,6 +988,7 @@ export default function Home() {
               {upcomingEvents.map((event) => {
                 const date = formatUpcomingEventDate(event.occurrenceStart, lang);
                 const tag = event.isRecurring ? (lang === "ko" ? "매주" : "Weekly") : event.eventType === "worship" ? (lang === "ko" ? "예배" : "Worship") : (lang === "ko" ? "행사" : "Event");
+                const venue = lang === "en" && event.venueEn ? event.venueEn : event.venueKo;
                 return (
                   <Link
                     href="/events"
@@ -1000,7 +1003,12 @@ export default function Home() {
                     <div className="flex-1">
                       <span className="mb-1 inline-block rounded-sm bg-[#17324D]/10 px-2 py-0.5 text-[10px] font-medium tracking-wide text-[#17324D]">{tag}</span>
                       <p className="font-semibold text-[#17324D] transition-colors group-hover:text-[#2F6F9F]" style={{ fontFamily: "'Source Serif 4', serif" }}>{lang === "en" && event.titleEn ? event.titleEn : event.titleKo}</p>
-                      <p className="mt-0.5 flex items-center gap-1 text-xs text-[#242A30]/50"><Clock size={10} /> {formatUpcomingEventTime(event, lang)}</p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#242A30]/50">
+                        <span className="inline-flex items-center gap-1"><Clock size={10} /> {formatUpcomingEventTime(event, lang)}</span>
+                        {venue ? (
+                          <span className="inline-flex min-w-0 items-center gap-1"><MapPin size={10} /> <span className="truncate">{venue}</span></span>
+                        ) : null}
+                      </div>
                     </div>
                     <ChevronRight size={16} className="text-[#242A30]/30 transition-colors group-hover:text-[#C9973E]" />
                   </Link>
