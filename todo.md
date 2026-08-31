@@ -197,6 +197,7 @@
 - [x] Google Photos selected import: Google Photos Picker의 관리자 명시적 선택·사이트 저장소 복사·중복 방지 가져오기 구현
 - [x] Google Photos MIME compatibility fix: Picker가 제공하는 실제 사진 MIME·파일명·응답 헤더를 허용하고 지원 불가 항목만 명확히 안내
 - [x] Google Photos import response diagnostics: 선택 사진의 안전한 유형·크기·다운로드 응답 통계를 기록해 실제 거부 원인 확인
+- [x] Google Photos reconnect 403 recovery: 재연결 시 OAuth 또는 Picker 단계의 403 오류 원인을 진단하고 재승인·사진 선택 흐름을 보완·검증
 - [x] Gallery deployment quota recovery: 갤러리 변경 배포 시 발생한 서비스 생성 할당량 제한을 해소하고 최신 체크포인트 운영 반영 확인
 - [x] Google Photos OAuth redirect registration: Google Cloud OAuth 클라이언트에 https://graceway-baptist.org/api/google-photos/callback 리디렉션 URI를 등록하고 실제 연결 검증
 - [x] Google Photos OAuth retry diagnosis: 계정 선택·동의 후 콜백 실패 원인을 확인하고 재시도 가능한 연결 상태·오류 안내 보완
@@ -216,6 +217,9 @@
 - [x] Sermon archive pagination: 설교 아카이브에 페이지 단위 탐색을 추가해 데스크톱에서 카드가 최대 두 줄로 표시되고 검색·필터 변경 시 첫 페이지로 초기화되도록 구현·검증
 - [x] Sermon responsive pagination: 브라우저 폭별 그리드 열 수에 맞춰 4열은 8개·3열은 6개 카드로 최대 두 줄이 보이도록 동적 페이지네이션 구현·검증
 - [x] Sermon pagination fade transition: 페이지 전환 시 카드 그리드의 짧은 페이드 아웃·인 모션과 prefers-reduced-motion 대응을 추가·검증
+- [ ] Subscriber newsletter delivery plan: 주일 오전 9시 또는 매일 발송 주기, 최신 주보·뉴스레터 콘텐츠, 수신 동의·수신 거부 정책, 이메일 제공자 방식 확정
+- [ ] Subscriber newsletter delivery: 발송 기록·중복 방지·수신 거부·관리자 미리보기·재발송·정기 최신 뉴스레터 이메일 발송 구현
+- [x] Reusable full-stack delivery skill: 요구 확인·TODO·스키마·API·UI·테스트·시각 검증·체크포인트 절차를 다른 프로젝트에서 사용할 수 있는 스킬로 패키징·검증
 - [ ] GitHub existing repository reconnection: 새 저장소 생성 없이 기존 graceway-baptist-church GitHub 연결을 재인증·복구
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
