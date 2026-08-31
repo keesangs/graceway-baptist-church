@@ -192,6 +192,7 @@
 - [x] Weekly newsletter header thumbnail: 이번 주 주보 첫 페이지 썸네일을 행사 페이지 좌측 헤더 하단으로 재배치하고 반응형 검증
 - [x] Weekly newsletter tile thumbnail correction: 이번 주 주보 좌측 타일의 발행 날짜 바로 아래에 첫 페이지 썸네일을 배치하고 헤더 중복을 제거·검증
 - [x] Events bulletin archive height alignment: 지난 교회 주보 영역의 높이를 최신 주보 좌측 타일과 균형 있게 맞춘 변경을 데스크톱·모바일에서 검증하고 체크포인트 저장
+- [x] Events bulletin archive exact height correction: 데스크톱에서 지난 주보 보관함과 최신 주보 타일의 실제 렌더링 높이를 측정하고 동일 높이로 정렬되도록 수정·검증·배포
 - [x] Church photo gallery experience plan: Graceway 브랜드에 맞는 앨범·사진·라이트박스 탐색 구조와 사진 보호·운영 원칙 확정
 - [x] Church photo gallery data model: 앨범·사진 메타데이터·공개 상태·촬영일·가져온 출처를 저장하는 스키마와 마이그레이션 추가
 - [x] Church photo gallery manual upload: 관리자 앨범 생성·사진 수동 업로드·캡션·정렬·공개 상태 관리 구현
