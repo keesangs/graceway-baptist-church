@@ -105,7 +105,7 @@
 - [x] GitHub synchronization: 현재 코드 변경과 GitHub에 추적 가능한 이미지 자산을 원격 main 브랜치에 동기화하고 반영 상태 확인
 - [x] Project README overview: 현재 기능·기술 구성·운영 흐름·개발 및 검증 방법을 문서화한 README를 작성
 - [x] Project README GitHub sync: README.md를 git에 추가·커밋·push하고 원격 keesangs/graceway-baptist-church 저장소에서 파일 존재와 최신 커밋 반영을 검증
-- [ ] Project README GitHub sync verification: README.md와 todo.md 변경을 포함한 실제 커밋·push를 수행하고 원격 keesangs/graceway-baptist-church의 HEAD와 로컬 최신 커밋·README 내용이 일치하는지 검증
+- [x] Project README GitHub sync verification: README.md와 todo.md 변경을 포함한 실제 커밋·push를 수행하고 원격 keesangs/graceway-baptist-church의 HEAD와 로컬 최신 커밋·README 내용이 일치하는지 검증
 - [x] Sticky shrinking navigation: 새 Graceway 로고가 항상 보이도록 상단 내비게이션을 고정하고 스크롤 시 컴팩트한 높이·로고 크기로 전환
 - [x] Home vision line break: 비전 문구 ‘다시 말씀으로, 다시 세상으로’의 요청한 줄바꿈 표현을 검증·반영하고 화면 확인
 - [x] GitHub vision sync: 최신 홈 비전 패널 줄바꿈 변경을 원격 main 브랜치에 동기화하고 반영 상태 확인
