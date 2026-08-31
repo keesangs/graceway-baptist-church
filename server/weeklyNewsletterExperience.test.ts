@@ -22,8 +22,12 @@ describe("weekly newsletter experience", () => {
     expect(brandPageHero).not.toContain("footerContent?: ReactNode");
     expect(eventsPage).toContain("지난 교회 주보");
     expect(eventsPage).toContain("lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)]");
-    expect(eventsPage).toContain("lg:items-stretch");
-    expect(eventsPage).toContain('className="min-w-0"');
+    expect(eventsPage).toContain("useRef");
+    expect(eventsPage).toContain("ResizeObserver");
+    expect(eventsPage).toContain("latestNewsletterTileHeight");
+    expect(eventsPage).toContain("lg:items-start");
+    expect(eventsPage).toContain('className="min-w-0 lg:flex lg:min-h-0 lg:flex-col"');
+    expect(eventsPage).toContain("lg:max-h-none lg:flex-1");
     expect(eventsPage).not.toContain("lg:h-[836px]");
     expect(eventsPage).toContain("setPreviewIssue(latestNewsletter)");
     expect(eventsPage).toContain("setPreviewIssue(issue)");

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, ExternalLink, Eye, FileText, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -180,6 +180,8 @@ export default function Events() {
   const [previewIssue, setPreviewIssue] = useState<WeeklyNewsletterIssue | null>(null);
   const [newsletterYearFilter, setNewsletterYearFilter] = useState("all");
   const [newsletterMonthFilter, setNewsletterMonthFilter] = useState("all");
+  const latestNewsletterTileRef = useRef<HTMLElement>(null);
+  const [latestNewsletterTileHeight, setLatestNewsletterTileHeight] = useState<number | null>(null);
   const range = useMemo(() => monthRange(month), [month]);
   const rangeInput = useMemo(() => ({ start: range.start, end: range.end }), [range]);
   const eventsQuery = trpc.events.listRange.useQuery(rangeInput);
@@ -221,6 +223,29 @@ export default function Events() {
     const { year, month: issueMonth } = newsletterYearMonth(issue.issueDate);
     return (newsletterYearFilter === "all" || year === newsletterYearFilter) && (newsletterMonthFilter === "all" || issueMonth === newsletterMonthFilter);
   }), [newsletterMonthFilter, newsletterYearFilter, priorNewsletters]);
+
+  useEffect(() => {
+    const tile = latestNewsletterTileRef.current;
+    if (!tile) {
+      setLatestNewsletterTileHeight(null);
+      return;
+    }
+
+    const measureTileHeight = () => {
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      setLatestNewsletterTileHeight(isDesktop ? tile.getBoundingClientRect().height : null);
+    };
+
+    measureTileHeight();
+    const observer = new ResizeObserver(measureTileHeight);
+    observer.observe(tile);
+    window.addEventListener("resize", measureTileHeight);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measureTileHeight);
+    };
+  }, [latestNewsletter?.id]);
 
   const showFeaturedDate = () => {
     if (!featuredSpecial) return;
@@ -288,20 +313,20 @@ export default function Events() {
             {latestNewsletterQuery.isLoading ? (
               <div className="h-80 animate-pulse rounded-lg bg-[#E7EEF1]" aria-label={lang === "ko" ? "주보를 불러오는 중" : "Loading weekly newsletter"} />
             ) : latestNewsletter ? (
-              <div className="grid gap-7 lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)] lg:items-stretch">
-                <article className="flex min-h-full flex-col justify-between rounded-lg border border-[#DCE4E7] bg-[#F4F6F7] p-5 shadow-[0_14px_28px_rgba(22,59,89,0.08)] sm:p-6">
+              <div className="grid gap-7 lg:grid-cols-[minmax(0,0.86fr)_minmax(19rem,1.14fr)] lg:items-start">
+                <article ref={latestNewsletterTileRef} className="flex flex-col justify-between rounded-lg border border-[#DCE4E7] bg-[#F4F6F7] p-5 shadow-[0_14px_28px_rgba(22,59,89,0.08)] sm:p-6">
                   <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">{formatNewsletterDate(latestNewsletter.issueDate, lang)}</p><button type="button" onClick={() => setPreviewIssue(latestNewsletter)} className="group relative mt-4 block aspect-[3/4] w-full overflow-hidden border border-[#DCE4E7] bg-[#E7EEF1] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2"><img src={`https://drive.google.com/thumbnail?id=${latestNewsletter.driveFileId}&sz=w1000`} alt="" className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none" /><span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#163B59]/65 to-transparent" /><span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-sm bg-[#163B59]/92 px-3 py-1.5 text-xs font-semibold text-white shadow-lg"><FileText className="size-3.5 text-[#E5C484]" />{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</span></button><h3 className="mt-4 font-serif text-2xl font-semibold text-[#163B59]">{lang === "en" && latestNewsletter.titleEn ? latestNewsletter.titleEn : latestNewsletter.titleKo}</h3><p className="mt-2 text-sm leading-6 text-[#607A91]">{lang === "ko" ? "첫 페이지를 미리 보고, 웹에서 전체 주보를 바로 열어 보세요." : "Preview the first page, then open the complete bulletin online."}</p><p className="mt-4 text-sm text-[#607A91]">PDF · {formatNewsletterFileSize(latestNewsletter.fileSize)}</p></div>
                   <div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={() => setPreviewIssue(latestNewsletter)} className="inline-flex items-center gap-2 rounded-sm bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 hover:bg-[#245170] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Eye className="size-4" />{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</button><a href={latestNewsletter.storageUrl} download className="inline-flex items-center gap-2 rounded-sm border border-[#B9955E]/50 bg-white px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color,border-color] duration-200 hover:border-[#B9955E] hover:bg-[#F6F0E5] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transition-none"><Download className="size-4 text-[#B07834]" />{lang === "ko" ? "다운로드" : "Download"}</a></div>
                 </article>
 
-                <aside aria-labelledby="previous-newsletters-title" className="min-w-0">
+                <aside aria-labelledby="previous-newsletters-title" className="min-w-0 lg:flex lg:min-h-0 lg:flex-col" style={latestNewsletterTileHeight ? { height: `${latestNewsletterTileHeight}px` } : undefined}>
                   <div className="mb-4 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">Archive</p><h3 id="previous-newsletters-title" className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "지난 교회 주보" : "Previous bulletins"}</h3></div><span aria-live="polite" className="text-xs text-[#607A91]">{lang === "ko" ? `${filteredPriorNewsletters.length}개 보기` : `${filteredPriorNewsletters.length} issue${filteredPriorNewsletters.length === 1 ? "" : "s"}`}</span></div>
                   {priorNewsletters.length > 0 ? <>
                     <div aria-label={lang === "ko" ? "지난 주보 필터" : "Previous bulletin filters"} className="mb-4 grid grid-cols-2 gap-2">
                       <Select value={newsletterYearFilter} onValueChange={value => { setNewsletterYearFilter(value); setNewsletterMonthFilter("all"); }}><SelectTrigger className="w-full border-[#C8D4D9] bg-white text-[#163B59] focus-visible:ring-[#607A91]"><SelectValue placeholder={lang === "ko" ? "연도 전체" : "All years"} /></SelectTrigger><SelectContent><SelectItem value="all">{lang === "ko" ? "연도 전체" : "All years"}</SelectItem>{newsletterYears.map(year => <SelectItem key={year} value={year}>{year}</SelectItem>)}</SelectContent></Select>
                       <Select value={newsletterMonthFilter} onValueChange={setNewsletterMonthFilter}><SelectTrigger className="w-full border-[#C8D4D9] bg-white text-[#163B59] focus-visible:ring-[#607A91]"><SelectValue placeholder={lang === "ko" ? "월 전체" : "All months"} /></SelectTrigger><SelectContent><SelectItem value="all">{lang === "ko" ? "월 전체" : "All months"}</SelectItem>{newsletterMonths.map(issueMonth => <SelectItem key={issueMonth} value={issueMonth}>{newsletterMonthLabel(issueMonth, lang)}</SelectItem>)}</SelectContent></Select>
                     </div>
-                    {filteredPriorNewsletters.length > 0 ? <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                    {filteredPriorNewsletters.length > 0 ? <div className="max-h-[34rem] min-h-0 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin] lg:max-h-none lg:flex-1">
                       {filteredPriorNewsletters.map(issue => <button key={issue.id} type="button" onClick={() => setPreviewIssue(issue)} className="group flex w-full items-center gap-4 rounded-lg border border-[#DCE4E7] bg-white p-3 text-left transition-[transform,border-color,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:border-[#B9955E]/65 hover:bg-[#FFFEFB] hover:shadow-[0_8px_18px_rgba(22,59,89,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607A91] focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><div className="grid size-11 shrink-0 place-items-center rounded-sm bg-[#F6F0E5] text-[#B07834]"><FileText className="size-5" /></div><span className="min-w-0 flex-1"><span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#B07834]">{formatNewsletterDate(issue.issueDate, lang)}</span><span className="mt-0.5 block truncate font-serif text-base font-semibold text-[#163B59]">{lang === "en" && issue.titleEn ? issue.titleEn : issue.titleKo}</span><span className="mt-1 block text-xs text-[#607A91]">{lang === "ko" ? "웹에서 미리보기" : "Preview online"}</span></span><Eye className="size-4 shrink-0 text-[#607A91] transition-transform duration-200 group-hover:scale-110 group-hover:text-[#B07834] motion-reduce:transform-none" /></button>)}
                     </div> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "선택한 연도와 월에 해당하는 주보가 없습니다." : "No bulletins match the selected year and month."}</div>}
                   </> : <div className="rounded-lg border border-dashed border-[#C8D4D9] bg-[#F4F6F7] px-5 py-10 text-center text-sm leading-6 text-[#607A91]">{lang === "ko" ? "지난 주보가 게시되면 이곳에서 볼 수 있습니다." : "Previous bulletins will appear here once published."}</div>}
