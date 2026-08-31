@@ -10,11 +10,45 @@ describe("sermon card metadata display", () => {
     scriptureEn: "Acts 3:1–16",
   };
 
+  const augustThirtiethSermon = {
+    date: "August 30, 2026",
+    title: "The True Strength of My Life",
+    titleKo: "내 인생의 진짜 힘",
+    scripture: "여호수아 14장 6절 ~ 12절",
+    scriptureEn: "Joshua 14:6–12",
+  };
+
   it("formats the requested Korean date, title, and scripture lines", () => {
     expect(getSermonMetadataLines(latestSermon, "ko")).toEqual({
       date: "2026. 08.23 주일예배 말씀",
       title: "기적이 아니라 예수입니다",
       scripture: "본문: 사도행전 3장 1절 ~ 16절",
+    });
+  });
+
+  it("uses the church-supplied August 30 title and scripture for the synchronized video", () => {
+    const cards = getCanonicalSermonCards([
+      {
+        ...augustThirtiethSermon,
+        speaker: "Pastor Hunsuk Lee",
+        duration: "New",
+        series: "Sunday Sermon",
+        videoId: "12P388oQ630",
+      },
+    ], [
+      {
+        videoId: "12P388oQ630",
+        title: "2026. 08.30 주일예배 말씀",
+        publishedAt: "2026-08-31T05:41:54.000Z",
+        thumbnailUrl: "https://example.com/aug-30.jpg",
+        playlistPosition: 0,
+      },
+    ]);
+
+    expect(getSermonMetadataLines(cards[0], "ko")).toEqual({
+      date: "2026. 08.30 주일예배 말씀",
+      title: "내 인생의 진짜 힘",
+      scripture: "본문: 여호수아 14장 6절 ~ 12절",
     });
   });
 

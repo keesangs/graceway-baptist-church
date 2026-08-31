@@ -216,6 +216,7 @@
 - [x] Home sermon metadata parity: Home 최근 설교 카드가 설교 페이지와 동일한 날짜·제목·본문 메타데이터를 모든 최신 영상에 표시하도록 보완·검증
 - [x] YouTube sync public refresh: 관리자 동기화 후 설교 페이지와 Home 최근 설교가 최신 동기화 영상을 조회·병합·정렬·갱신하도록 진단·수정·검증
 - [x] YouTube 2026-08-30 sermon title refresh: YouTube에서 수정한 8월 30일 주일예배 설교 제목을 재동기화하고 Home·설교 공개 카드의 날짜·제목·정렬을 검증·배포
+- [x] YouTube 2026-08-30 sermon scripture metadata: 확인된 이번 주 설교 본문을 메타데이터에 보완하고 Home·설교 카드 표시와 회귀 테스트를 검증·배포
 - [x] Sermon archive pagination: 설교 아카이브에 페이지 단위 탐색을 추가해 데스크톱에서 카드가 최대 두 줄로 표시되고 검색·필터 변경 시 첫 페이지로 초기화되도록 구현·검증
 - [x] Sermon responsive pagination: 브라우저 폭별 그리드 열 수에 맞춰 4열은 8개·3열은 6개 카드로 최대 두 줄이 보이도록 동적 페이지네이션 구현·검증
 - [x] Sermon pagination fade transition: 페이지 전환 시 카드 그리드의 짧은 페이드 아웃·인 모션과 prefers-reduced-motion 대응을 추가·검증

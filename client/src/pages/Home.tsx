@@ -53,6 +53,16 @@ type HomeSermon = {
 
 const legacySermons: HomeSermon[] = [
   {
+    title: "The True Strength of My Life",
+    titleKo: "내 인생의 진짜 힘",
+    scripture: "여호수아 14장 6절 ~ 12절",
+    scriptureEn: "Joshua 14:6–12",
+    date: "August 30, 2026",
+    speaker: "Pastor Hunsuk Lee",
+    duration: "New",
+    videoId: "12P388oQ630",
+  },
+  {
     title: "Jesus, Not a Miracle",
     titleKo: "기적이 아니라 예수입니다",
     scripture: "사도행전 3장 1절 ~ 16절",
