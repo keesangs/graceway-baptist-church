@@ -49,6 +49,7 @@
 - [x] Authenticated meditation notes localStorage migration verification: 기존 localStorage 답변이 로그인 후 서버 노트로 한 번 이전되고 이후 서버값이 우선되는지 검증
 - [x] Authenticated meditation notes retry verification: notes.upsert 실패를 시뮬레이션하고 ‘다시 저장’ 제어가 노트 텍스트 변경 없이 두 번째 저장을 발생시키는지 검증
 - [ ] Authenticated meditation notes migration browser verification: localStorage에만 있는 QT 답변이 로그인 후 meditation_notes에 저장되고 이후 서버 복사본이 우선되는지 브라우저 흐름으로 검증
+- [x] Authenticated meditation notes migration integration test: localStorage에만 있는 답변이 로그인 상태의 묵상 페이지에서 최초 notes.upsert 요청으로 전달되는지 컴포넌트 테스트로 검증
 - [x] Authenticated meditation notes retry behavior test: 오류 상태와 재시도 동작을 버튼 문자열 확인을 넘어 집중 테스트로 검증
 - [x] Authenticated meditation notes interactive retry test: notes.upsert 실패를 모킹하고 다시 저장 클릭이 동일 답변으로 reset 후 두 번째 upsert를 호출하는지 컴포넌트 테스트로 검증
 - [x] Authenticated meditation notes retry notice integration: 실제 오류 안내 컴포넌트에서 다시 저장 클릭이 savePersonalNote.reset 및 동일 입력의 savePersonalNote.mutate 호출로 이어지는지 검증
