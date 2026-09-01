@@ -4,7 +4,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, LogOut, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
@@ -12,7 +12,7 @@ import { PersonalNoteRetryButton } from "@/components/PersonalNoteRetryButton";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
-import { EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
+import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
 
 function getQtStorageKey(date: string) {
   return `qt_${date}`;
@@ -35,7 +35,7 @@ function readLocalQtAnswers(date: string): QtAnswers {
 
 export default function Meditation() {
   const { lang } = useLang();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split("T")[0]);
   const [qtAnswers, setQtAnswers] = useState<QtAnswers>(EMPTY_QT_ANSWERS);
   const [shouldPersistQtAnswers, setShouldPersistQtAnswers] = useState(false);
@@ -45,6 +45,8 @@ export default function Meditation() {
   const [commentOffset, setCommentOffset] = useState(0);
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
+  const [logoutError, setLogoutError] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [hasResolvedInitialDate, setHasResolvedInitialDate] = useState(false);
   const qtAnswersRef = useRef(qtAnswers);
   const utils = trpc.useUtils();
@@ -223,6 +225,23 @@ export default function Meditation() {
       reset: savePersonalNote.reset,
       mutate: savePersonalNote.mutate,
     });
+  };
+
+  const handleMeditationLogout = async () => {
+    setLogoutError(false);
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      // Browser copies may contain private reflections. Remove them on logout;
+      // the account copy remains stored securely on the server.
+      clearQtBrowserCopies(localStorage);
+      setQtAnswers(EMPTY_QT_ANSWERS);
+      setShouldPersistQtAnswers(false);
+    } catch {
+      setLogoutError(true);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   // 날짜 네비게이션
@@ -796,7 +815,7 @@ export default function Meditation() {
 
                   <div aria-live="polite" className="mb-5 rounded-lg border border-[#DCE4E7] bg-[#F7F9F9] px-3 py-2.5 text-xs leading-relaxed text-[#607A91]">
                     {isAuthenticated ? (
-                      personalNoteQuery.isLoading ? (
+                      authLoading || personalNoteQuery.isLoading ? (
                         <span className="inline-flex items-center gap-2"><Loader2 className="size-3.5 animate-spin" />{lang === "ko" ? "내 묵상 기록을 불러오는 중입니다." : "Loading your private meditation note."}</span>
                       ) : savePersonalNote.isError ? (
                         <div className="flex flex-wrap items-center justify-between gap-2 text-red-600" role="alert">
@@ -806,7 +825,20 @@ export default function Meditation() {
                       ) : savePersonalNote.isPending || shouldPersistQtAnswers ? (
                         <span className="inline-flex items-center gap-2"><Loader2 className="size-3.5 animate-spin" />{lang === "ko" ? "내 계정에 비공개로 저장 중입니다." : "Saving privately to your account."}</span>
                       ) : (
-                        <span>{lang === "ko" ? "내 계정에 비공개로 자동 저장됩니다. 다른 기기에서도 같은 계정으로 볼 수 있습니다." : "Saved privately to your account and available on your other devices."}</span>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span>{lang === "ko" ? "내 계정에 비공개로 자동 저장됩니다. 다른 기기에서도 같은 계정으로 볼 수 있습니다." : "Saved privately to your account and available on your other devices."}</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleMeditationLogout}
+                            disabled={isLoggingOut}
+                            className="h-auto shrink-0 px-1.5 py-1 text-xs font-semibold text-[#163B59] hover:bg-[#E8EFF2]"
+                          >
+                            {isLoggingOut ? <Loader2 className="size-3.5 animate-spin" /> : <LogOut className="size-3.5" />}
+                            {lang === "ko" ? "로그아웃" : "Log out"}
+                          </Button>
+                        </div>
                       )
                     ) : (
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -817,6 +849,11 @@ export default function Meditation() {
                       </div>
                     )}
                   </div>
+                  {logoutError && (
+                    <p role="alert" className="-mt-3 mb-5 text-xs text-red-600">
+                      {lang === "ko" ? "로그아웃하지 못했습니다. 다시 시도해 주세요." : "We could not sign you out. Please try again."}
+                    </p>
+                  )}
 
                   <div className="space-y-6 [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91]">
                     {/* Q1 */}

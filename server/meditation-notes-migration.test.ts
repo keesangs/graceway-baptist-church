@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, shouldSchedulePersonalNoteSave } from "../client/src/lib/meditationNotes";
+import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, shouldSchedulePersonalNoteSave } from "../client/src/lib/meditationNotes";
 
 describe("personal meditation note migration", () => {
   it("copies a meaningful legacy browser note only when no account note exists", () => {
@@ -53,5 +53,22 @@ describe("personal meditation note migration", () => {
       isPending: false,
       isError: false,
     })).toBe(true);
+  });
+
+  it("clears only private QT browser copies when the member signs out", () => {
+    const entries = new Map<string, string>([
+      ["qt_2026-08-31", "private reflection"],
+      ["qt_2026-09-01", "private reflection"],
+      ["theme", "light"],
+    ]);
+    const storage = {
+      get length() { return entries.size; },
+      key(index: number) { return Array.from(entries.keys())[index] ?? null; },
+      removeItem(key: string) { entries.delete(key); },
+    };
+
+    clearQtBrowserCopies(storage);
+
+    expect(Array.from(entries.entries())).toEqual([["theme", "light"]]);
   });
 });

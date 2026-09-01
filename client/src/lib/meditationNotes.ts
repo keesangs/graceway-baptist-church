@@ -77,3 +77,10 @@ export function retryPersonalNoteSave({
   reset();
   mutate(input);
 }
+
+/** Remove only private QT browser copies when a member signs out of a shared device. */
+export function clearQtBrowserCopies(storage: Pick<Storage, "removeItem" | "length" | "key">) {
+  Array.from({ length: storage.length }, (_, index) => storage.key(index))
+    .filter((key): key is string => Boolean(key?.startsWith("qt_")))
+    .forEach((key) => storage.removeItem(key));
+}

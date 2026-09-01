@@ -15,6 +15,9 @@ describe("meditation personal notes UI", () => {
     expect(meditationPage).toContain("다른 기기에서도 같은 계정으로 볼 수 있습니다");
     expect(meditationPage).toContain("retryPersonalNoteSave");
     expect(meditationPage).toContain("PersonalNoteRetryButton");
+    expect(meditationPage).toContain("handleMeditationLogout");
+    expect(meditationPage).toContain("clearQtBrowserCopies");
+    expect(meditationPage).toContain("로그아웃");
   });
 
   it("keeps a defensive browser fallback and migrates an existing local note only after sign-in", () => {
