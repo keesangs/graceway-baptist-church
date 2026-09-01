@@ -43,8 +43,8 @@
 - [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
 - [x] Meditation likes feature (members only)
 - [x] Authenticated meditation notes: 묵상 질문 답변을 로그인 사용자별 비공개 데이터로 영구 저장하고 기기 간 날짜별 동기화·기존 localStorage 이전·권한·회귀 테스트를 구현
-- [ ] Authenticated meditation notes browser verification: 로그인 사용자 세션에서 /meditation의 묵상 질문을 실제 저장하고 새로고침 후 같은 날짜 기록이 재조회되는지 검증
-- [ ] Authenticated meditation notes cross-device verification: 같은 계정으로 다른 브라우저·세션에서 동일 날짜 노트가 동기화되어 보이는지 확인
+- [x] Authenticated meditation notes browser verification: 로그인 사용자 세션에서 /meditation의 묵상 질문을 실제 저장하고 새로고침 후 같은 날짜 기록이 재조회되는지 검증
+- [x] Authenticated meditation notes cross-device verification: 같은 계정으로 다른 브라우저·세션에서 동일 날짜 노트가 동기화되어 보이는지 확인
 - [ ] Authenticated meditation notes retry resilience: notes.upsert 실패 후 값 변경 없이도 명시적 재시도 경로를 제공하고 검증
 - [ ] Authenticated meditation notes localStorage migration verification: 기존 localStorage 답변이 로그인 후 서버 노트로 한 번 이전되고 이후 서버값이 우선되는지 검증
 - [x] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
