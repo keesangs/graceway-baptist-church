@@ -7,14 +7,14 @@ import { Card } from "@/components/ui/card";
 import { Trash2, Edit2, Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { DailyBibleAccessPanel } from "@/components/DailyBibleAccessPanel";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { startLogin } from "@/const";
 
 export default function AdminDailyBible() {
   const { user, loading } = useAuth();
   const { lang } = useLang();
-  const [, setLocation] = useLocation();
 
   const [formData, setFormData] = useState({
     meditationDate: new Date().toISOString().split("T")[0],
@@ -30,13 +30,6 @@ export default function AdminDailyBible() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 접근 제어: 관리자만 접근 가능
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")) {
-      setLocation("/");
-    }
-  }, [user, loading, setLocation]);
 
   // tRPC 쿼리
   const { data: meditations, isLoading, refetch } = trpc.meditation.list.useQuery({
@@ -192,8 +185,28 @@ export default function AdminDailyBible() {
     return <div className="text-center py-8">{lang === "ko" ? "로딩 중..." : "Loading..."}</div>;
   }
 
-  if (!user || user.role !== "admin") {
-    return <div className="text-center py-8 text-red-600">{lang === "ko" ? "접근 권한이 없습니다." : "Access denied."}</div>;
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col bg-[#FCFAF6]">
+        <Navbar />
+        <main className="mx-auto mt-20 flex w-full max-w-2xl flex-1 items-center px-4 py-12 md:px-8">
+          <DailyBibleAccessPanel lang={lang} state="signed-out" onLogin={startLogin} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (user.role !== "admin") {
+    return (
+      <div className="flex min-h-screen flex-col bg-[#FCFAF6]">
+        <Navbar />
+        <main className="mx-auto mt-20 flex w-full max-w-2xl flex-1 items-center px-4 py-12 md:px-8">
+          <DailyBibleAccessPanel lang={lang} state="non-admin" />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (

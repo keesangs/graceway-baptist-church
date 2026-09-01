@@ -63,6 +63,22 @@ beforeEach(() => {
 });
 
 describe("meditation.comments", () => {
+  it("rejects Daily Bible writes from a signed-in non-admin member", async () => {
+    const caller = appRouter.createCaller(makeContext("user", 11));
+
+    await expect(
+      caller.meditation.create({
+        meditationDate: "2026-09-02",
+        scriptureReference: "요한복음 3:16",
+        scriptureText: "하나님이 세상을 이처럼 사랑하사",
+        title: "하나님의 사랑",
+        content: "복음의 은혜를 묵상합니다.",
+      }),
+    ).rejects.toThrow();
+
+    expect(insertDailyMeditation).not.toHaveBeenCalled();
+  });
+
   it("stores optional English Daily Bible fields for English-mode readers", async () => {
     insertDailyMeditation.mockResolvedValue({ insertId: 17 });
 

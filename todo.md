@@ -44,6 +44,12 @@
 - [x] Meditation likes feature (members only)
 - [x] Authenticated meditation notes: 묵상 질문 답변을 로그인 사용자별 비공개 데이터로 영구 저장하고 기기 간 날짜별 동기화·기존 localStorage 이전·권한·회귀 테스트를 구현
 - [x] Meditation authenticated logout control: 묵상 질문 로그인 상태에 명확한 로그아웃 버튼을 추가하고 로그아웃 후 비공개 노트 조회·저장 차단을 테스트·화면 검증
+- [x] Admin Daily Bible access recovery: /admin/daily-bible 접근 실패의 인증·라우팅·런타임 원인을 진단하고 관리자 묵상 본문 입력·수정 화면을 복구·검증
+- [x] Admin Daily Bible logged-in verification: 관리자 세션으로 /admin/daily-bible 접속 후 입력 폼과 기존 묵상 목록이 정상 표시되는지 브라우저에서 확인
+- [x] Admin Daily Bible edit/create verification: 관리자 상태에서 기존 묵상 1건의 수정이 성공 메시지와 목록 갱신까지 동작하는지 검증
+- [x] Admin Daily Bible auth-regression verification: 비로그인 상태에서는 로그인 CTA, 일반 사용자 상태에서는 접근 거부, 관리자 상태에서는 실제 관리 폼이 보이는지 3가지 경로를 확인
+- [x] Admin Daily Bible edit success verification: 관리자 상태에서 기존 묵상 1건을 저장하고 성공 메시지 표시와 목록·폼 갱신을 명확한 네트워크 근거로 확인
+- [x] Admin Daily Bible non-admin access verification: 일반 사용자 세션에서 /admin/daily-bible 접근 시 접근 거부 화면과 서버 쓰기 거부가 나타나는지 검증
 - [x] Meditation logout browser verification: 로그인된 /meditation에서 로그아웃 버튼을 실제 클릭하고, 이후 로그인 CTA와 비공개 노트 조회 중단 상태를 확인
 - [x] Meditation logout private-note browser verification: 로그아웃 뒤 로그인 CTA가 보이고 기존 비공개 노트 답변이 더 이상 표시되지 않는지 실제 화면으로 확인
 - [x] Meditation logout query-state verification: 로그아웃 뒤 personal notes 쿼리가 비활성화되고 추가 저장 요청이 발생하지 않는지 테스트로 검증
