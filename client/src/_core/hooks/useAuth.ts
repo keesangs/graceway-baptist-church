@@ -2,6 +2,7 @@ import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
+import { clearQtBrowserCopies } from "@/lib/meditationNotes";
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -44,6 +45,9 @@ export function useAuth(options?: UseAuthOptions) {
       // backend cookie is cleared by the logout mutation.
       try {
         sessionStorage.removeItem("manus-cookie");
+      } catch {}
+      try {
+        clearQtBrowserCopies(localStorage);
       } catch {}
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();

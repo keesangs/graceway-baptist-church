@@ -50,6 +50,13 @@
 - [x] Admin Daily Bible auth-regression verification: 비로그인 상태에서는 로그인 CTA, 일반 사용자 상태에서는 접근 거부, 관리자 상태에서는 실제 관리 폼이 보이는지 3가지 경로를 확인
 - [x] Admin Daily Bible edit success verification: 관리자 상태에서 기존 묵상 1건을 저장하고 성공 메시지 표시와 목록·폼 갱신을 명확한 네트워크 근거로 확인
 - [x] Admin Daily Bible non-admin access verification: 일반 사용자 세션에서 /admin/daily-bible 접근 시 접근 거부 화면과 서버 쓰기 거부가 나타나는지 검증
+- [x] Global browser logout control: 일반 브라우저의 공통 내비게이션에서 로그인 상태를 알리고 로그인·로그아웃을 안전하게 실행하도록 구현·검증
+- [x] Global browser logout desktop verification: 로그인된 일반 브라우저의 상단 내비게이션에 로그아웃 제어가 표시되는지 데스크톱 화면에서 확인
+- [ ] Global browser logout mobile verification: 모바일 메뉴를 연 뒤 로그인·로그아웃 제어가 표시되고 정상 작동하는지 확인
+- [x] Today Daily Bible entry: 오늘 날짜 묵상 본문의 성경 구절·제목·본문·묵상 내용을 확인해 /admin/daily-bible에 등록하고 공개 묵상 표시를 검증
+- [x] Today Daily Bible admin update verification: /admin/daily-bible에서 2026-09-01 항목을 실제로 생성 또는 수정하고 성공 메시지·성공 응답·목록 갱신을 확인
+- [x] Today Daily Bible admin update response verification: /admin/daily-bible에서 2026-09-01 항목 저장 뒤 POST /api/trpc/meditation.update의 성공 응답을 명확히 확인
+- [x] Today Daily Bible public sync verification: 관리자 저장 직후 /meditation에서 2026-09-01 제목·성경 구절·본문·묵상 내용이 최신값으로 반영되는지 확인
 - [x] Meditation logout browser verification: 로그인된 /meditation에서 로그아웃 버튼을 실제 클릭하고, 이후 로그인 CTA와 비공개 노트 조회 중단 상태를 확인
 - [x] Meditation logout private-note browser verification: 로그아웃 뒤 로그인 CTA가 보이고 기존 비공개 노트 답변이 더 이상 표시되지 않는지 실제 화면으로 확인
 - [x] Meditation logout query-state verification: 로그아웃 뒤 personal notes 쿼리가 비활성화되고 추가 저장 요청이 발생하지 않는지 테스트로 검증

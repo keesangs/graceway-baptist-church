@@ -4,17 +4,18 @@
  */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Inbox, Menu, X } from "lucide-react";
+import { Inbox, LogIn, LogOut, Menu, X } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { BrandLogo } from "@/components/BrandLogo";
+import { startLogin } from "@/const";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
   const { lang, toggleLang, t } = useLang();
-  const { user } = useAuth();
+  const { user, loading, logout } = useAuth();
   const isHome = location === "/";
   const isAdmin = user?.role === "admin";
 
@@ -45,6 +46,11 @@ export default function Navbar() {
     `group relative rounded-sm text-sm font-medium tracking-wide transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D9B87A] ${
       active ? "text-[#D9B87A]" : "text-white/82 hover:text-white"
     }`;
+
+  const handleLogout = () => {
+    setMobileOpen(false);
+    void logout();
+  };
 
   return (
     <header
@@ -85,6 +91,30 @@ export default function Navbar() {
               {lang === "ko" ? "수신함" : "Inbox"}
               <span className={`absolute -bottom-1 left-0 h-px bg-[#B9955E] transition-all duration-200 ${location === "/admin" ? "w-full" : "w-0 group-hover:w-full"}`} />
             </Link>
+          )}
+
+          {!loading && (
+            user ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold text-white/85 transition-all duration-200 hover:border-white/60 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D9B87A]"
+                aria-label={lang === "ko" ? "로그아웃" : "Log out"}
+              >
+                <LogOut size={14} />
+                <span className="hidden xl:inline">{lang === "ko" ? "로그아웃" : "Log out"}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={startLogin}
+                className="flex items-center gap-1.5 rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold text-white/85 transition-all duration-200 hover:border-white/60 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D9B87A]"
+                aria-label={lang === "ko" ? "로그인" : "Sign in"}
+              >
+                <LogIn size={14} />
+                <span className="hidden xl:inline">{lang === "ko" ? "로그인" : "Sign in"}</span>
+              </button>
+            )
           )}
 
           <button
@@ -142,6 +172,27 @@ export default function Navbar() {
                 <Inbox size={14} />
                 {lang === "ko" ? "수신함" : "Inbox"}
               </Link>
+            )}
+            {!loading && (
+              user ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2 rounded px-4 py-3 text-left text-sm font-medium text-white/90 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <LogOut size={15} />
+                  {lang === "ko" ? "로그아웃" : "Log out"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startLogin}
+                  className="flex w-full items-center gap-2 rounded px-4 py-3 text-left text-sm font-medium text-white/90 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <LogIn size={15} />
+                  {lang === "ko" ? "로그인" : "Sign in"}
+                </button>
+              )
             )}
             <Link href="/connect" className="mx-4 mt-2 rounded-sm bg-[#B9955E] px-5 py-3 text-center text-sm font-semibold tracking-wide text-[#0B2C43]">
               {t("nav.planVisit")}
