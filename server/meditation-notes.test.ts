@@ -92,6 +92,28 @@ describe("meditation personal notes", () => {
     });
   });
 
+  it("accepts the same private note payload when a member retries after a transient save failure", async () => {
+    const input = {
+      meditationId: 7,
+      questionOne: "하나님은 신실하십니다.",
+      questionTwo: "오늘 순종합니다.",
+      questionThree: "여호수아 14:12",
+    };
+    dbMocks.upsertMeditationNote
+      .mockRejectedValueOnce(new Error("Temporary database interruption"))
+      .mockResolvedValueOnce({ id: 3, ...input, userId: 42 });
+
+    await expect(
+      appRouter.createCaller(signedInContext).meditation.notes.upsert(input),
+    ).rejects.toThrow("Temporary database interruption");
+    await expect(
+      appRouter.createCaller(signedInContext).meditation.notes.upsert(input),
+    ).resolves.toMatchObject({ id: 3, userId: 42, ...input });
+
+    expect(dbMocks.upsertMeditationNote).toHaveBeenNthCalledWith(1, { ...input, userId: 42 });
+    expect(dbMocks.upsertMeditationNote).toHaveBeenNthCalledWith(2, { ...input, userId: 42 });
+  });
+
   it("rejects guests before private notes can be read or written", async () => {
     await expect(
       appRouter.createCaller(guestContext).meditation.notes.get({ meditationId: 7 }),

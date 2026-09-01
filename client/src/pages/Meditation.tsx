@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import React from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,13 +8,11 @@ import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageC
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
+import { PersonalNoteRetryButton } from "@/components/PersonalNoteRetryButton";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
-
-type QtAnswers = { q1: string; q2: string; q3: string };
-
-const EMPTY_QT_ANSWERS: QtAnswers = { q1: "", q2: "", q3: "" };
+import { EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
 
 function getQtStorageKey(date: string) {
   return `qt_${date}`;
@@ -32,10 +31,6 @@ function readLocalQtAnswers(date: string): QtAnswers {
   } catch {
     return EMPTY_QT_ANSWERS;
   }
-}
-
-function hasQtAnswerContent(answers: QtAnswers) {
-  return Object.values(answers).some((answer) => answer.trim().length > 0);
 }
 
 export default function Meditation() {
@@ -166,32 +161,35 @@ export default function Meditation() {
     if (personalNoteQuery.data) {
       // Preserve a newer local edit until its debounce save has completed.
       if (shouldPersistQtAnswers || savePersonalNote.isPending) return;
-      const serverAnswers: QtAnswers = {
-        q1: personalNoteQuery.data.questionOne,
-        q2: personalNoteQuery.data.questionTwo,
-        q3: personalNoteQuery.data.questionThree,
-      };
-      setQtAnswers(serverAnswers);
-      localStorage.setItem(getQtStorageKey(currentDate), JSON.stringify(serverAnswers));
+      const resolved = resolveQtAnswersForAccount(personalNoteQuery.data, EMPTY_QT_ANSWERS);
+      setQtAnswers(resolved.answers);
+      localStorage.setItem(getQtStorageKey(currentDate), JSON.stringify(resolved.answers));
       setShouldPersistQtAnswers(false);
       return;
     }
 
     const browserAnswers = readLocalQtAnswers(currentDate);
-    if (hasQtAnswerContent(browserAnswers)) {
-      setQtAnswers(browserAnswers);
-      setShouldPersistQtAnswers(true);
-    }
+    const resolved = resolveQtAnswersForAccount(null, browserAnswers);
+    setQtAnswers(resolved.answers);
+    setShouldPersistQtAnswers(resolved.shouldPersist);
   }, [currentDate, currentMeditation?.id, isAuthenticated, personalNoteQuery.data, personalNoteQuery.isSuccess, savePersonalNote.isPending, shouldPersistQtAnswers]);
 
   // A short debounce keeps typing responsive while syncing a private copy to
   // the member's account. A failed request waits for an intentional next edit.
   useEffect(() => {
-    if (!isAuthenticated || !currentMeditation?.id || !shouldPersistQtAnswers || savePersonalNote.isPending || savePersonalNote.isError) return;
+    const meditationId = currentMeditation?.id;
+    if (!meditationId) return;
+    if (!shouldSchedulePersonalNoteSave({
+      isAuthenticated,
+      meditationId,
+      shouldPersist: shouldPersistQtAnswers,
+      isPending: savePersonalNote.isPending,
+      isError: savePersonalNote.isError,
+    })) return;
 
     const timeoutId = window.setTimeout(() => {
       savePersonalNote.mutate({
-        meditationId: currentMeditation.id,
+        meditationId,
         questionOne: qtAnswers.q1,
         questionTwo: qtAnswers.q2,
         questionThree: qtAnswers.q3,
@@ -215,8 +213,16 @@ export default function Meditation() {
 
   const retryPersonalNoteSave = () => {
     if (!isAuthenticated || !currentMeditation?.id) return;
-    savePersonalNote.reset();
-    setShouldPersistQtAnswers(true);
+    retryPersonalNoteSaveRequest({
+      input: {
+        meditationId: currentMeditation.id,
+        questionOne: qtAnswers.q1,
+        questionTwo: qtAnswers.q2,
+        questionThree: qtAnswers.q3,
+      },
+      reset: savePersonalNote.reset,
+      mutate: savePersonalNote.mutate,
+    });
   };
 
   // 날짜 네비게이션
@@ -795,9 +801,7 @@ export default function Meditation() {
                       ) : savePersonalNote.isError ? (
                         <div className="flex flex-wrap items-center justify-between gap-2 text-red-600" role="alert">
                           <span>{lang === "ko" ? "저장하지 못했습니다. 잠시 후 다시 시도해 주세요." : "We could not save this note. Please try again shortly."}</span>
-                          <Button type="button" size="sm" variant="ghost" onClick={retryPersonalNoteSave} className="h-auto px-1.5 py-1 text-xs font-semibold text-[#163B59] hover:bg-[#E8EFF2]">
-                            {lang === "ko" ? "다시 저장" : "Retry save"}
-                          </Button>
+                          <PersonalNoteRetryButton lang={lang} onRetry={retryPersonalNoteSave} />
                         </div>
                       ) : savePersonalNote.isPending || shouldPersistQtAnswers ? (
                         <span className="inline-flex items-center gap-2"><Loader2 className="size-3.5 animate-spin" />{lang === "ko" ? "내 계정에 비공개로 저장 중입니다." : "Saving privately to your account."}</span>

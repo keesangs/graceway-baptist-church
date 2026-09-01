@@ -14,12 +14,13 @@ describe("meditation personal notes UI", () => {
     expect(meditationPage).toContain("내 계정에 비공개로 자동 저장됩니다");
     expect(meditationPage).toContain("다른 기기에서도 같은 계정으로 볼 수 있습니다");
     expect(meditationPage).toContain("retryPersonalNoteSave");
-    expect(meditationPage).toContain("다시 저장");
+    expect(meditationPage).toContain("PersonalNoteRetryButton");
   });
 
   it("keeps a defensive browser fallback and migrates an existing local note only after sign-in", () => {
     expect(meditationPage).toContain("readLocalQtAnswers");
-    expect(meditationPage).toContain("hasQtAnswerContent");
+    expect(meditationPage).toContain("resolveQtAnswersForAccount");
+    expect(meditationPage).toContain("shouldSchedulePersonalNoteSave");
     expect(meditationPage).toContain("legacy browser-only note");
     expect(meditationPage).toContain("isAuthenticated && currentMeditation?.id");
   });

@@ -45,8 +45,14 @@
 - [x] Authenticated meditation notes: 묵상 질문 답변을 로그인 사용자별 비공개 데이터로 영구 저장하고 기기 간 날짜별 동기화·기존 localStorage 이전·권한·회귀 테스트를 구현
 - [x] Authenticated meditation notes browser verification: 로그인 사용자 세션에서 /meditation의 묵상 질문을 실제 저장하고 새로고침 후 같은 날짜 기록이 재조회되는지 검증
 - [x] Authenticated meditation notes cross-device verification: 같은 계정으로 다른 브라우저·세션에서 동일 날짜 노트가 동기화되어 보이는지 확인
-- [ ] Authenticated meditation notes retry resilience: notes.upsert 실패 후 값 변경 없이도 명시적 재시도 경로를 제공하고 검증
-- [ ] Authenticated meditation notes localStorage migration verification: 기존 localStorage 답변이 로그인 후 서버 노트로 한 번 이전되고 이후 서버값이 우선되는지 검증
+- [x] Authenticated meditation notes retry resilience: notes.upsert 실패 후 값 변경 없이도 명시적 재시도 경로를 제공하고 검증
+- [x] Authenticated meditation notes localStorage migration verification: 기존 localStorage 답변이 로그인 후 서버 노트로 한 번 이전되고 이후 서버값이 우선되는지 검증
+- [x] Authenticated meditation notes retry verification: notes.upsert 실패를 시뮬레이션하고 ‘다시 저장’ 제어가 노트 텍스트 변경 없이 두 번째 저장을 발생시키는지 검증
+- [ ] Authenticated meditation notes migration browser verification: localStorage에만 있는 QT 답변이 로그인 후 meditation_notes에 저장되고 이후 서버 복사본이 우선되는지 브라우저 흐름으로 검증
+- [x] Authenticated meditation notes retry behavior test: 오류 상태와 재시도 동작을 버튼 문자열 확인을 넘어 집중 테스트로 검증
+- [x] Authenticated meditation notes interactive retry test: notes.upsert 실패를 모킹하고 다시 저장 클릭이 동일 답변으로 reset 후 두 번째 upsert를 호출하는지 컴포넌트 테스트로 검증
+- [x] Authenticated meditation notes retry notice integration: 실제 오류 안내 컴포넌트에서 다시 저장 클릭이 savePersonalNote.reset 및 동일 입력의 savePersonalNote.mutate 호출로 이어지는지 검증
+- [ ] Authenticated meditation notes retry browser verification: 실패 상태 UI에서 다시 저장 제어가 실제로 저장을 재시도하는지 브라우저 또는 통합 테스트로 검증
 - [x] Meditation like toggle implementation: 로그인 사용자의 묵상 공감 토글·사용자별 상태·공감 수 표시를 tRPC와 묵상 페이지에 연결
 - [ ] Meditation likes behavior test: 공감 상태 조회·토글이 DB 값을 실제로 변경하고 비로그인 사용자는 거부되는지 동작 테스트 추가
 - [ ] Meditation likes E2E verification: 로그인 사용자 흐름에서 공감 수·aria-pressed·새로고침 후 유지 상태를 실제 확인
