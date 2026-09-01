@@ -7,15 +7,43 @@ import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, MessageC
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
+
+type QtAnswers = { q1: string; q2: string; q3: string };
+
+const EMPTY_QT_ANSWERS: QtAnswers = { q1: "", q2: "", q3: "" };
+
+function getQtStorageKey(date: string) {
+  return `qt_${date}`;
+}
+
+function readLocalQtAnswers(date: string): QtAnswers {
+  try {
+    const raw = localStorage.getItem(getQtStorageKey(date));
+    if (!raw) return EMPTY_QT_ANSWERS;
+    const parsed = JSON.parse(raw) as Partial<QtAnswers>;
+    return {
+      q1: typeof parsed.q1 === "string" ? parsed.q1 : "",
+      q2: typeof parsed.q2 === "string" ? parsed.q2 : "",
+      q3: typeof parsed.q3 === "string" ? parsed.q3 : "",
+    };
+  } catch {
+    return EMPTY_QT_ANSWERS;
+  }
+}
+
+function hasQtAnswerContent(answers: QtAnswers) {
+  return Object.values(answers).some((answer) => answer.trim().length > 0);
+}
 
 export default function Meditation() {
   const { lang } = useLang();
   const { user, isAuthenticated } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split("T")[0]);
-  const [qtAnswers, setQtAnswers] = useState({ q1: "", q2: "", q3: "" });
+  const [qtAnswers, setQtAnswers] = useState<QtAnswers>(EMPTY_QT_ANSWERS);
+  const [shouldPersistQtAnswers, setShouldPersistQtAnswers] = useState(false);
   const [copiedVerse, setCopiedVerse] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
@@ -23,6 +51,7 @@ export default function Meditation() {
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [hasResolvedInitialDate, setHasResolvedInitialDate] = useState(false);
+  const qtAnswersRef = useRef(qtAnswers);
   const utils = trpc.useUtils();
 
   // tRPC 쿼리 — 모든 묵상 데이터 로드
@@ -32,6 +61,14 @@ export default function Meditation() {
   );
 
   const currentMeditation = allMeditations.find((m) => m.meditationDate === currentDate);
+  const personalNoteInput = useMemo(
+    () => ({ meditationId: currentMeditation?.id ?? 0 }),
+    [currentMeditation?.id],
+  );
+  const personalNoteQuery = trpc.meditation.notes.get.useQuery(personalNoteInput, {
+    enabled: isAuthenticated && Boolean(currentMeditation?.id),
+    staleTime: 1000 * 30,
+  });
   const meditationLikeInput = useMemo(
     () => ({ meditationId: currentMeditation?.id ?? 0 }),
     [currentMeditation?.id],
@@ -82,6 +119,18 @@ export default function Meditation() {
     },
   });
 
+  const savePersonalNote = trpc.meditation.notes.upsert.useMutation({
+    onSuccess: async (_note, input) => {
+      const latestAnswers = qtAnswersRef.current;
+      const matchesLatestAnswers =
+        latestAnswers.q1.trim() === input.questionOne &&
+        latestAnswers.q2.trim() === input.questionTwo &&
+        latestAnswers.q3.trim() === input.questionThree;
+      if (matchesLatestAnswers) setShouldPersistQtAnswers(false);
+      await utils.meditation.notes.get.invalidate({ meditationId: input.meditationId });
+    },
+  });
+
   // If a devotion has not yet been published for the current day, start the
   // visitor at the newest available meditation instead of an empty page.
   useEffect(() => {
@@ -98,21 +147,76 @@ export default function Meditation() {
     setReplyDraft("");
   }, [currentMeditation?.id]);
 
-  // localStorage에서 QT 답변 로드
   useEffect(() => {
-    const saved = localStorage.getItem(`qt_${currentDate}`);
-    if (saved) {
-      setQtAnswers(JSON.parse(saved));
-    } else {
-      setQtAnswers({ q1: "", q2: "", q3: "" });
-    }
+    qtAnswersRef.current = qtAnswers;
+  }, [qtAnswers]);
+
+  // Keep the existing browser copy available immediately while a member's
+  // private server-side note is being fetched.
+  useEffect(() => {
+    setQtAnswers(readLocalQtAnswers(currentDate));
+    setShouldPersistQtAnswers(false);
   }, [currentDate]);
 
-  // QT 답변 저장
+  // An existing account record wins. A legacy browser-only note is copied into
+  // the signed-in member's private account when no remote note exists.
+  useEffect(() => {
+    if (!isAuthenticated || !currentMeditation?.id || !personalNoteQuery.isSuccess) return;
+
+    if (personalNoteQuery.data) {
+      // Preserve a newer local edit until its debounce save has completed.
+      if (shouldPersistQtAnswers || savePersonalNote.isPending) return;
+      const serverAnswers: QtAnswers = {
+        q1: personalNoteQuery.data.questionOne,
+        q2: personalNoteQuery.data.questionTwo,
+        q3: personalNoteQuery.data.questionThree,
+      };
+      setQtAnswers(serverAnswers);
+      localStorage.setItem(getQtStorageKey(currentDate), JSON.stringify(serverAnswers));
+      setShouldPersistQtAnswers(false);
+      return;
+    }
+
+    const browserAnswers = readLocalQtAnswers(currentDate);
+    if (hasQtAnswerContent(browserAnswers)) {
+      setQtAnswers(browserAnswers);
+      setShouldPersistQtAnswers(true);
+    }
+  }, [currentDate, currentMeditation?.id, isAuthenticated, personalNoteQuery.data, personalNoteQuery.isSuccess, savePersonalNote.isPending, shouldPersistQtAnswers]);
+
+  // A short debounce keeps typing responsive while syncing a private copy to
+  // the member's account. A failed request waits for an intentional next edit.
+  useEffect(() => {
+    if (!isAuthenticated || !currentMeditation?.id || !shouldPersistQtAnswers || savePersonalNote.isPending || savePersonalNote.isError) return;
+
+    const timeoutId = window.setTimeout(() => {
+      savePersonalNote.mutate({
+        meditationId: currentMeditation.id,
+        questionOne: qtAnswers.q1,
+        questionTwo: qtAnswers.q2,
+        questionThree: qtAnswers.q3,
+      });
+    }, 650);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [currentMeditation?.id, isAuthenticated, qtAnswers.q1, qtAnswers.q2, qtAnswers.q3, savePersonalNote.isError, savePersonalNote.isPending, shouldPersistQtAnswers]);
+
+  // Local storage remains a read-only fallback for guests and a transition path
+  // for prior browser-only answers. Signed-in members also sync privately.
   const handleQtChange = (key: string, value: string) => {
     const updated = { ...qtAnswers, [key]: value };
     setQtAnswers(updated);
-    localStorage.setItem(`qt_${currentDate}`, JSON.stringify(updated));
+    localStorage.setItem(getQtStorageKey(currentDate), JSON.stringify(updated));
+    if (isAuthenticated && currentMeditation?.id) {
+      if (savePersonalNote.isError) savePersonalNote.reset();
+      setShouldPersistQtAnswers(true);
+    }
+  };
+
+  const retryPersonalNoteSave = () => {
+    if (!isAuthenticated || !currentMeditation?.id) return;
+    savePersonalNote.reset();
+    setShouldPersistQtAnswers(true);
   };
 
   // 날짜 네비게이션
@@ -684,47 +788,79 @@ export default function Meditation() {
                     {lang === "ko" ? "묵상 질문" : "QT Questions"}
                   </h4>
 
+                  <div aria-live="polite" className="mb-5 rounded-lg border border-[#DCE4E7] bg-[#F7F9F9] px-3 py-2.5 text-xs leading-relaxed text-[#607A91]">
+                    {isAuthenticated ? (
+                      personalNoteQuery.isLoading ? (
+                        <span className="inline-flex items-center gap-2"><Loader2 className="size-3.5 animate-spin" />{lang === "ko" ? "내 묵상 기록을 불러오는 중입니다." : "Loading your private meditation note."}</span>
+                      ) : savePersonalNote.isError ? (
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-red-600" role="alert">
+                          <span>{lang === "ko" ? "저장하지 못했습니다. 잠시 후 다시 시도해 주세요." : "We could not save this note. Please try again shortly."}</span>
+                          <Button type="button" size="sm" variant="ghost" onClick={retryPersonalNoteSave} className="h-auto px-1.5 py-1 text-xs font-semibold text-[#163B59] hover:bg-[#E8EFF2]">
+                            {lang === "ko" ? "다시 저장" : "Retry save"}
+                          </Button>
+                        </div>
+                      ) : savePersonalNote.isPending || shouldPersistQtAnswers ? (
+                        <span className="inline-flex items-center gap-2"><Loader2 className="size-3.5 animate-spin" />{lang === "ko" ? "내 계정에 비공개로 저장 중입니다." : "Saving privately to your account."}</span>
+                      ) : (
+                        <span>{lang === "ko" ? "내 계정에 비공개로 자동 저장됩니다. 다른 기기에서도 같은 계정으로 볼 수 있습니다." : "Saved privately to your account and available on your other devices."}</span>
+                      )
+                    ) : (
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span>{lang === "ko" ? "로그인하면 기록을 비공개로 저장하고 다른 기기에서도 이어서 작성할 수 있습니다." : "Sign in to save this note privately and continue on other devices."}</span>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => startLogin()} className="h-auto px-1.5 py-1 text-xs font-semibold text-[#163B59] hover:bg-[#E8EFF2]">
+                          <LogIn className="size-3.5" />{lang === "ko" ? "로그인" : "Sign in"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="space-y-6 [&_textarea]:border-[#C8D4D9] [&_textarea]:bg-white [&_textarea]:focus-visible:ring-[#607A91]">
                     {/* Q1 */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="qt-question-one" className="block text-sm font-medium text-gray-700 mb-2">
                         {lang === "ko" ? "1. 하나님은 어떤 분?" : "1. Who is God?"}
                       </label>
                       <Textarea
+                        id="qt-question-one"
                         value={qtAnswers.q1}
                         onChange={(e) => handleQtChange("q1", e.target.value)}
                         placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
+                        maxLength={2000}
                         className="min-h-24 resize-none"
                       />
-                      <p className="text-xs text-gray-500 mt-1">0/500</p>
+                      <p className="text-xs text-gray-500 mt-1">{qtAnswers.q1.length}/2000</p>
                     </div>
 
                     {/* Q2 */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="qt-question-two" className="block text-sm font-medium text-gray-700 mb-2">
                         {lang === "ko" ? "2. 내게 주는 교훈은?" : "2. What is the lesson?"}
                       </label>
                       <Textarea
+                        id="qt-question-two"
                         value={qtAnswers.q2}
                         onChange={(e) => handleQtChange("q2", e.target.value)}
                         placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
+                        maxLength={2000}
                         className="min-h-24 resize-none"
                       />
-                      <p className="text-xs text-gray-500 mt-1">0/500</p>
+                      <p className="text-xs text-gray-500 mt-1">{qtAnswers.q2.length}/2000</p>
                     </div>
 
                     {/* Q3 */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="qt-question-three" className="block text-sm font-medium text-gray-700 mb-2">
                         {lang === "ko" ? "3. 오늘 나에게 주시는 성경 구절" : "3. Today's verse for me"}
                       </label>
                       <Textarea
+                        id="qt-question-three"
                         value={qtAnswers.q3}
                         onChange={(e) => handleQtChange("q3", e.target.value)}
                         placeholder={lang === "ko" ? "답변을 입력하세요..." : "Enter your answer..."}
+                        maxLength={2000}
                         className="min-h-24 resize-none"
                       />
-                      <p className="text-xs text-gray-500 mt-1">0/500</p>
+                      <p className="text-xs text-gray-500 mt-1">{qtAnswers.q3.length}/2000</p>
                     </div>
                   </div>
 

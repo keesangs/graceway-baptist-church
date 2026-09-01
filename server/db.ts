@@ -12,6 +12,7 @@ import {
   InsertGooglePhotosConnection,
   InsertMediaFile,
   InsertMeditationComment,
+  InsertMeditationNote,
   InsertNewsletterSubscriber,
   InsertPhotoAlbum,
   InsertWeeklyNewsletterIssue,
@@ -24,6 +25,7 @@ import {
   meditationCommentLikes,
   meditationComments,
   meditationLikes,
+  meditationNotes,
   newsletterSubscribers,
   photoAlbums,
   users,
@@ -379,6 +381,35 @@ export async function deleteDailyMeditation(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(dailyMeditations).where(eq(dailyMeditations.id, id));
+}
+
+// Personal meditation note queries. Notes are intentionally scoped by both
+// meditation and user, so no caller can read another member's private answers.
+export async function getMeditationNoteForUser(meditationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(meditationNotes)
+    .where(and(eq(meditationNotes.meditationId, meditationId), eq(meditationNotes.userId, userId)))
+    .limit(1);
+  return row || null;
+}
+
+export async function upsertMeditationNote(
+  data: Pick<InsertMeditationNote, "meditationId" | "userId" | "questionOne" | "questionTwo" | "questionThree">,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(meditationNotes).values(data).onDuplicateKeyUpdate({
+    set: {
+      questionOne: data.questionOne,
+      questionTwo: data.questionTwo,
+      questionThree: data.questionThree,
+      updatedAt: new Date(),
+    },
+  });
+  return getMeditationNoteForUser(data.meditationId, data.userId);
 }
 
 // Church calendar event queries

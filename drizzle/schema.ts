@@ -181,6 +181,25 @@ export const dailyMeditations = mysqlTable("daily_meditations", {
 export type DailyMeditation = typeof dailyMeditations.$inferSelect;
 export type InsertDailyMeditation = typeof dailyMeditations.$inferInsert;
 
+// Personal meditation notes — private QT answers owned by one signed-in user.
+// A user may keep one note for each published daily meditation.
+export const meditationNotes = mysqlTable("meditation_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  meditationId: int("meditationId").notNull(),
+  userId: int("userId").notNull(),
+  questionOne: text("questionOne").notNull(),
+  questionTwo: text("questionTwo").notNull(),
+  questionThree: text("questionThree").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  uniqueUserMeditationNote: uniqueIndex("meditation_note_user_meditation_unique").on(table.userId, table.meditationId),
+  userUpdatedIdx: index("meditation_note_user_updated_idx").on(table.userId, table.updatedAt),
+}));
+
+export type MeditationNote = typeof meditationNotes.$inferSelect;
+export type InsertMeditationNote = typeof meditationNotes.$inferInsert;
+
 // Meditation comments — user reflections and responses to daily meditations
 export const meditationComments = mysqlTable("meditation_comments", {
   id: int("id").autoincrement().primaryKey(),

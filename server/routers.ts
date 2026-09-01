@@ -20,6 +20,7 @@ import {
   getDailyMeditationById,
   getDailyMeditationByDate,
   getMeditationCommentById,
+  getMeditationNoteForUser,
   getUserMeditationLike,
   getLatestPublishedWeeklyNewsletterIssue,
   getWeeklyNewsletterIssueById,
@@ -46,6 +47,7 @@ import {
   subscribeToNewsletter,
   toggleMeditationCommentLike,
   toggleMeditationLike,
+  upsertMeditationNote,
   updateCalendarEvent,
   updateDailyMeditation,
   updateGalleryPhoto,
@@ -696,6 +698,30 @@ export const appRouter = router({
         deleteDailyMeditation(input.id);
         return { success: true } as const;
       }),
+
+    notes: router({
+      /** Personal QT answers are private to the signed-in member. */
+      get: protectedProcedure
+        .input(z.object({ meditationId: z.number().int().positive() }))
+        .query(async ({ input, ctx }) => {
+          const meditation = await getDailyMeditationById(input.meditationId);
+          if (!meditation) throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
+          return getMeditationNoteForUser(input.meditationId, ctx.user.id);
+        }),
+
+      upsert: protectedProcedure
+        .input(z.object({
+          meditationId: z.number().int().positive(),
+          questionOne: z.string().trim().max(2000),
+          questionTwo: z.string().trim().max(2000),
+          questionThree: z.string().trim().max(2000),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          const meditation = await getDailyMeditationById(input.meditationId);
+          if (!meditation) throw new TRPCError({ code: "NOT_FOUND", message: "Meditation not found" });
+          return upsertMeditationNote({ ...input, userId: ctx.user.id });
+        }),
+    }),
 
     likeStatus: publicProcedure
       .input(z.object({ meditationId: z.number().int().positive() }))
