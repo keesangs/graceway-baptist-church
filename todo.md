@@ -44,8 +44,11 @@
 - [x] Meditation likes feature (members only)
 - [x] Authenticated meditation notes: 묵상 질문 답변을 로그인 사용자별 비공개 데이터로 영구 저장하고 기기 간 날짜별 동기화·기존 localStorage 이전·권한·회귀 테스트를 구현
 - [x] Meditation authenticated logout control: 묵상 질문 로그인 상태에 명확한 로그아웃 버튼을 추가하고 로그아웃 후 비공개 노트 조회·저장 차단을 테스트·화면 검증
-- [ ] Meditation logout browser verification: 로그인된 /meditation에서 로그아웃 버튼을 실제 클릭하고, 이후 로그인 CTA와 비공개 노트 조회 중단 상태를 확인
-- [ ] Meditation logout access-control test: 로그인 해제 상태에서 notes.get 쿼리가 비활성화되고 노트 업서트가 예약되지 않는지 집중 테스트로 검증
+- [x] Meditation logout browser verification: 로그인된 /meditation에서 로그아웃 버튼을 실제 클릭하고, 이후 로그인 CTA와 비공개 노트 조회 중단 상태를 확인
+- [x] Meditation logout private-note browser verification: 로그아웃 뒤 로그인 CTA가 보이고 기존 비공개 노트 답변이 더 이상 표시되지 않는지 실제 화면으로 확인
+- [x] Meditation logout query-state verification: 로그아웃 뒤 personal notes 쿼리가 비활성화되고 추가 저장 요청이 발생하지 않는지 테스트로 검증
+- [ ] Meditation logout query-state integration test: 로그인 상태에서 로그아웃 상태로 전환된 뒤 notes.get이 disabled 되고 notes.upsert가 새로 호출되지 않는지 컴포넌트 테스트로 검증
+- [x] Meditation logout access-control test: 로그인 해제 상태에서 notes.get 쿼리가 비활성화되고 노트 업서트가 예약되지 않는지 집중 테스트로 검증
 - [ ] Meditation logout interaction test: handleMeditationLogout가 logout 뒤 qt_* 브라우저 사본만 삭제하고 세 입력 상태를 비우는지 안정적인 상호작용 테스트로 검증
 - [x] Authenticated meditation notes browser verification: 로그인 사용자 세션에서 /meditation의 묵상 질문을 실제 저장하고 새로고침 후 같은 날짜 기록이 재조회되는지 검증
 - [x] Authenticated meditation notes cross-device verification: 같은 계정으로 다른 브라우저·세션에서 동일 날짜 노트가 동기화되어 보이는지 확인

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, shouldSchedulePersonalNoteSave } from "../client/src/lib/meditationNotes";
+import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, isPersonalNoteQueryEnabled, resolveQtAnswersForAccount, shouldSchedulePersonalNoteSave } from "../client/src/lib/meditationNotes";
 
 describe("personal meditation note migration", () => {
   it("copies a meaningful legacy browser note only when no account note exists", () => {
@@ -70,5 +70,16 @@ describe("personal meditation note migration", () => {
     clearQtBrowserCopies(storage);
 
     expect(Array.from(entries.entries())).toEqual([["theme", "light"]]);
+  });
+
+  it("disables private note queries and scheduled saves after logout", () => {
+    expect(isPersonalNoteQueryEnabled({ isAuthenticated: false, meditationId: 7 })).toBe(false);
+    expect(shouldSchedulePersonalNoteSave({
+      isAuthenticated: false,
+      meditationId: 7,
+      shouldPersist: true,
+      isPending: false,
+      isError: false,
+    })).toBe(false);
   });
 });

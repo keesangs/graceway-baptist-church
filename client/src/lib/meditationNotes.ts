@@ -57,6 +57,17 @@ export function shouldSchedulePersonalNoteSave({
   return Boolean(isAuthenticated && meditationId && shouldPersist && !isPending && !isError);
 }
 
+/** A private account note must never be fetched after the member signs out. */
+export function isPersonalNoteQueryEnabled({
+  isAuthenticated,
+  meditationId,
+}: {
+  isAuthenticated: boolean;
+  meditationId?: number | null;
+}) {
+  return Boolean(isAuthenticated && meditationId);
+}
+
 export type PersonalNoteSaveInput = {
   meditationId: number;
   questionOne: string;

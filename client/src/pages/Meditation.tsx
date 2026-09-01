@@ -12,7 +12,7 @@ import { PersonalNoteRetryButton } from "@/components/PersonalNoteRetryButton";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
-import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
+import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, isPersonalNoteQueryEnabled, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
 
 function getQtStorageKey(date: string) {
   return `qt_${date}`;
@@ -63,7 +63,7 @@ export default function Meditation() {
     [currentMeditation?.id],
   );
   const personalNoteQuery = trpc.meditation.notes.get.useQuery(personalNoteInput, {
-    enabled: isAuthenticated && Boolean(currentMeditation?.id),
+    enabled: isPersonalNoteQueryEnabled({ isAuthenticated, meditationId: currentMeditation?.id }),
     staleTime: 1000 * 30,
   });
   const meditationLikeInput = useMemo(
