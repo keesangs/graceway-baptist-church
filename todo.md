@@ -52,7 +52,7 @@
 - [x] Admin Daily Bible non-admin access verification: 일반 사용자 세션에서 /admin/daily-bible 접근 시 접근 거부 화면과 서버 쓰기 거부가 나타나는지 검증
 - [x] Global browser logout control: 일반 브라우저의 공통 내비게이션에서 로그인 상태를 알리고 로그인·로그아웃을 안전하게 실행하도록 구현·검증
 - [x] Global browser logout desktop verification: 로그인된 일반 브라우저의 상단 내비게이션에 로그아웃 제어가 표시되는지 데스크톱 화면에서 확인
-- [ ] Global browser logout mobile verification: 모바일 메뉴를 연 뒤 로그인·로그아웃 제어가 표시되고 정상 작동하는지 확인
+- [x] Global browser logout mobile verification: 모바일 메뉴를 연 뒤 로그인·로그아웃 제어가 표시되고 정상 작동하는지 확인
 - [x] Today Daily Bible entry: 오늘 날짜 묵상 본문의 성경 구절·제목·본문·묵상 내용을 확인해 /admin/daily-bible에 등록하고 공개 묵상 표시를 검증
 - [x] Today Daily Bible admin update verification: /admin/daily-bible에서 2026-09-01 항목을 실제로 생성 또는 수정하고 성공 메시지·성공 응답·목록 갱신을 확인
 - [x] Today Daily Bible admin update response verification: /admin/daily-bible에서 2026-09-01 항목 저장 뒤 POST /api/trpc/meditation.update의 성공 응답을 명확히 확인
