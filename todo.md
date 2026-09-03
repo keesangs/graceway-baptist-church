@@ -40,6 +40,9 @@
 - [x] Hero title responsive font sizing: clamp(2rem, 10vw, 64px) for mobile/desktop optimization
 
 ## Future Enhancements — Not Yet Implemented
+- [x] WWW domain routing audit: graceway-baptist.org와 www 호스트의 DNS·TLS·호스팅 응답을 조사하고, www를 정규 도메인으로 안전하게 리디렉션하는 설정 위치·절차를 문서화
+- [ ] WWW domain routing audit report: 조사 결과를 사용자에게 단계별로 전달하고, 현재 DNS 위임·등록기관·www 404 원인·Manus 측 www 연결 또는 재연결 위치를 명확히 안내
+- [ ] WWW domain routing validation: 실제 DNS 관리 주체를 최종 확인한 뒤 www에서 apex로의 HTTPS 리디렉션 적용 전후를 검토
 - [x] Meditation comments feature (members only): public comment reading, logged-in writing, own-comment deletion, and admin moderation
 - [x] Meditation likes feature (members only)
 - [x] Authenticated meditation notes: 묵상 질문 답변을 로그인 사용자별 비공개 데이터로 영구 저장하고 기기 간 날짜별 동기화·기존 localStorage 이전·권한·회귀 테스트를 구현
