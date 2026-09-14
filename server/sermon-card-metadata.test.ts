@@ -58,6 +58,7 @@ describe("sermon card metadata display", () => {
         videoId: "guest-speaker",
         title: "2026. 09.13 주일예배 말씀",
         speaker: "조명제 전도사",
+        scripture: "요한복음 17장 3절",
         publishedAt: "2026-09-13T19:00:00.000Z",
         thumbnailUrl: "https://example.com/guest.jpg",
         playlistPosition: 0,
@@ -72,6 +73,7 @@ describe("sermon card metadata display", () => {
     ]);
 
     expect(cards.find((card) => card.videoId === "guest-speaker")?.speaker).toBe("Staff Pastor MyeongJe Cho");
+    expect(cards.find((card) => card.videoId === "guest-speaker")?.scripture).toBe("요한복음 17장 3절");
     expect(cards.find((card) => card.videoId === "default-speaker")?.speaker).toBe("Pastor Hunsuk Lee");
     expect(getPublicSermonSpeaker(DEFAULT_SERMON_SPEAKER)).toBe("Pastor Hunsuk Lee");
     expect(getPublicSermonSpeaker("조명제 전도사")).toBe("Staff Pastor MyeongJe Cho");

@@ -1,0 +1,1 @@
+ALTER TABLE `youtube_videos` ADD `scripture` varchar(500);

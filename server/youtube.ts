@@ -11,6 +11,7 @@ export type PlaylistVideo = {
   playlistItemId: string;
   title: string;
   speaker?: string;
+  scripture?: string;
   publishedAt: Date;
   thumbnailUrl: string;
   playlistPosition: number;
@@ -57,8 +58,26 @@ export function extractSermonSpeaker(description: string | undefined) {
   return undefined;
 }
 
-async function fetchSermonSpeakers(videoIds: string[], apiKey: string) {
-  const speakersByVideoId = new Map<string, string>();
+/** Reads the first non-empty `본문:` line from a YouTube video description. */
+export function extractSermonScripture(description: string | undefined) {
+  if (!description) return undefined;
+
+  for (const line of description.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:본문|성경\s*본문|scripture|bible\s*passage)\s*[:：]\s*(.+?)\s*$/i);
+    const scripture = match?.[1]?.trim();
+    if (scripture) return scripture.slice(0, 500);
+  }
+
+  return undefined;
+}
+
+type SermonVideoMetadata = {
+  speaker?: string;
+  scripture?: string;
+};
+
+async function fetchSermonMetadata(videoIds: string[], apiKey: string) {
+  const metadataByVideoId = new Map<string, SermonVideoMetadata>();
 
   for (let start = 0; start < videoIds.length; start += VIDEO_DETAILS_BATCH_SIZE) {
     const endpoint = new URL("https://www.googleapis.com/youtube/v3/videos");
@@ -74,7 +93,10 @@ async function fetchSermonSpeakers(videoIds: string[], apiKey: string) {
       for (const item of payload.items ?? []) {
         const videoId = item.id?.trim();
         const speaker = extractSermonSpeaker(item.snippet?.description);
-        if (videoId && speaker) speakersByVideoId.set(videoId, speaker);
+        const scripture = extractSermonScripture(item.snippet?.description);
+        if (videoId && (speaker || scripture)) {
+          metadataByVideoId.set(videoId, { speaker, scripture });
+        }
       }
     } catch {
       // Speaker metadata is optional. A transient details lookup must not block
@@ -82,7 +104,7 @@ async function fetchSermonSpeakers(videoIds: string[], apiKey: string) {
     }
   }
 
-  return speakersByVideoId;
+  return metadataByVideoId;
 }
 
 function getThumbnailUrl(thumbnails: Record<string, { url?: string }> | undefined) {
@@ -160,9 +182,10 @@ export async function fetchPlaylistVideos(
 
   if (videoKind !== "sermon" || videos.length === 0) return videos;
 
-  const speakersByVideoId = await fetchSermonSpeakers(videos.map((video) => video.videoId), apiKey);
+  const metadataByVideoId = await fetchSermonMetadata(videos.map((video) => video.videoId), apiKey);
   return videos.map((video) => ({
     ...video,
-    speaker: speakersByVideoId.get(video.videoId),
+    speaker: metadataByVideoId.get(video.videoId)?.speaker,
+    scripture: metadataByVideoId.get(video.videoId)?.scripture,
   }));
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { extractSermonSpeaker, fetchPlaylistVideos } from "./youtube";
+import { extractSermonSpeaker, extractSermonScripture, fetchPlaylistVideos } from "./youtube";
 
 const originalFetch = global.fetch;
 
@@ -31,7 +31,7 @@ describe("YouTube playlist sync", () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          items: [{ id: "video-1", snippet: { description: "설교자: 조명제 전도사\n성경본문: 요한복음 17:3" } }],
+          items: [{ id: "video-1", snippet: { description: "설교자: 조명제 전도사\n본문: 요한복음 17장 3절" } }],
         }),
       }) as unknown as typeof fetch;
 
@@ -44,6 +44,7 @@ describe("YouTube playlist sync", () => {
         playlistItemId: "playlist-item-1",
         title: "Sunday sermon",
         speaker: "조명제 전도사",
+        scripture: "요한복음 17장 3절",
         playlistPosition: 0,
       }),
     ]);
@@ -79,5 +80,11 @@ describe("YouTube playlist sync", () => {
     expect(extractSermonSpeaker("제목: 영생과 천국\n설교자: 조명제 전도사\n본문: 요한복음 17:3"))
       .toBe("조명제 전도사");
     expect(extractSermonSpeaker("조명제 전도사 설교\n본문: 요한복음 17:3")).toBeUndefined();
+  });
+
+  it("accepts only a labelled scripture line and ignores unstructured references", () => {
+    expect(extractSermonScripture("설교자: 조명제 전도사\n본문: 요한복음 17장 3절"))
+      .toBe("요한복음 17장 3절");
+    expect(extractSermonScripture("요한복음 17장 3절을 함께 읽습니다.")).toBeUndefined();
   });
 });

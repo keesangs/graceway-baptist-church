@@ -26,6 +26,7 @@ export type SyncedSermonVideo = {
   videoId: string;
   title: string;
   speaker?: string | null;
+  scripture?: string | null;
   publishedAt: Date | string;
   thumbnailUrl: string;
   playlistPosition: number;
@@ -101,8 +102,8 @@ export function getCanonicalSermonCards(
     return {
       title: legacy?.title ?? video.title,
       titleKo: legacy?.titleKo ?? video.title,
-      scripture: legacy?.scripture ?? "",
-      scriptureEn: legacy?.scriptureEn ?? "",
+      scripture: video.scripture?.trim() || legacy?.scripture || "",
+      scriptureEn: legacy?.scriptureEn ?? video.scripture?.trim() ?? "",
       date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
       speaker: getPublicSermonSpeaker(video.speaker?.trim() || legacy?.speaker || DEFAULT_SERMON_SPEAKER),
       duration: legacy?.duration ?? "New",
