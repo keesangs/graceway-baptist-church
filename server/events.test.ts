@@ -158,10 +158,16 @@ describe("events router", () => {
     const specialEvent = { ...sundayWorship, id: 44, titleKo: "가을 특별 예배", eventType: "special" as const, recurrence: "none" as const, startAt: new Date("2026-09-14T01:00:00.000Z"), endAt: null };
     listPublishedCalendarEvents.mockResolvedValue([sundayWorship, specialEvent]);
 
-    const featured = await appRouter.createCaller(makeContext()).events.featuredSpecial();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-13T00:00:00.000Z"));
+    try {
+      const featured = await appRouter.createCaller(makeContext()).events.featuredSpecial();
 
-    expect(featured).toEqual(expect.objectContaining({ seriesId: specialEvent.id, eventType: "special" }));
-    expect(listPublishedCalendarEvents).toHaveBeenCalledTimes(1);
+      expect(featured).toEqual(expect.objectContaining({ seriesId: specialEvent.id, eventType: "special" }));
+      expect(listPublishedCalendarEvents).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("denies a non-administrator before an event can be created", async () => {

@@ -13,9 +13,14 @@ const insertContactMessage = vi.fn();
 const listContactMessages = vi.fn();
 
 const notifyOwner = vi.fn();
+const sendContactEmailNotification = vi.fn();
 
 vi.mock("./_core/notification", () => ({
   notifyOwner: (...args: unknown[]) => notifyOwner(...args),
+}));
+
+vi.mock("./contactEmail", () => ({
+  sendContactEmailNotification: (...args: unknown[]) => sendContactEmailNotification(...args),
 }));
 
 vi.mock("./db", () => ({
@@ -60,6 +65,7 @@ function makeContext(role?: "user" | "admin"): TrpcContext {
 beforeEach(() => {
   vi.clearAllMocks();
   notifyOwner.mockResolvedValue(true);
+  sendContactEmailNotification.mockResolvedValue({ id: "email_123" });
 });
 
 describe("newsletter.subscribe", () => {
@@ -122,6 +128,15 @@ describe("contact.submit", () => {
 
     expect(result).toEqual({ success: true });
     expect(insertContactMessage).toHaveBeenCalledWith({
+      firstName: "Grace",
+      lastName: "Kim",
+      email: "grace.kim@example.com",
+      phone: "510-529-5636",
+      topic: "visit",
+      message: "We would like to visit this Sunday.",
+    });
+    expect(sendContactEmailNotification).toHaveBeenCalledWith({
+      contactId: 7,
       firstName: "Grace",
       lastName: "Kim",
       email: "grace.kim@example.com",
@@ -219,6 +234,44 @@ describe("contact.submit", () => {
     expect(result).toEqual({ success: true });
     expect(insertContactMessage).toHaveBeenCalledTimes(1);
     expect(notifyOwner).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the database inbox and owner alert when direct email delivery fails", async () => {
+    insertContactMessage.mockResolvedValue({ insertId: 12 });
+    sendContactEmailNotification.mockRejectedValue(new Error("email provider unavailable"));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const caller = appRouter.createCaller(makeContext());
+
+    const result = await caller.contact.submit({
+      firstName: "Mina",
+      lastName: "Choi",
+      email: "mina@example.com",
+      topic: "general",
+      message: "Please contact me.",
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(insertContactMessage).toHaveBeenCalledTimes(1);
+    expect(notifyOwner).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      "[contact.submit] Direct email notification failed — database record and owner notification preserved.",
+    );
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining("mina@example.com"));
+    warn.mockRestore();
+  });
+
+  it("rejects an invalid visitor email before it can become a Reply-To address", async () => {
+    const caller = appRouter.createCaller(makeContext());
+
+    await expect(caller.contact.submit({
+      firstName: "Mina",
+      lastName: "Choi",
+      email: "not-an-email",
+      topic: "general",
+    })).rejects.toThrow();
+
+    expect(insertContactMessage).not.toHaveBeenCalled();
+    expect(sendContactEmailNotification).not.toHaveBeenCalled();
   });
 
   it("keeps the message inbox admin-only", async () => {

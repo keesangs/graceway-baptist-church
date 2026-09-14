@@ -56,6 +56,7 @@ import {
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { notifyOwner } from "./_core/notification";
+import { sendContactEmailNotification } from "./contactEmail";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
@@ -73,6 +74,13 @@ const TOPIC_LABELS = {
   ministry: "Ministry involvement",
   general: "General question",
 } as const;
+
+const contactName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .refine((value) => !/[\r\n]/.test(value), "Names must not contain line breaks");
 
 const calendarEventValues = {
   titleKo: z.string().trim().min(1).max(255),
@@ -570,8 +578,8 @@ export const appRouter = router({
     submit: publicProcedure
       .input(
         z.object({
-          firstName: z.string().trim().min(1).max(100),
-          lastName: z.string().trim().min(1).max(100),
+          firstName: contactName,
+          lastName: contactName,
           // Trim/lowercase before format validation — see newsletter.subscribe.
           email: z.string().trim().toLowerCase().pipe(z.string().email().max(320)),
           phone: z.string().max(40).optional(),
@@ -583,7 +591,7 @@ export const appRouter = router({
         const phone = input.phone?.trim() || null;
         const message = input.message?.trim() || null;
 
-        await insertContactMessage({
+        const savedMessage = await insertContactMessage({
           firstName: input.firstName,
           lastName: input.lastName,
           email: input.email,
@@ -592,9 +600,30 @@ export const appRouter = router({
           message,
         });
 
-        // Alert church staff so an enquiry is not left sitting unread in the
-        // database. The visitor's submission is already saved at this point, so a
-        // notification outage must never turn into a failed form submission.
+        // The database inbox is authoritative. Direct email is attempted only
+        // after persistence, and a provider outage must never lose the enquiry or
+        // turn into a failed visitor submission.
+        try {
+          await sendContactEmailNotification({
+            contactId: Number(savedMessage.insertId),
+            firstName: input.firstName,
+            lastName: input.lastName,
+            email: input.email,
+            phone,
+            topic: input.topic,
+            message,
+          });
+        } catch {
+          // Keep this intentionally sanitized: visitor names, addresses,
+          // messages, credentials, and provider response bodies must not enter
+          // application logs.
+          console.warn(
+            "[contact.submit] Direct email notification failed — database record and owner notification preserved.",
+          );
+        }
+
+        // Preserve the established project-owner notification as a separate
+        // audit/fallback channel even when the direct Gmail email succeeds.
         try {
           const notified = await notifyOwner({
             title: `New ${TOPIC_LABELS[input.topic]} enquiry from ${input.firstName} ${input.lastName}`,

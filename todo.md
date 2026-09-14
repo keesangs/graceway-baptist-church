@@ -40,6 +40,17 @@
 - [x] Hero title responsive font sizing: clamp(2rem, 10vw, 64px) for mobile/desktop optimization
 
 ## Future Enhancements — Not Yet Implemented
+- [x] Google Workspace nonprofit transition guidance: 501(c)(3) 준비 중 일반 유료 Workspace 가입 후 Google for Nonprofits 자격 승인·무료/할인 Workspace로 전환할 때 계정·도메인·메일 연속성과 신청 순서를 공식 정책으로 확인·안내
+- [ ] Domain email inbox setup guidance: Google Workspace·Zoho Mail의 현재 요금·무료 사용 가능 범위·MX/SPF/DKIM/DMARC 설정을 비교하고 info@graceway-baptist.org 인박스 개설 절차를 안내
+- [x] Contact form direct email notification: 문의 양식 제출 시 info@graceway-baptist.org로 직접 이메일 알림을 보내고 데이터베이스 보관·관리자 알림·전송 실패 처리를 유지하도록 구현·검증
+- [ ] Contact inbox access audit: info@graceway-baptist.org의 MX 레코드·수신 메일 서비스와 웹사이트 문의·구독 알림 전달 흐름을 확인하고 안전한 인박스 접근 방법을 안내
+- [ ] Google Workspace TXT verification recovery: Google 도메인 소유권 확인 실패를 TXT 값·권한 DNS·공개 전파 기준으로 진단하고 현재 웹사이트 DNS를 보호하며 인증 재시도·Gmail MX 설정 단계로 복구
+- [ ] Google Workspace TXT verification persistent failure: 공개 DNS에서 인증 TXT가 확인된 뒤에도 Google Workspace가 거부하는 원인을 가입 세션·대체 CNAME·검증 지연 기준으로 진단하고 안전한 인증 완료 경로를 안내
+- [ ] Google Workspace Gmail MX setup: 공식 Gmail MX 우선순위·서버를 현재 DNS와 대조하고, 웹사이트 A·www·인증 TXT를 보존한 채 승인 후 추가·공개 전파 검증
+- [ ] Google Workspace email authentication: 도메인 인증 완료 후 SPF·DKIM·DMARC 레코드를 순서대로 설정하고 Gmail 수신·발신 신뢰성을 검증
+- [ ] Google Workspace account-side verification: Manus DNS 정상 진단을 근거로 Google Admin의 현재 인증 토큰을 대조하고 도메인 검증을 재시도
+- [ ] Google Workspace escalation package: 계정 측 재시도 후에도 실패하면 Google 지원팀에 제출할 인증 토큰·오류·호스트 권한 DNS 정상 확인 근거를 정리
+- [ ] Google Workspace registrar/DNS correction: Google 지원팀의 등록기관과 DNS 호스트 혼동을 공개 권한 DNS·TXT·MX 근거로 정정하고 계정 측 검증 재조사를 요청
 - [x] WWW domain routing audit: graceway-baptist.org와 www 호스트의 DNS·TLS·호스팅 응답을 조사하고, www를 정규 도메인으로 안전하게 리디렉션하는 설정 위치·절차를 문서화
 - [x] WWW domain routing audit report: 조사 결과를 사용자에게 단계별로 전달하고, 현재 DNS 위임·등록기관·www 404 원인·Manus 측 www 연결 또는 재연결 위치를 명확히 안내
 - [x] WWW domain routing audit report delivery: 조사 결과를 채팅으로 단계별 전달하고, 현재 DNS 위임·등록기관·www 404 원인·Manus의 Domains 및 Data controls 설정 위치를 명시
@@ -274,3 +285,5 @@
 - [ ] GitHub latest main synchronization: 재인증 후 원격 main과 로컬 변경을 병합하고 체크포인트로 동기화
 - [ ] GitHub replacement repository verification: 새로 생성된 keesangs/graceway-baptist-church 저장소의 접근·초기 이력 상태 확인
 - [ ] GitHub replacement repository bootstrap: 현재 Graceway 프로젝트의 최신 코드와 Git 이력을 새 저장소 main에 안전하게 초기 동기화
+- [x] Contact form transactional sender setup: Resend 발신 도메인 인증 레코드를 기존 Google Workspace DNS와 충돌 없이 확인하고, 승인된 발신자·Reply-To 정책을 확정
+- [x] Contact form direct-email delivery integration: DB 저장 후 info@graceway-baptist.org 알림을 시도하되 전송 실패에도 관리자 메시지·기존 소유자 알림을 보존하도록 서버 서비스와 회귀 테스트 구현
