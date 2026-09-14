@@ -3,8 +3,8 @@
  * Sections: Hero, Featured Worship, Worship Archive with filter
  * Features: YouTube thumbnail + inline modal player, KO/EN language toggle
  */
-import { useMemo, useState } from "react";
-import { Play, Clock, Search, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Play, Clock, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
@@ -111,6 +111,38 @@ const legacyWorships: WorshipCard[] = [
 
 const seriesFilters = ["All", "Sunday Worship"];
 const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
+const ARCHIVE_FADE_DURATION_MS = 160;
+
+export function getResponsiveWorshipsPerPage(viewportWidth: number) {
+  if (viewportWidth >= 1280) return 8; // xl: 4 columns × 2 rows
+  if (viewportWidth >= 1024) return 6; // lg: 3 columns × 2 rows
+  if (viewportWidth >= 640) return 4; // sm: 2 columns × 2 rows
+  return 2; // mobile: 1 column × 2 rows
+}
+
+function getPageNumbers(totalPages: number, currentPage: number) {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  return Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
+}
+
+function useResponsiveWorshipsPerPage() {
+  const [worshipsPerPage, setWorshipsPerPage] = useState(() =>
+    getResponsiveWorshipsPerPage(typeof window === "undefined" ? 1280 : window.innerWidth),
+  );
+
+  useEffect(() => {
+    const updateWorshipsPerPage = () => setWorshipsPerPage(getResponsiveWorshipsPerPage(window.innerWidth));
+    updateWorshipsPerPage();
+    window.addEventListener("resize", updateWorshipsPerPage);
+    return () => window.removeEventListener("resize", updateWorshipsPerPage);
+  }, []);
+
+  return worshipsPerPage;
+}
 
 // YouTube thumbnail URL helper
 function ytThumb(videoId: string, quality: "maxresdefault" | "mqdefault" = "mqdefault") {
@@ -122,6 +154,10 @@ export default function Worship() {
   const [activeSeries, setActiveSeries] = useState("All");
   const [search, setSearch] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isArchiveTransitioning, setIsArchiveTransitioning] = useState(false);
+  const archiveTransitionTimer = useRef<number | null>(null);
+  const worshipsPerPage = useResponsiveWorshipsPerPage();
   const syncedVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT);
 
   const worships = useMemo(() => {
@@ -160,6 +196,41 @@ export default function Worship() {
     const matchSearch = title.toLowerCase().includes(search.toLowerCase());
     return matchSeries && matchSearch;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / worshipsPerPage));
+  const visiblePage = Math.min(currentPage, totalPages);
+  const pageStart = (visiblePage - 1) * worshipsPerPage;
+  const paginatedWorships = filtered.slice(pageStart, pageStart + worshipsPerPage);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    return () => {
+      if (archiveTransitionTimer.current !== null) {
+        window.clearTimeout(archiveTransitionTimer.current);
+      }
+    };
+  }, []);
+
+  const changeArchivePage = (nextPage: number) => {
+    const boundedPage = Math.min(totalPages, Math.max(1, nextPage));
+    if (boundedPage === visiblePage || isArchiveTransitioning) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCurrentPage(boundedPage);
+      return;
+    }
+
+    setIsArchiveTransitioning(true);
+    archiveTransitionTimer.current = window.setTimeout(() => {
+      setCurrentPage(boundedPage);
+      window.requestAnimationFrame(() => setIsArchiveTransitioning(false));
+    }, ARCHIVE_FADE_DURATION_MS);
+  };
+
+  const visiblePageNumbers = getPageNumbers(totalPages, visiblePage);
 
   const featured = worships[0];
   const playingWorship = worships.find((worship) => worship.videoId === playingId);
@@ -310,18 +381,24 @@ export default function Worship() {
                 placeholder={lang === "ko" ? "검색..." : "Search..."}
                 aria-label={lang === "ko" ? "찬양 검색" : "Search worship"}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full rounded-md border border-[#C8D4D9] bg-[#FFFEFB] py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#607A91]/50"
               />
             </div>
           </div>
 
           {/* Results */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            aria-busy={isArchiveTransitioning}
+            className={`grid grid-cols-1 gap-6 transition-opacity duration-[160ms] motion-reduce:transition-none sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${isArchiveTransitioning ? "opacity-0" : "opacity-100"}`}
+          >
             {filtered.length > 0 ? (
-              filtered.map((w, i) => (
+              paginatedWorships.map((w) => (
                 <article
-                  key={i}
+                  key={w.videoId}
                   className="group overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] text-left shadow-sm transition-shadow duration-300 hover:shadow-md"
                 >
                   <button
@@ -373,6 +450,58 @@ export default function Worship() {
               </div>
             )}
           </div>
+
+          {filtered.length > 0 && (
+            <nav aria-label={lang === "ko" ? "찬양 목록 페이지 탐색" : "Worship archive pagination"} className="mt-9 flex flex-col items-center justify-between gap-4 border-t border-[#D7E1E5] pt-6 sm:flex-row">
+              <p className="text-xs text-[#607A91]" aria-live="polite">
+                {lang === "ko"
+                  ? `${pageStart + 1}–${Math.min(pageStart + worshipsPerPage, filtered.length)} / ${filtered.length}편`
+                  : `${pageStart + 1}–${Math.min(pageStart + worshipsPerPage, filtered.length)} of ${filtered.length} worship videos`}
+              </p>
+              <div className="flex items-center gap-2" role="group" aria-label={lang === "ko" ? "페이지 이동" : "Page controls"}>
+                <button
+                  type="button"
+                  onClick={() => changeArchivePage(visiblePage - 1)}
+                  disabled={visiblePage === 1 || isArchiveTransitioning}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={15} /> <span className="hidden sm:inline">{lang === "ko" ? "이전" : "Previous"}</span>
+                  <span className="sr-only sm:hidden">{lang === "ko" ? "이전 페이지" : "Previous page"}</span>
+                </button>
+                <span className="flex h-10 min-w-13 items-center justify-center rounded-sm bg-[#E7EEF1] px-3 text-xs font-semibold text-[#163B59] sm:hidden" aria-live="polite">
+                  {visiblePage} / {totalPages}
+                </span>
+                <div className="hidden items-center gap-2 sm:flex">
+                  {visiblePageNumbers.map((page, index) => (
+                    <span key={page} className="contents">
+                      {index > 0 && page - visiblePageNumbers[index - 1] > 1 && (
+                        <span className="px-0.5 text-xs text-[#607A91]" aria-hidden="true">…</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => changeArchivePage(page)}
+                        disabled={isArchiveTransitioning}
+                        aria-current={page === visiblePage ? "page" : undefined}
+                        aria-label={lang === "ko" ? `${page}쪽으로 이동` : `Go to page ${page}`}
+                        className={`flex h-10 min-w-10 items-center justify-center rounded-sm px-2 text-xs font-semibold transition-colors ${page === visiblePage ? "bg-[#163B59] text-white" : "border border-[#C8D4D9] bg-[#FFFEFB] text-[#163B59] hover:border-[#607A91]"} disabled:cursor-not-allowed disabled:opacity-50`}
+                      >
+                        {page}
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => changeArchivePage(visiblePage + 1)}
+                  disabled={visiblePage === totalPages || isArchiveTransitioning}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C8D4D9] bg-[#FFFEFB] px-3 text-xs font-medium text-[#163B59] transition-colors hover:border-[#607A91] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <span className="hidden sm:inline">{lang === "ko" ? "다음" : "Next"}</span>
+                  <span className="sr-only sm:hidden">{lang === "ko" ? "다음 페이지" : "Next page"}</span> <ChevronRight size={15} />
+                </button>
+              </div>
+            </nav>
+          )}
         </div>
       </section>
 

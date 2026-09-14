@@ -288,3 +288,4 @@
 - [x] Contact form transactional sender setup: Resend 발신 도메인 인증 레코드를 기존 Google Workspace DNS와 충돌 없이 확인하고, 승인된 발신자·Reply-To 정책을 확정
 - [x] Contact form direct-email delivery integration: DB 저장 후 info@graceway-baptist.org 알림을 시도하되 전송 실패에도 관리자 메시지·기존 소유자 알림을 보존하도록 서버 서비스와 회귀 테스트 구현
 - [x] Admin Inbox mobile navigation: 데스크톱 전체 탭 바를 유지하고 모바일에서는 현재 관리 영역을 표시하는 선택 메뉴로 전환해 Messages·Subscribers·Events·Gallery·Weekly newsletter가 잘리지 않도록 구현·검증
+- [x] Worship archive pagination: 주일예배 찬양 아카이브에 설교 페이지와 같은 반응형 페이지네이션을 추가하고 공유·재생 기능을 보존하며 모바일·데스크톱에서 검증
