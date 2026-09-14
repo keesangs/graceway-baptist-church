@@ -10,6 +10,7 @@ export type PlaylistVideo = {
   videoId: string;
   playlistItemId: string;
   title: string;
+  speaker?: string;
   publishedAt: Date;
   thumbnailUrl: string;
   playlistPosition: number;
@@ -28,6 +29,61 @@ type PlaylistItemsResponse = {
     };
   }>;
 };
+
+type VideosResponse = {
+  items?: Array<{
+    id?: string;
+    snippet?: {
+      description?: string;
+    };
+  }>;
+};
+
+const VIDEO_DETAILS_BATCH_SIZE = 50;
+
+/**
+ * Reads the first non-empty `설교자:` line from a YouTube video description.
+ * The description remains source content only; no raw description is persisted.
+ */
+export function extractSermonSpeaker(description: string | undefined) {
+  if (!description) return undefined;
+
+  for (const line of description.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:설교자|speaker)\s*[:：]\s*(.+?)\s*$/i);
+    const speaker = match?.[1]?.trim();
+    if (speaker) return speaker.slice(0, 160);
+  }
+
+  return undefined;
+}
+
+async function fetchSermonSpeakers(videoIds: string[], apiKey: string) {
+  const speakersByVideoId = new Map<string, string>();
+
+  for (let start = 0; start < videoIds.length; start += VIDEO_DETAILS_BATCH_SIZE) {
+    const endpoint = new URL("https://www.googleapis.com/youtube/v3/videos");
+    endpoint.searchParams.set("part", "snippet");
+    endpoint.searchParams.set("id", videoIds.slice(start, start + VIDEO_DETAILS_BATCH_SIZE).join(","));
+    endpoint.searchParams.set("key", apiKey);
+
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) continue;
+
+      const payload = (await response.json()) as VideosResponse;
+      for (const item of payload.items ?? []) {
+        const videoId = item.id?.trim();
+        const speaker = extractSermonSpeaker(item.snippet?.description);
+        if (videoId && speaker) speakersByVideoId.set(videoId, speaker);
+      }
+    } catch {
+      // Speaker metadata is optional. A transient details lookup must not block
+      // the existing playlist sync or erase the default speaker fallback.
+    }
+  }
+
+  return speakersByVideoId;
+}
 
 function getThumbnailUrl(thumbnails: Record<string, { url?: string }> | undefined) {
   return thumbnails?.high?.url
@@ -102,5 +158,11 @@ export async function fetchPlaylistVideos(
     if (pageToken) seenTokens.add(pageToken);
   } while (pageToken);
 
-  return videos;
+  if (videoKind !== "sermon" || videos.length === 0) return videos;
+
+  const speakersByVideoId = await fetchSermonSpeakers(videos.map((video) => video.videoId), apiKey);
+  return videos.map((video) => ({
+    ...video,
+    speaker: speakersByVideoId.get(video.videoId),
+  }));
 }

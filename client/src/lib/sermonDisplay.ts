@@ -25,10 +25,13 @@ export type CanonicalSermonCard = SermonDisplayData & {
 export type SyncedSermonVideo = {
   videoId: string;
   title: string;
+  speaker?: string | null;
   publishedAt: Date | string;
   thumbnailUrl: string;
   playlistPosition: number;
 };
+
+export const DEFAULT_SERMON_SPEAKER = "이헌석 목사";
 
 function getDateFromLabel(value: string) {
   const match = value.match(/(20\d{2})\.\s*(\d{1,2})\.(\d{1,2})/);
@@ -88,7 +91,7 @@ export function getCanonicalSermonCards(
       scripture: legacy?.scripture ?? "",
       scriptureEn: legacy?.scriptureEn ?? "",
       date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-      speaker: legacy?.speaker ?? "Pastor Hunsuk Lee",
+      speaker: video.speaker?.trim() || legacy?.speaker || DEFAULT_SERMON_SPEAKER,
       duration: legacy?.duration ?? "New",
       series: legacy?.series ?? "Sunday Sermon",
       videoId: video.videoId,

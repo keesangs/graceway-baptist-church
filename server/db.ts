@@ -190,6 +190,7 @@ export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
         .set({
           playlistItemId: video.playlistItemId,
           title: video.title,
+          speaker: video.speaker ?? null,
           publishedAt: video.publishedAt,
           thumbnailUrl: video.thumbnailUrl,
           playlistPosition: video.playlistPosition,

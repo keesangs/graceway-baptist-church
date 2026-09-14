@@ -289,3 +289,4 @@
 - [x] Contact form direct-email delivery integration: DB 저장 후 info@graceway-baptist.org 알림을 시도하되 전송 실패에도 관리자 메시지·기존 소유자 알림을 보존하도록 서버 서비스와 회귀 테스트 구현
 - [x] Admin Inbox mobile navigation: 데스크톱 전체 탭 바를 유지하고 모바일에서는 현재 관리 영역을 표시하는 선택 메뉴로 전환해 Messages·Subscribers·Events·Gallery·Weekly newsletter가 잘리지 않도록 구현·검증
 - [x] Worship archive pagination: 주일예배 찬양 아카이브에 설교 페이지와 같은 반응형 페이지네이션을 추가하고 공유·재생 기능을 보존하며 모바일·데스크톱에서 검증
+- [x] YouTube sermon speaker metadata: 설명의 `설교자:` 줄을 개별 설교자 표기로 우선 적용하고, 누락 시 이헌석 목사를 기본값으로 처리하며 기존 설교 카드와 동기화를 검증

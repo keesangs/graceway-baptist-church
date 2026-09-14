@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCanonicalSermonCards, getSermonDateTimestamp, getSermonMetadataLines } from "../client/src/lib/sermonDisplay";
+import { DEFAULT_SERMON_SPEAKER, getCanonicalSermonCards, getSermonDateTimestamp, getSermonMetadataLines } from "../client/src/lib/sermonDisplay";
 
 describe("sermon card metadata display", () => {
   const latestSermon = {
@@ -50,6 +50,29 @@ describe("sermon card metadata display", () => {
       title: "내 인생의 진짜 힘",
       scripture: "본문: 여호수아 14장 6절 ~ 12절",
     });
+  });
+
+  it("prefers the synchronized speaker metadata and defaults to Pastor Hunsuk Lee when it is absent", () => {
+    const cards = getCanonicalSermonCards([], [
+      {
+        videoId: "guest-speaker",
+        title: "2026. 09.13 주일예배 말씀",
+        speaker: "조명제 전도사",
+        publishedAt: "2026-09-13T19:00:00.000Z",
+        thumbnailUrl: "https://example.com/guest.jpg",
+        playlistPosition: 0,
+      },
+      {
+        videoId: "default-speaker",
+        title: "2026. 09.06 주일예배 말씀",
+        publishedAt: "2026-09-06T19:00:00.000Z",
+        thumbnailUrl: "https://example.com/default.jpg",
+        playlistPosition: 1,
+      },
+    ]);
+
+    expect(cards.find((card) => card.videoId === "guest-speaker")?.speaker).toBe("조명제 전도사");
+    expect(cards.find((card) => card.videoId === "default-speaker")?.speaker).toBe(DEFAULT_SERMON_SPEAKER);
   });
 
   it("derives the actual Sunday from a synced playlist title rather than its upload timestamp", () => {

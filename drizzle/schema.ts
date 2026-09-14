@@ -58,6 +58,7 @@ export const youtubeVideos = mysqlTable("youtube_videos", {
   videoId: varchar("videoId", { length: 32 }).notNull(),
   playlistItemId: varchar("playlistItemId", { length: 128 }).notNull(),
   title: varchar("title", { length: 500 }).notNull(),
+  speaker: varchar("speaker", { length: 160 }),
   publishedAt: timestamp("publishedAt").notNull(),
   thumbnailUrl: varchar("thumbnailUrl", { length: 1024 }).notNull(),
   playlistPosition: int("playlistPosition").notNull(),
