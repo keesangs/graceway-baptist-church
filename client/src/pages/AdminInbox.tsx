@@ -16,6 +16,14 @@ import AdminEventsPanel from "@/components/AdminEventsPanel";
 import AdminGalleryPanel from "@/components/AdminGalleryPanel";
 import AdminWeeklyNewsletterPanel from "@/components/AdminWeeklyNewsletterPanel";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Inbox,
   Mail,
   Phone,
@@ -33,6 +41,21 @@ import {
 type Tab = "messages" | "subscribers" | "events" | "gallery" | "bulletins";
 const SERMON_LIST_INPUT = { videoKind: "sermon" } as const;
 const WORSHIP_LIST_INPUT = { videoKind: "worship" } as const;
+const TAB_VALUES: readonly Tab[] = ["messages", "subscribers", "events", "gallery", "bulletins"];
+
+const TAB_DEFINITIONS = [
+  { key: "messages" as Tab, label: "Messages", description: "Contact enquiries", Icon: Inbox },
+  { key: "subscribers" as Tab, label: "Subscribers", description: "Newsletter signups", Icon: Mail },
+  { key: "events" as Tab, label: "Events", description: "Church calendar", Icon: CalendarDays },
+  { key: "gallery" as Tab, label: "Gallery", description: "Photo albums", Icon: Images },
+  { key: "bulletins" as Tab, label: "Weekly newsletter", description: "Bulletin archive", Icon: FileText },
+] as const;
+
+function getInitialTab(): Tab {
+  if (typeof window === "undefined") return "messages";
+  const requested = new URLSearchParams(window.location.search).get("tab");
+  return TAB_VALUES.includes(requested as Tab) ? (requested as Tab) : "messages";
+}
 
 const TOPIC_LABELS: Record<string, string> = {
   visit: "Plan a visit",
@@ -78,10 +101,7 @@ function downloadCsv(filename: string, rows: string[][]) {
 
 export default function AdminInbox() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const [tab, setTab] = useState<Tab>(() => {
-    if (typeof window === "undefined") return "messages";
-    return new URLSearchParams(window.location.search).get("tab") === "gallery" ? "gallery" : "messages";
-  });
+  const [tab, setTab] = useState<Tab>(getInitialTab);
 
   const isAdmin = user?.role === "admin";
 
@@ -109,6 +129,8 @@ export default function AdminInbox() {
     () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0, gallery: galleryQuery.data?.length ?? 0, bulletins: weeklyNewsletterQuery.data?.length ?? 0 }),
     [messages.length, subscribers.length, eventsQuery.data?.length, galleryQuery.data?.length, weeklyNewsletterQuery.data?.length],
   );
+  const tabItems = TAB_DEFINITIONS.map((item) => ({ ...item, count: counts[item.key] }));
+  const activeTab = tabItems.find((item) => item.key === tab) ?? tabItems[0];
 
   // ── Auth gates ──────────────────────────────────────────────────────────
   if (authLoading) {
@@ -220,17 +242,10 @@ export default function AdminInbox() {
 
       <div className="container py-12">
         {/* Tabs + actions */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div className="inline-flex rounded-sm border border-[#17324D]/15 bg-white overflow-hidden">
-            {(
-              [
-                { key: "messages" as Tab, label: "Messages", count: counts.messages },
-                { key: "subscribers" as Tab, label: "Subscribers", count: counts.subscribers },
-                { key: "events" as Tab, label: "Events", count: counts.events },
-                { key: "gallery" as Tab, label: "Gallery", count: counts.gallery },
-                { key: "bulletins" as Tab, label: "Weekly newsletter", count: counts.bulletins },
-              ]
-            ).map(item => (
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
+          {/* Desktop keeps the scan-friendly full tab bar. */}
+          <div className="hidden overflow-hidden rounded-sm border border-[#17324D]/15 bg-white md:inline-flex">
+            {tabItems.map((item) => (
               <button
                 key={item.key}
                 onClick={() => setTab(item.key)}
@@ -242,36 +257,82 @@ export default function AdminInbox() {
                 }`}
               >
                 {item.label}
-                <span
-                  className={`ml-2 text-xs ${tab === item.key ? "text-[#D9B87A]" : "text-[#607A91]/60"}`}
-                >
+                <span className={`ml-2 text-xs ${tab === item.key ? "text-[#D9B87A]" : "text-[#607A91]/60"}`}>
                   {item.count}
                 </span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Narrow screens use a selector so no section is clipped off-screen. */}
+          <div className="md:hidden">
+            <label htmlFor="admin-inbox-section" className="sr-only">Choose an Inbox section</label>
+            <Select value={tab} onValueChange={(value) => setTab(value as Tab)}>
+              <SelectTrigger
+                id="admin-inbox-section"
+                aria-label="Choose an Inbox section"
+                className="h-12 w-full border-[#17324D]/20 bg-white px-4 text-[#163B59] shadow-sm focus-visible:border-[#607A91] focus-visible:ring-[#607A91]/30"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <activeTab.Icon size={17} className="shrink-0 text-[#B07834]" />
+                  <span className="truncate text-sm font-semibold">{activeTab.label}</span>
+                  <span className="rounded-full bg-[#E7EEF1] px-2 py-0.5 text-xs font-semibold text-[#163B59]">
+                    {activeTab.count}
+                  </span>
+                </span>
+              </SelectTrigger>
+              <SelectContent className="border-[#DCE4E7] bg-[#FFFEFB] text-[#163B59]">
+                <SelectGroup>
+                  <SelectLabel className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#B07834]">
+                    Inbox sections
+                  </SelectLabel>
+                  {tabItems.map((item) => (
+                    <SelectItem
+                      key={item.key}
+                      value={item.key}
+                      textValue={item.label}
+                      className="py-2.5 pl-3 pr-9 text-[#163B59] focus:bg-[#E7EEF1] focus:text-[#163B59]"
+                    >
+                      <span className="flex min-w-[13rem] items-center justify-between gap-6">
+                        <span className="flex items-center gap-2.5">
+                          <item.Icon size={15} className="text-[#607A91]" />
+                          <span>
+                            <span className="block font-semibold">{item.label}</span>
+                            <span className="block text-xs text-[#607A91]">{item.description}</span>
+                          </span>
+                        </span>
+                        <span className="rounded-full bg-[#E7EEF1] px-2 py-0.5 text-xs font-semibold text-[#163B59]">
+                          {item.count}
+                        </span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:items-center">
             <button
               onClick={() => {
                 setSyncResult(null);
                 syncYouTubeMutation.mutate();
               }}
               disabled={syncYouTubeMutation.isPending}
-              className="inline-flex items-center gap-2 rounded-md border border-[#B9955E]/50 bg-[#FFFEFB] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#F6F0E5] disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.97]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#B9955E]/50 bg-[#FFFEFB] px-3 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#F6F0E5] disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.97] md:px-4"
             >
               <Youtube size={15} /> {syncYouTubeMutation.isPending ? "Syncing playlists…" : "Sync YouTube playlists"}
             </button>
             <button
               onClick={() => refetch()}
-              className="inline-flex items-center gap-2 rounded-md border border-[#C8D4D9] bg-[#FFFEFB] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#E7EEF1] active:scale-[0.97]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#C8D4D9] bg-[#FFFEFB] px-3 py-2.5 text-sm font-semibold text-[#163B59] transition-all duration-200 hover:bg-[#E7EEF1] active:scale-[0.97] md:px-4"
             >
               <RefreshCw size={15} /> Refresh
             </button>
             {(tab === "messages" || tab === "subscribers") && (
               <button
                 onClick={handleExport}
-                className="inline-flex items-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97]"
+                className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#163B59] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#245170] active:scale-[0.97] md:col-span-1"
               >
                 <Download size={15} /> Export CSV
               </button>
