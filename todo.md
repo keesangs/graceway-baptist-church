@@ -290,3 +290,4 @@
 - [x] Admin Inbox mobile navigation: 데스크톱 전체 탭 바를 유지하고 모바일에서는 현재 관리 영역을 표시하는 선택 메뉴로 전환해 Messages·Subscribers·Events·Gallery·Weekly newsletter가 잘리지 않도록 구현·검증
 - [x] Worship archive pagination: 주일예배 찬양 아카이브에 설교 페이지와 같은 반응형 페이지네이션을 추가하고 공유·재생 기능을 보존하며 모바일·데스크톱에서 검증
 - [x] YouTube sermon speaker metadata: 설명의 `설교자:` 줄을 개별 설교자 표기로 우선 적용하고, 누락 시 이헌석 목사를 기본값으로 처리하며 기존 설교 카드와 동기화를 검증
+- [x] YouTube sermon speaker display standardization: 플레이리스트를 즉시 재동기화해 2026-09-13 설교자 정보를 확인하고, 이헌석 목사·조명제 전도사의 공개 표기를 Pastor Hunsuk Lee·Staff Pastor MyeongJe Cho로 통일·검증

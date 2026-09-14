@@ -33,6 +33,19 @@ export type SyncedSermonVideo = {
 
 export const DEFAULT_SERMON_SPEAKER = "이헌석 목사";
 
+const PUBLIC_SERMON_SPEAKER_NAMES: Record<string, string> = {
+  "이헌석 목사": "Pastor Hunsuk Lee",
+  "Pastor Hunsuk Lee": "Pastor Hunsuk Lee",
+  "조명제 전도사": "Staff Pastor MyeongJe Cho",
+  "Staff Pastor MyeongJe Cho": "Staff Pastor MyeongJe Cho",
+};
+
+/** Uses the church-approved English display name for known sermon speakers. */
+export function getPublicSermonSpeaker(speaker: string | null | undefined) {
+  const normalized = speaker?.trim() || DEFAULT_SERMON_SPEAKER;
+  return PUBLIC_SERMON_SPEAKER_NAMES[normalized] ?? normalized;
+}
+
 function getDateFromLabel(value: string) {
   const match = value.match(/(20\d{2})\.\s*(\d{1,2})\.(\d{1,2})/);
   if (!match) return null;
@@ -91,7 +104,7 @@ export function getCanonicalSermonCards(
       scripture: legacy?.scripture ?? "",
       scriptureEn: legacy?.scriptureEn ?? "",
       date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-      speaker: video.speaker?.trim() || legacy?.speaker || DEFAULT_SERMON_SPEAKER,
+      speaker: getPublicSermonSpeaker(video.speaker?.trim() || legacy?.speaker || DEFAULT_SERMON_SPEAKER),
       duration: legacy?.duration ?? "New",
       series: legacy?.series ?? "Sunday Sermon",
       videoId: video.videoId,

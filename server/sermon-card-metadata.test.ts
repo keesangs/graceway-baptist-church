@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SERMON_SPEAKER, getCanonicalSermonCards, getSermonDateTimestamp, getSermonMetadataLines } from "../client/src/lib/sermonDisplay";
+import { DEFAULT_SERMON_SPEAKER, getCanonicalSermonCards, getPublicSermonSpeaker, getSermonDateTimestamp, getSermonMetadataLines } from "../client/src/lib/sermonDisplay";
 
 describe("sermon card metadata display", () => {
   const latestSermon = {
@@ -71,8 +71,10 @@ describe("sermon card metadata display", () => {
       },
     ]);
 
-    expect(cards.find((card) => card.videoId === "guest-speaker")?.speaker).toBe("조명제 전도사");
-    expect(cards.find((card) => card.videoId === "default-speaker")?.speaker).toBe(DEFAULT_SERMON_SPEAKER);
+    expect(cards.find((card) => card.videoId === "guest-speaker")?.speaker).toBe("Staff Pastor MyeongJe Cho");
+    expect(cards.find((card) => card.videoId === "default-speaker")?.speaker).toBe("Pastor Hunsuk Lee");
+    expect(getPublicSermonSpeaker(DEFAULT_SERMON_SPEAKER)).toBe("Pastor Hunsuk Lee");
+    expect(getPublicSermonSpeaker("조명제 전도사")).toBe("Staff Pastor MyeongJe Cho");
   });
 
   it("derives the actual Sunday from a synced playlist title rather than its upload timestamp", () => {
