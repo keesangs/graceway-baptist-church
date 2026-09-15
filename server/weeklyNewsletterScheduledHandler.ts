@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { getWeeklyNewsletterSyncSettings } from "./db";
 import { sdk } from "./_core/sdk";
+import { deliverLatestWeeklyNewsletter } from "./weeklyNewsletterDelivery";
 import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
 
 const WEEKLY_NEWSLETTER_SYNC_PATH = "/api/scheduled/weekly-newsletter-sync";
@@ -45,7 +46,8 @@ export function registerWeeklyNewsletterScheduledHandler(app: Express) {
       }
 
       const result = await syncPublicWeeklyNewsletterArchive();
-      return res.json({ ok: true, result, timestamp: new Date().toISOString() });
+      const delivery = await deliverLatestWeeklyNewsletter();
+      return res.json({ ok: true, result, delivery, timestamp: new Date().toISOString() });
     } catch (error) {
       const message = errorMessage(error);
       console.error("[Weekly newsletter sync] scheduled run failed:", error);

@@ -10,7 +10,6 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerWeeklyNewsletterScheduledHandler } from "../weeklyNewsletterScheduledHandler";
 import { registerWeeklyNewsletterDeliveryWebhook } from "../weeklyNewsletterDeliveryWebhook";
-import { registerWeeklyNewsletterDeliveryScheduledHandler } from "../weeklyNewsletterDeliveryScheduledHandler";
 import { registerGooglePhotosRoutes } from "../googlePhotosRoutes";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -43,7 +42,6 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerGooglePhotosRoutes(app);
   registerWeeklyNewsletterScheduledHandler(app);
-  registerWeeklyNewsletterDeliveryScheduledHandler(app);
   // tRPC API
   app.use(
     "/api/trpc",

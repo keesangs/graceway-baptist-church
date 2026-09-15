@@ -5,7 +5,7 @@ import { isSundayMorningNewsletterSyncTime } from "./weeklyNewsletterScheduledHa
 
 const deliveryService = readFileSync(new URL("./weeklyNewsletterDelivery.ts", import.meta.url), "utf8");
 const deliveryWebhook = readFileSync(new URL("./weeklyNewsletterDeliveryWebhook.ts", import.meta.url), "utf8");
-const deliverySchedule = readFileSync(new URL("./weeklyNewsletterDeliveryScheduledHandler.ts", import.meta.url), "utf8");
+const syncSchedule = readFileSync(new URL("./weeklyNewsletterScheduledHandler.ts", import.meta.url), "utf8");
 const adminPanel = readFileSync(new URL("../client/src/components/AdminWeeklyNewsletterPanel.tsx", import.meta.url), "utf8");
 const schema = readFileSync(new URL("../drizzle/schema.ts", import.meta.url), "utf8");
 
@@ -54,14 +54,20 @@ describe("weekly newsletter delivery", () => {
     expect(schema).toContain('providerEventId: varchar("providerEventId", { length: 128 }).notNull().unique()');
   });
 
-  it("protects the scheduled delivery callback with the persisted cron identity and church-time 9 AM guard", () => {
-    expect(deliverySchedule).toContain('"/api/scheduled/weekly-newsletter-delivery"');
-    expect(deliverySchedule).toContain("user.isCron");
-    expect(deliverySchedule).toContain("settings.scheduleCronTaskUid !== user.taskUid");
-    expect(deliverySchedule).toContain("isSundayMorningNewsletterSyncTime");
-    expect(deliverySchedule).toContain("deliverLatestWeeklyNewsletter");
+  it("uses the existing persisted Sunday sync cron as the sole protected delivery trigger", () => {
+    expect(syncSchedule).toContain('"/api/scheduled/weekly-newsletter-sync"');
+    expect(syncSchedule).toContain("user.isCron");
+    expect(syncSchedule).toContain("settings.scheduleCronTaskUid !== user.taskUid");
+    expect(syncSchedule).toContain("isSundayMorningNewsletterSyncTime");
+    expect(syncSchedule).toContain("deliverLatestWeeklyNewsletter");
     expect(isSundayMorningNewsletterSyncTime(new Date("2026-09-20T16:00:00.000Z"))).toBe(true);
     expect(isSundayMorningNewsletterSyncTime(new Date("2026-11-01T17:00:00.000Z"))).toBe(true);
+  });
+
+  it("delivers only after the existing Sunday bulletin synchronization has completed", () => {
+    expect(syncSchedule).toContain("const result = await syncPublicWeeklyNewsletterArchive();");
+    expect(syncSchedule).toContain("const delivery = await deliverLatestWeeklyNewsletter();");
+    expect(syncSchedule.indexOf("syncPublicWeeklyNewsletterArchive()")).toBeLessThan(syncSchedule.indexOf("deliverLatestWeeklyNewsletter()"));
   });
 
   it("shows staff campaign counts and a guarded manual latest-bulletin send control", () => {
