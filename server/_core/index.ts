@@ -9,6 +9,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerWeeklyNewsletterScheduledHandler } from "../weeklyNewsletterScheduledHandler";
+import { registerWeeklyNewsletterDeliveryWebhook } from "../weeklyNewsletterDeliveryWebhook";
+import { registerWeeklyNewsletterDeliveryScheduledHandler } from "../weeklyNewsletterDeliveryScheduledHandler";
 import { registerGooglePhotosRoutes } from "../googlePhotosRoutes";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -33,6 +35,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  registerWeeklyNewsletterDeliveryWebhook(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -40,6 +43,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerGooglePhotosRoutes(app);
   registerWeeklyNewsletterScheduledHandler(app);
+  registerWeeklyNewsletterDeliveryScheduledHandler(app);
   // tRPC API
   app.use(
     "/api/trpc",

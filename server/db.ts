@@ -30,6 +30,11 @@ import {
   newsletterSubscribers,
   photoAlbums,
   users,
+  WeeklyNewsletterIssue,
+  weeklyNewsletterCampaigns,
+  weeklyNewsletterDeliveries,
+  weeklyNewsletterDeliveryEvents,
+  weeklyNewsletterDeliverySettings,
   weeklyNewsletterIssues,
   weeklyNewsletterSyncSettings,
   youtubeVideos,
@@ -440,6 +445,192 @@ export async function updateWeeklyNewsletterSyncSettings(data: Partial<typeof we
   if (!db) throw new Error("Database not available");
   await db.insert(weeklyNewsletterSyncSettings).values({ id: 1, ...data }).onDuplicateKeyUpdate({ set: data });
   return getWeeklyNewsletterSyncSettings();
+}
+
+export async function getWeeklyNewsletterDeliverySettings() {
+  const db = await getDb();
+  if (!db) return null;
+  const [settings] = await db.select().from(weeklyNewsletterDeliverySettings).where(eq(weeklyNewsletterDeliverySettings.id, 1)).limit(1);
+  return settings ?? null;
+}
+
+export async function updateWeeklyNewsletterDeliverySettings(data: Partial<typeof weeklyNewsletterDeliverySettings.$inferInsert>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(weeklyNewsletterDeliverySettings).values({ id: 1, ...data }).onDuplicateKeyUpdate({ set: data });
+  return getWeeklyNewsletterDeliverySettings();
+}
+
+export async function listActiveNewsletterSubscribers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(newsletterSubscribers).where(and(
+    eq(newsletterSubscribers.status, "active"),
+    eq(newsletterSubscribers.isActive, 1),
+  )).orderBy(asc(newsletterSubscribers.id));
+}
+
+export async function getNewsletterSubscriberById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [subscriber] = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.id, id)).limit(1);
+  return subscriber ?? null;
+}
+
+export async function getWeeklyNewsletterCampaignByIssueId(issueId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [campaign] = await db.select().from(weeklyNewsletterCampaigns).where(eq(weeklyNewsletterCampaigns.issueId, issueId)).limit(1);
+  return campaign ?? null;
+}
+
+export async function getWeeklyNewsletterCampaignById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [campaign] = await db.select().from(weeklyNewsletterCampaigns).where(eq(weeklyNewsletterCampaigns.id, id)).limit(1);
+  return campaign ?? null;
+}
+
+export async function getOrCreateWeeklyNewsletterCampaign(input: { issue: WeeklyNewsletterIssue; subject: string; sender: string; scheduledFor: Date }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(weeklyNewsletterCampaigns).values({
+    issueId: input.issue.id,
+    subject: input.subject,
+    sender: input.sender,
+    scheduledFor: input.scheduledFor,
+  }).onDuplicateKeyUpdate({ set: { updatedAt: new Date() } });
+  const campaign = await getWeeklyNewsletterCampaignByIssueId(input.issue.id);
+  if (!campaign) throw new Error("Weekly newsletter campaign could not be loaded");
+  return campaign;
+}
+
+export async function listRecentWeeklyNewsletterCampaigns(limit = 12) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ campaign: weeklyNewsletterCampaigns, issue: weeklyNewsletterIssues })
+    .from(weeklyNewsletterCampaigns)
+    .innerJoin(weeklyNewsletterIssues, eq(weeklyNewsletterCampaigns.issueId, weeklyNewsletterIssues.id))
+    .orderBy(desc(weeklyNewsletterCampaigns.createdAt))
+    .limit(limit);
+}
+
+export async function ensureWeeklyNewsletterCampaignDeliveries(campaignId: number, subscribers: Awaited<ReturnType<typeof listActiveNewsletterSubscribers>>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  for (const subscriber of subscribers) {
+    await db.insert(weeklyNewsletterDeliveries).values({
+      campaignId,
+      subscriberId: subscriber.id,
+      email: subscriber.email,
+      lang: subscriber.lang,
+    }).onDuplicateKeyUpdate({ set: { updatedAt: new Date() } });
+  }
+}
+
+export async function listWeeklyNewsletterCampaignDeliveries(campaignId: number, statuses?: Array<"queued" | "sent" | "delivered" | "bounced" | "failed" | "suppressed" | "unsubscribed" | "sending">) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(weeklyNewsletterDeliveries.campaignId, campaignId)];
+  if (statuses?.length) conditions.push(inArray(weeklyNewsletterDeliveries.status, statuses));
+  return db.select().from(weeklyNewsletterDeliveries).where(and(...conditions)).orderBy(asc(weeklyNewsletterDeliveries.id));
+}
+
+export async function claimWeeklyNewsletterDelivery(deliveryId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const [result] = await db.update(weeklyNewsletterDeliveries)
+    .set({ status: "sending", attemptCount: sql`${weeklyNewsletterDeliveries.attemptCount} + 1` })
+    .where(and(
+      eq(weeklyNewsletterDeliveries.id, deliveryId),
+      inArray(weeklyNewsletterDeliveries.status, ["queued", "failed"]),
+    ));
+  return result.affectedRows === 1;
+}
+
+export async function markWeeklyNewsletterDeliverySent(deliveryId: number, providerEmailId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(weeklyNewsletterDeliveries).set({ status: "sent", providerEmailId, sentAt: new Date(), failureReason: null }).where(eq(weeklyNewsletterDeliveries.id, deliveryId));
+}
+
+export async function markWeeklyNewsletterDeliveryFailed(deliveryId: number, reason: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(weeklyNewsletterDeliveries).set({ status: "failed", failureReason: reason.slice(0, 500) }).where(eq(weeklyNewsletterDeliveries.id, deliveryId));
+}
+
+export async function markWeeklyNewsletterDeliveryExcluded(deliveryId: number, status: "suppressed" | "unsubscribed") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(weeklyNewsletterDeliveries).set({ status }).where(eq(weeklyNewsletterDeliveries.id, deliveryId));
+}
+
+export async function getWeeklyNewsletterDeliveryByProviderEmailId(providerEmailId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [delivery] = await db.select().from(weeklyNewsletterDeliveries).where(eq(weeklyNewsletterDeliveries.providerEmailId, providerEmailId)).limit(1);
+  return delivery ?? null;
+}
+
+export async function createWeeklyNewsletterUnsubscribeToken(subscriberId: number) {
+  return createNewsletterTokenForSubscriber(subscriberId, "unsubscribe");
+}
+
+export async function markWeeklyNewsletterCampaignSending(campaignId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(weeklyNewsletterCampaigns).set({ status: "sending", startedAt: new Date(), lastError: null }).where(eq(weeklyNewsletterCampaigns.id, campaignId));
+}
+
+export async function refreshWeeklyNewsletterCampaignCounts(campaignId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const deliveries = await listWeeklyNewsletterCampaignDeliveries(campaignId);
+  const counts = deliveries.reduce((acc, delivery) => {
+    acc[delivery.status] = (acc[delivery.status] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const sentCount = (counts.sent ?? 0) + (counts.delivered ?? 0);
+  const failedCount = counts.failed ?? 0;
+  const bouncedCount = counts.bounced ?? 0;
+  const skippedCount = (counts.suppressed ?? 0) + (counts.unsubscribed ?? 0);
+  const totalRecipients = deliveries.length;
+  const status = totalRecipients === 0 ? "skipped" : failedCount + bouncedCount > 0 ? (sentCount > 0 ? "partial" : "failed") : "sent";
+  await db.update(weeklyNewsletterCampaigns).set({
+    status,
+    totalRecipients,
+    sentCount,
+    deliveredCount: counts.delivered ?? 0,
+    bouncedCount,
+    failedCount,
+    skippedCount,
+    completedAt: new Date(),
+  }).where(eq(weeklyNewsletterCampaigns.id, campaignId));
+  return getWeeklyNewsletterCampaignById(campaignId);
+}
+
+export async function recordWeeklyNewsletterProviderEvent(input: { providerEventId: string; providerEmailId?: string | null; eventType: string; occurredAt?: Date | null; failureReason?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [existing] = await db.select({ id: weeklyNewsletterDeliveryEvents.id }).from(weeklyNewsletterDeliveryEvents).where(eq(weeklyNewsletterDeliveryEvents.providerEventId, input.providerEventId)).limit(1);
+  if (existing) return { duplicate: true, delivery: null } as const;
+  await db.insert(weeklyNewsletterDeliveryEvents).values({ providerEventId: input.providerEventId, providerEmailId: input.providerEmailId ?? null, eventType: input.eventType, occurredAt: input.occurredAt ?? null });
+  if (!input.providerEmailId) return { duplicate: false, delivery: null } as const;
+  const delivery = await getWeeklyNewsletterDeliveryByProviderEmailId(input.providerEmailId);
+  if (!delivery) return { duplicate: false, delivery: null } as const;
+
+  const eventTime = input.occurredAt ?? new Date();
+  if (delivery.providerEventAt && delivery.providerEventAt > eventTime) return { duplicate: false, delivery } as const;
+  if (input.eventType === "email.delivered") {
+    await db.update(weeklyNewsletterDeliveries).set({ status: "delivered", deliveredAt: eventTime, providerEventAt: eventTime }).where(eq(weeklyNewsletterDeliveries.id, delivery.id));
+  } else if (input.eventType === "email.bounced" || input.eventType === "email.complained") {
+    const status = input.eventType === "email.bounced" ? "bounced" : "suppressed";
+    await db.update(weeklyNewsletterDeliveries).set({ status, bouncedAt: eventTime, providerEventAt: eventTime, failureReason: input.failureReason?.slice(0, 500) ?? null }).where(eq(weeklyNewsletterDeliveries.id, delivery.id));
+    await db.update(newsletterSubscribers).set({ status: "suppressed", isActive: 0 }).where(eq(newsletterSubscribers.id, delivery.subscriberId));
+  }
+  await refreshWeeklyNewsletterCampaignCounts(delivery.campaignId);
+  return { duplicate: false, delivery } as const;
 }
 
 export async function insertContactMessage(data: InsertContactMessage) {

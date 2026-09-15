@@ -147,6 +147,73 @@ export const weeklyNewsletterIssues = mysqlTable("weekly_newsletter_issues", {
 export type WeeklyNewsletterIssue = typeof weeklyNewsletterIssues.$inferSelect;
 export type InsertWeeklyNewsletterIssue = typeof weeklyNewsletterIssues.$inferInsert;
 
+// A published issue can produce only one automatic campaign. Updating the same
+// PDF never creates a duplicate Sunday send without an explicit staff workflow.
+export const weeklyNewsletterCampaigns = mysqlTable("weekly_newsletter_campaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  issueId: int("issueId").notNull().unique(),
+  status: mysqlEnum("status", ["scheduled", "sending", "sent", "partial", "skipped", "failed"]).default("scheduled").notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  sender: varchar("sender", { length: 500 }).notNull(),
+  scheduledFor: timestamp("scheduledFor"),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  totalRecipients: int("totalRecipients").default(0).notNull(),
+  sentCount: int("sentCount").default(0).notNull(),
+  deliveredCount: int("deliveredCount").default(0).notNull(),
+  bouncedCount: int("bouncedCount").default(0).notNull(),
+  failedCount: int("failedCount").default(0).notNull(),
+  skippedCount: int("skippedCount").default(0).notNull(),
+  lastError: text("lastError"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  statusScheduledIdx: index("weekly_newsletter_campaign_status_scheduled_idx").on(table.status, table.scheduledFor),
+}));
+
+export type WeeklyNewsletterCampaign = typeof weeklyNewsletterCampaigns.$inferSelect;
+
+// Each recipient gets one immutable delivery record for a campaign. The unique
+// campaign/subscriber pair is the primary idempotency guard across cron retries.
+export const weeklyNewsletterDeliveries = mysqlTable("weekly_newsletter_deliveries", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull(),
+  subscriberId: int("subscriberId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  lang: mysqlEnum("lang", ["en", "ko"]).notNull(),
+  status: mysqlEnum("status", ["queued", "sending", "sent", "delivered", "bounced", "failed", "suppressed", "unsubscribed"]).default("queued").notNull(),
+  providerEmailId: varchar("providerEmailId", { length: 128 }).unique(),
+  attemptCount: int("attemptCount").default(0).notNull(),
+  sentAt: timestamp("sentAt"),
+  deliveredAt: timestamp("deliveredAt"),
+  bouncedAt: timestamp("bouncedAt"),
+  failureReason: varchar("failureReason", { length: 500 }),
+  providerEventAt: timestamp("providerEventAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  campaignSubscriberUnique: uniqueIndex("weekly_newsletter_delivery_campaign_subscriber_unique").on(table.campaignId, table.subscriberId),
+  campaignStatusIdx: index("weekly_newsletter_delivery_campaign_status_idx").on(table.campaignId, table.status),
+  subscriberStatusIdx: index("weekly_newsletter_delivery_subscriber_status_idx").on(table.subscriberId, table.status),
+}));
+
+export type WeeklyNewsletterDelivery = typeof weeklyNewsletterDeliveries.$inferSelect;
+
+// Webhook events are deduplicated by the provider's Svix event ID. Payloads are
+// intentionally not persisted because they can contain recipient metadata.
+export const weeklyNewsletterDeliveryEvents = mysqlTable("weekly_newsletter_delivery_events", {
+  id: int("id").autoincrement().primaryKey(),
+  providerEventId: varchar("providerEventId", { length: 128 }).notNull().unique(),
+  providerEmailId: varchar("providerEmailId", { length: 128 }),
+  eventType: varchar("eventType", { length: 64 }).notNull(),
+  occurredAt: timestamp("occurredAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  providerEmailIdx: index("weekly_newsletter_delivery_event_email_idx").on(table.providerEmailId, table.createdAt),
+}));
+
+export type WeeklyNewsletterDeliveryEvent = typeof weeklyNewsletterDeliveryEvents.$inferSelect;
+
 // Singleton configuration row for the project-level Sunday bulletin sync.
 export const weeklyNewsletterSyncSettings = mysqlTable("weekly_newsletter_sync_settings", {
   id: int("id").primaryKey(),
@@ -158,6 +225,19 @@ export const weeklyNewsletterSyncSettings = mysqlTable("weekly_newsletter_sync_s
 });
 
 export type WeeklyNewsletterSyncSettings = typeof weeklyNewsletterSyncSettings.$inferSelect;
+
+// Singleton configuration for the project-owned Sunday delivery Heartbeat.
+export const weeklyNewsletterDeliverySettings = mysqlTable("weekly_newsletter_delivery_settings", {
+  id: int("id").primaryKey(),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }).unique(),
+  deliveryEnabled: int("deliveryEnabled").default(0).notNull(),
+  lastRunAt: timestamp("lastRunAt"),
+  lastSuccessAt: timestamp("lastSuccessAt"),
+  lastError: text("lastError"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeeklyNewsletterDeliverySettings = typeof weeklyNewsletterDeliverySettings.$inferSelect;
 
 // Contact form submissions from the Connect page.
 export const contactMessages = mysqlTable("contact_messages", {

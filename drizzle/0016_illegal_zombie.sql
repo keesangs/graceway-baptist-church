@@ -1,0 +1,1 @@
+ALTER TABLE `weekly_newsletter_deliveries` MODIFY COLUMN `status` enum('queued','sending','sent','delivered','bounced','failed','suppressed','unsubscribed') NOT NULL DEFAULT 'queued';

@@ -297,4 +297,10 @@
 - [x] Newsletter subscription notifications: 구독 요청·확정 시 DB 보관 후 방문자 확인 이메일과 info@ 운영 알림을 전송하되, 전송 실패에도 구독 기록을 보존
 - [x] Newsletter confirmation and unsubscribe pages: 확인·수신 거부 공개 페이지와 단일 사용 토큰 검증을 구현
 - [x] Newsletter admin lifecycle management: 관리자 Subscribers 화면에 상태·언어·확정·수신 거부 정보를 표시하고 발송 준비 상태를 관리
-- [ ] Newsletter subscription verification: 구독·중복·재구독·수신 거부·알림 실패 보존의 회귀 테스트와 실제 테스트 이메일 승인 절차를 완료
+- [x] Newsletter subscription verification: 구독·중복·재구독·수신 거부·알림 실패 보존의 회귀 테스트와 실제 테스트 이메일 승인 절차를 완료
+- [x] Weekly newsletter campaigns: 주보 이슈별 캠페인과 구독자별 발송 이력·제공자 메시지 ID·전달/반송/실패 상태를 영구 저장
+- [x] Weekly newsletter delivery service: 최신 공개 주보·활성 구독자만 대상으로 인증된 이메일 템플릿을 발송하고 중복·빈 주보 발송을 방지
+- [ ] Weekly newsletter bounce handling: 수신 거부·반송·불만 상태를 발송 제외로 반영하고 관리자에게 추적 가능한 상태를 제공
+- [x] Weekly newsletter delivery admin: 관리자 주보 패널에 캠페인 요약·발송 수·상태·최근 오류와 예약 준비 상태를 표시
+- [ ] Weekly newsletter Sunday schedule: 매주 일요일 오전 9시 America/Los_Angeles에 최신 주보를 한 번만 발송하는 인증·멱등 예약 작업을 생성·활성화
+- [ ] Weekly newsletter live verification: 실제 활성 구독자 발송·예약 실행·발송 이력·관리자 운영 알림을 검증

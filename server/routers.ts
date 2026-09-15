@@ -23,6 +23,7 @@ import {
   getMeditationNoteForUser,
   getUserMeditationLike,
   getLatestPublishedWeeklyNewsletterIssue,
+  getWeeklyNewsletterDeliverySettings,
   getWeeklyNewsletterIssueById,
   getWeeklyNewsletterSyncSettings,
   insertContactMessage,
@@ -42,6 +43,7 @@ import {
   listPhotoAlbumsForAdmin,
   publishDraftGalleryPhotos,
   listWeeklyNewsletterIssuesForAdmin,
+  listRecentWeeklyNewsletterCampaigns,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
   confirmNewsletterSubscription,
@@ -55,6 +57,7 @@ import {
   updateGalleryPhoto,
   updatePhotoAlbum,
   updateWeeklyNewsletterIssue,
+  updateWeeklyNewsletterDeliverySettings,
 } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { notifyOwner } from "./_core/notification";
@@ -65,6 +68,7 @@ import { storagePut } from "./storage";
 import { fetchPlaylistVideos } from "./youtube";
 import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
+import { deliverLatestWeeklyNewsletter } from "./weeklyNewsletterDelivery";
 import { beginGooglePhotosAuthorization, createGooglePhotosPickerSession, getGooglePhotosPickerSession, importGooglePhotosSelection } from "./googlePhotos";
 import { deleteGooglePhotosConnectionForUser, getGooglePhotosConnectionForUser } from "./db";
 import {
@@ -534,9 +538,17 @@ export const appRouter = router({
     /** Administrators can inspect drafts, hidden records, and sync diagnostics. */
     listAdmin: adminProcedure.query(() => listWeeklyNewsletterIssuesForAdmin()),
     syncStatus: adminProcedure.query(() => getWeeklyNewsletterSyncSettings()),
+    deliveryStatus: adminProcedure.query(async () => ({
+      settings: await getWeeklyNewsletterDeliverySettings(),
+      campaigns: await listRecentWeeklyNewsletterCampaigns(),
+    })),
 
     /** On-demand fallback for the Sunday background sync. */
     syncNow: adminProcedure.mutation(() => syncPublicWeeklyNewsletterArchive()),
+    sendLatestNow: adminProcedure.mutation(() => deliverLatestWeeklyNewsletter()),
+    setDeliveryEnabled: adminProcedure
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(({ input }) => updateWeeklyNewsletterDeliverySettings({ deliveryEnabled: input.enabled ? 1 : 0 })),
 
     update: adminProcedure.input(weeklyNewsletterUpdateInput).mutation(async ({ input }) => {
       const issue = await getWeeklyNewsletterIssueById(input.id);
