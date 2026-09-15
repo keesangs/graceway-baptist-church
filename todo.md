@@ -292,3 +292,4 @@
 - [x] YouTube sermon speaker metadata: 설명의 `설교자:` 줄을 개별 설교자 표기로 우선 적용하고, 누락 시 이헌석 목사를 기본값으로 처리하며 기존 설교 카드와 동기화를 검증
 - [x] YouTube sermon speaker display standardization: 플레이리스트를 즉시 재동기화해 2026-09-13 설교자 정보를 확인하고, 이헌석 목사·조명제 전도사의 공개 표기를 Pastor Hunsuk Lee·Staff Pastor MyeongJe Cho로 통일·검증
 - [x] YouTube sermon scripture metadata: 2026-09-13 설교의 YouTube 설명 본문 메타데이터를 동기화·저장하고 설교·홈 카드에 누락 없이 표시되도록 구현·검증
+- [x] Newsletter subscription and bulletin delivery plan: 구독자 DB 보관·관리자 Gmail 알림·수신 거부·주보 발송 이력·매주일 자동 발송을 위한 데이터·이메일·예약 작업 구조와 승인 항목을 설계
