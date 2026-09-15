@@ -73,6 +73,8 @@ describe("weekly newsletter delivery", () => {
   it("shows staff campaign counts and a guarded manual latest-bulletin send control", () => {
     expect(adminPanel).toContain("trpc.weeklyNewsletter.deliveryStatus.useQuery");
     expect(adminPanel).toContain("trpc.weeklyNewsletter.sendLatestNow.useMutation");
+    expect(adminPanel).toContain("trpc.weeklyNewsletter.setDeliveryEnabled.useMutation");
+    expect(adminPanel).toContain("주간 주보 이메일 자동 발송");
     expect(adminPanel).toContain("deliverySettings?.deliveryEnabled");
     expect(adminPanel).toContain("최근 수신자");
     expect(adminPanel).toContain("오류·반송");

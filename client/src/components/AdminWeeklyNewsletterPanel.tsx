@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 type NewsletterIssue = {
   id: number;
@@ -76,13 +77,20 @@ export default function AdminWeeklyNewsletterPanel() {
     },
     onError: error => setNotice({ kind: "error", text: error.message }),
   });
+  const deliveryEnabledMutation = trpc.weeklyNewsletter.setDeliveryEnabled.useMutation({
+    onSuccess: async settings => {
+      await refresh();
+      setNotice({ kind: "success", text: settings?.deliveryEnabled ? (lang === "ko" ? "주보 이메일 발송을 활성화했습니다." : "Bulletin email delivery is enabled.") : (lang === "ko" ? "주보 이메일 발송을 중지했습니다." : "Bulletin email delivery is paused.") });
+    },
+    onError: error => setNotice({ kind: "error", text: error.message }),
+  });
 
   const issues = (issuesQuery.data ?? []) as NewsletterIssue[];
   const syncStatus = syncStatusQuery.data;
   const deliveryStatus = deliveryStatusQuery.data;
   const deliverySettings = deliveryStatus?.settings;
   const recentCampaign = deliveryStatus?.campaigns?.[0]?.campaign;
-  const pending = syncMutation.isPending || updateMutation.isPending || deliveryMutation.isPending;
+  const pending = syncMutation.isPending || updateMutation.isPending || deliveryMutation.isPending || deliveryEnabledMutation.isPending;
 
   return (
     <section aria-label={lang === "ko" ? "주보 관리" : "Weekly newsletter management"} className="space-y-6">
@@ -129,7 +137,16 @@ export default function AdminWeeklyNewsletterPanel() {
             <h2 className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "주간 주보 이메일" : "Weekly bulletin email"}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#607A91]">{lang === "ko" ? "확인 완료된 구독자에게만 최신 공개 주보를 한 번씩 발송하며, 수신 거부·반송 주소는 자동으로 제외됩니다." : "Only confirmed subscribers receive the latest published bulletin once; unsubscribed and bounced addresses are excluded."}</p>
           </div>
-          <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${deliverySettings?.deliveryEnabled ? "bg-[#EDF5EE] text-[#315C3A]" : "bg-[#F6F0E5] text-[#8A6420]"}`}><MailCheck className="size-3.5" />{deliverySettings?.deliveryEnabled ? (lang === "ko" ? "자동 발송 준비됨" : "Delivery enabled") : (lang === "ko" ? "예약 연결 대기" : "Schedule pending")}</span>
+          <div className="flex items-center gap-3 rounded-lg border border-[#DCE4E7] bg-white px-3 py-2">
+            <span className={`inline-flex w-fit items-center gap-2 text-xs font-semibold ${deliverySettings?.deliveryEnabled ? "text-[#315C3A]" : "text-[#8A6420]"}`}><MailCheck className="size-3.5" />{deliverySettings?.deliveryEnabled ? (lang === "ko" ? "자동 발송 활성" : "Delivery enabled") : (lang === "ko" ? "자동 발송 중지" : "Delivery paused")}</span>
+            <Switch
+              aria-label={lang === "ko" ? "주간 주보 이메일 자동 발송" : "Weekly bulletin email delivery"}
+              checked={Boolean(deliverySettings?.deliveryEnabled)}
+              disabled={!deliverySettings || pending}
+              onCheckedChange={enabled => { setNotice(null); deliveryEnabledMutation.mutate({ enabled }); }}
+              className="data-[state=checked]:bg-[#315C3A] data-[state=unchecked]:bg-[#9AAAB3]"
+            />
+          </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg bg-[#E7EEF1] px-4 py-3 text-sm text-[#163B59]"><span className="block text-xs font-semibold uppercase tracking-wider text-[#607A91]">{lang === "ko" ? "최근 수신자" : "Latest recipients"}</span><strong className="mt-1 block text-xl">{recentCampaign?.totalRecipients ?? 0}</strong></div>
