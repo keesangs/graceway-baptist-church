@@ -44,10 +44,12 @@ import {
   listWeeklyNewsletterIssuesForAdmin,
   listYouTubeVideos,
   saveYouTubePlaylistVideos,
-  subscribeToNewsletter,
+  confirmNewsletterSubscription,
+  requestNewsletterSubscription,
   toggleMeditationCommentLike,
   toggleMeditationLike,
   upsertMeditationNote,
+  unsubscribeNewsletterSubscriber,
   updateCalendarEvent,
   updateDailyMeditation,
   updateGalleryPhoto,
@@ -65,6 +67,11 @@ import { expandCalendarEventOccurrences, getFeaturedSpecialCalendarEventOccurren
 import { syncPublicWeeklyNewsletterArchive } from "./weeklyNewsletterSync";
 import { beginGooglePhotosAuthorization, createGooglePhotosPickerSession, getGooglePhotosPickerSession, importGooglePhotosSelection } from "./googlePhotos";
 import { deleteGooglePhotosConnectionForUser, getGooglePhotosConnectionForUser } from "./db";
+import {
+  sendNewsletterConfirmationRequest,
+  sendNewsletterStaffNotification,
+  sendNewsletterSubscriptionConfirmedEmail,
+} from "./newsletterSubscriptionEmail";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -547,10 +554,7 @@ export const appRouter = router({
 
   // ── Newsletter ─────────────────────────────────────────────────────
   newsletter: router({
-    /**
-     * Public signup from the Home page form. Idempotent by email, so a repeat
-     * submission is treated as success instead of a duplicate-key error.
-     */
+    /** Public signup always persists first and requires the recipient to confirm a fresh link. */
     subscribe: publicProcedure
       .input(
         z.object({
@@ -561,11 +565,59 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ input }) => {
-        const row = await subscribeToNewsletter({
+        const result = await requestNewsletterSubscription({
           email: input.email,
           lang: input.lang,
         });
-        return { success: true, email: row?.email ?? input.email } as const;
+
+        if (result.status === "confirmation-required" && result.confirmationToken && result.confirmationTokenHash) {
+          const emailInput = {
+            subscriberId: result.subscriber.id,
+            email: result.subscriber.email,
+            lang: result.subscriber.lang,
+          } as const;
+          const outcomes = await Promise.allSettled([
+            sendNewsletterConfirmationRequest(emailInput, result.confirmationToken, result.confirmationTokenHash),
+            sendNewsletterStaffNotification(emailInput, "requested"),
+          ]);
+          if (outcomes.some(outcome => outcome.status === "rejected")) {
+            console.warn("[newsletter.subscribe] Email notification failed — subscription request remains stored.");
+          }
+        }
+
+        // Do not reveal whether an arbitrary address is already active, pending,
+        // or suppressed. The public form always provides the same next step.
+        return { success: true, confirmationRequired: true } as const;
+      }),
+
+    confirm: publicProcedure
+      .input(z.object({ token: z.string().min(32).max(128) }))
+      .mutation(async ({ input }) => {
+        const result = await confirmNewsletterSubscription(input.token);
+        if (!result) throw new TRPCError({ code: "BAD_REQUEST", message: "This confirmation link is invalid or has expired." });
+
+        const emailInput = {
+          subscriberId: result.subscriber.id,
+          email: result.subscriber.email,
+          lang: result.subscriber.lang,
+        } as const;
+        const outcomes = await Promise.allSettled([
+          sendNewsletterSubscriptionConfirmedEmail(emailInput, result.unsubscribeToken, result.unsubscribeTokenHash),
+          sendNewsletterStaffNotification(emailInput, "confirmed"),
+        ]);
+        if (outcomes.some(outcome => outcome.status === "rejected")) {
+          console.warn("[newsletter.confirm] Email notification failed — confirmed subscription remains active.");
+        }
+
+        return { success: true } as const;
+      }),
+
+    unsubscribe: publicProcedure
+      .input(z.object({ token: z.string().min(32).max(128) }))
+      .mutation(async ({ input }) => {
+        const subscriber = await unsubscribeNewsletterSubscriber(input.token);
+        if (!subscriber) throw new TRPCError({ code: "BAD_REQUEST", message: "This unsubscribe link is invalid or has expired." });
+        return { success: true } as const;
       }),
 
     /** Church staff view of the subscriber list. */

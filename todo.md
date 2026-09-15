@@ -293,3 +293,8 @@
 - [x] YouTube sermon speaker display standardization: 플레이리스트를 즉시 재동기화해 2026-09-13 설교자 정보를 확인하고, 이헌석 목사·조명제 전도사의 공개 표기를 Pastor Hunsuk Lee·Staff Pastor MyeongJe Cho로 통일·검증
 - [x] YouTube sermon scripture metadata: 2026-09-13 설교의 YouTube 설명 본문 메타데이터를 동기화·저장하고 설교·홈 카드에 누락 없이 표시되도록 구현·검증
 - [x] Newsletter subscription and bulletin delivery plan: 구독자 DB 보관·관리자 Gmail 알림·수신 거부·주보 발송 이력·매주일 자동 발송을 위한 데이터·이메일·예약 작업 구조와 승인 항목을 설계
+- [x] Newsletter subscription lifecycle: 확인 대기·활성·수신 거부 상태, 해시 토큰, 재구독 규칙을 데이터베이스에 추가하고 기존 구독자를 안전하게 보존
+- [x] Newsletter subscription notifications: 구독 요청·확정 시 DB 보관 후 방문자 확인 이메일과 info@ 운영 알림을 전송하되, 전송 실패에도 구독 기록을 보존
+- [x] Newsletter confirmation and unsubscribe pages: 확인·수신 거부 공개 페이지와 단일 사용 토큰 검증을 구현
+- [x] Newsletter admin lifecycle management: 관리자 Subscribers 화면에 상태·언어·확정·수신 거부 정보를 표시하고 발송 준비 상태를 관리
+- [ ] Newsletter subscription verification: 구독·중복·재구독·수신 거부·알림 실패 보존의 회귀 테스트와 실제 테스트 이메일 승인 절차를 완료

@@ -20,6 +20,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import AdminInbox from "@/pages/AdminInbox";
 import AdminDailyBible from "@/pages/AdminDailyBible";
+import NewsletterConfirmation from "@/pages/NewsletterConfirmation";
+import NewsletterUnsubscribe from "@/pages/NewsletterUnsubscribe";
 import { scrollPageToTop } from "@/lib/navigation";
 
 function ScrollToTopOnNavigation() {
@@ -48,6 +50,8 @@ function Router() {
       <Route path="/gallery" component={Gallery} />
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfService} />
+      <Route path="/newsletter/confirm/:token" component={NewsletterConfirmation} />
+      <Route path="/newsletter/unsubscribe/:token" component={NewsletterUnsubscribe} />
       <Route path="/admin" component={AdminInbox} />
       <Route path="/admin/daily-bible" component={AdminDailyBible} />
       <Route path="/404" component={NotFound} />

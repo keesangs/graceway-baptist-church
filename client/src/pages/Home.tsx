@@ -241,14 +241,14 @@ export default function Home() {
   const ko = lang === "ko";
   const [heroVisible, setHeroVisible] = useState(false);
 
-  // Newsletter signup — persists to the newsletter_subscribers table.
+  // Newsletter signup persists first, then asks the recipient to confirm a one-time email link.
   const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const [confirmationRequested, setConfirmationRequested] = useState(false);
   const syncedSermonsQuery = trpc.youtube.list.useQuery(HOME_SERMON_LIST_INPUT);
   const upcomingEventsQuery = trpc.events.upcoming.useQuery();
   const subscribeMutation = trpc.newsletter.subscribe.useMutation({
     onSuccess: () => {
-      setSubscribed(true);
+      setConfirmationRequested(true);
       setEmail("");
     },
   });
@@ -1051,17 +1051,17 @@ export default function Home() {
               <p className="text-white/60 text-sm leading-relaxed">{t("home.newsletterDesc")}</p>
             </div>
             <div>
-              {subscribed ? (
+              {confirmationRequested ? (
                 <div className="flex items-start gap-3 px-4 py-4 bg-[#C9973E]/15 border border-[#C9973E]/40 rounded-sm">
                   <Check size={18} className="text-[#C9973E] shrink-0 mt-0.5" />
                   <div>
                     <p className="text-white text-sm font-semibold">
-                      {ko ? "구독 승인되었습니다" : "You're subscribed"}
+                      {ko ? "이메일에서 구독을 확인해 주세요" : "Please confirm your subscription by email"}
                     </p>
                     <p className="text-white/60 text-xs mt-1">
                       {ko
-                        ? "매주 새로운 소식을 이메일로 보내드립니다."
-                        : "We'll send weekly reflections and announcements to your inbox."}
+                        ? "확인 링크를 선택하면 주간 주보와 교회 소식을 받아보실 수 있습니다."
+                        : "Select the confirmation link to receive weekly bulletins and church updates."}
                     </p>
                   </div>
                 </div>

@@ -7,13 +7,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
-const subscribeToNewsletter = vi.fn();
+const requestNewsletterSubscription = vi.fn();
+const confirmNewsletterSubscription = vi.fn();
+const unsubscribeNewsletterSubscriber = vi.fn();
 const listNewsletterSubscribers = vi.fn();
 const insertContactMessage = vi.fn();
 const listContactMessages = vi.fn();
 
 const notifyOwner = vi.fn();
 const sendContactEmailNotification = vi.fn();
+const sendNewsletterConfirmationRequest = vi.fn();
+const sendNewsletterStaffNotification = vi.fn();
+const sendNewsletterSubscriptionConfirmedEmail = vi.fn();
 
 vi.mock("./_core/notification", () => ({
   notifyOwner: (...args: unknown[]) => notifyOwner(...args),
@@ -23,9 +28,17 @@ vi.mock("./contactEmail", () => ({
   sendContactEmailNotification: (...args: unknown[]) => sendContactEmailNotification(...args),
 }));
 
+vi.mock("./newsletterSubscriptionEmail", () => ({
+  sendNewsletterConfirmationRequest: (...args: unknown[]) => sendNewsletterConfirmationRequest(...args),
+  sendNewsletterStaffNotification: (...args: unknown[]) => sendNewsletterStaffNotification(...args),
+  sendNewsletterSubscriptionConfirmedEmail: (...args: unknown[]) => sendNewsletterSubscriptionConfirmedEmail(...args),
+}));
+
 vi.mock("./db", () => ({
   // Engagement helpers under test
-  subscribeToNewsletter: (...args: unknown[]) => subscribeToNewsletter(...args),
+  requestNewsletterSubscription: (...args: unknown[]) => requestNewsletterSubscription(...args),
+  confirmNewsletterSubscription: (...args: unknown[]) => confirmNewsletterSubscription(...args),
+  unsubscribeNewsletterSubscriber: (...args: unknown[]) => unsubscribeNewsletterSubscriber(...args),
   listNewsletterSubscribers: (...args: unknown[]) => listNewsletterSubscribers(...args),
   insertContactMessage: (...args: unknown[]) => insertContactMessage(...args),
   listContactMessages: (...args: unknown[]) => listContactMessages(...args),
@@ -66,11 +79,19 @@ beforeEach(() => {
   vi.clearAllMocks();
   notifyOwner.mockResolvedValue(true);
   sendContactEmailNotification.mockResolvedValue({ id: "email_123" });
+  sendNewsletterConfirmationRequest.mockResolvedValue({ id: "email_confirm_123" });
+  sendNewsletterStaffNotification.mockResolvedValue({ id: "email_staff_123" });
+  sendNewsletterSubscriptionConfirmedEmail.mockResolvedValue({ id: "email_welcome_123" });
 });
 
 describe("newsletter.subscribe", () => {
   it("accepts an anonymous visitor and normalizes the email to lowercase", async () => {
-    subscribeToNewsletter.mockResolvedValue({ email: "visitor@example.com", lang: "en" });
+    requestNewsletterSubscription.mockResolvedValue({
+      subscriber: { id: 31, email: "visitor@example.com", lang: "en" },
+      status: "confirmation-required",
+      confirmationToken: "a".repeat(43),
+      confirmationTokenHash: "b".repeat(64),
+    });
     const caller = appRouter.createCaller(makeContext());
 
     const result = await caller.newsletter.subscribe({
@@ -78,20 +99,27 @@ describe("newsletter.subscribe", () => {
       lang: "en",
     });
 
-    expect(result).toEqual({ success: true, email: "visitor@example.com" });
-    expect(subscribeToNewsletter).toHaveBeenCalledWith({
+    expect(result).toEqual({ success: true, confirmationRequired: true });
+    expect(requestNewsletterSubscription).toHaveBeenCalledWith({
       email: "visitor@example.com",
       lang: "en",
     });
+    expect(sendNewsletterConfirmationRequest).toHaveBeenCalledOnce();
+    expect(sendNewsletterStaffNotification).toHaveBeenCalledWith(expect.objectContaining({ email: "visitor@example.com" }), "requested");
   });
 
   it("stores the Korean language preference when the site is in KO mode", async () => {
-    subscribeToNewsletter.mockResolvedValue({ email: "korean@example.com", lang: "ko" });
+    requestNewsletterSubscription.mockResolvedValue({
+      subscriber: { id: 32, email: "korean@example.com", lang: "ko" },
+      status: "confirmation-required",
+      confirmationToken: "c".repeat(43),
+      confirmationTokenHash: "d".repeat(64),
+    });
     const caller = appRouter.createCaller(makeContext());
 
     await caller.newsletter.subscribe({ email: "korean@example.com", lang: "ko" });
 
-    expect(subscribeToNewsletter).toHaveBeenCalledWith({
+    expect(requestNewsletterSubscription).toHaveBeenCalledWith({
       email: "korean@example.com",
       lang: "ko",
     });
@@ -101,7 +129,7 @@ describe("newsletter.subscribe", () => {
     const caller = appRouter.createCaller(makeContext());
 
     await expect(caller.newsletter.subscribe({ email: "not-an-email", lang: "en" })).rejects.toThrow();
-    expect(subscribeToNewsletter).not.toHaveBeenCalled();
+    expect(requestNewsletterSubscription).not.toHaveBeenCalled();
   });
 
   it("keeps the subscriber list admin-only", async () => {

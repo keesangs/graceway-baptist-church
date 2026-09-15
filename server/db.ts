@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   calendarEvents,
@@ -14,6 +14,7 @@ import {
   InsertMeditationComment,
   InsertMeditationNote,
   InsertNewsletterSubscriber,
+  newsletterSubscriptionTokens,
   InsertPhotoAlbum,
   InsertWeeklyNewsletterIssue,
   InsertUser,
@@ -34,6 +35,7 @@ import {
   youtubeVideos,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { createNewsletterToken, getNewsletterTokenExpiry, hashNewsletterToken, type NewsletterTokenPurpose } from "./newsletterSubscription";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -208,29 +210,147 @@ export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
   return { added, updated, total: videos.length };
 }
 
-/**
- * Newsletter signup. Idempotent by email: a repeat submission refreshes the
- * language preference and re-activates a previously unsubscribed address rather
- * than erroring out, so the visitor always sees a success state.
- */
-export async function subscribeToNewsletter(data: InsertNewsletterSubscriber) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+export type NewsletterSubscriberStatus = "pending" | "active" | "unsubscribed" | "suppressed";
+export type NewsletterSubscriptionRequest = {
+  email: string;
+  lang: "en" | "ko";
+};
+export type NewsletterSubscriptionRequestResult = {
+  subscriber: typeof newsletterSubscribers.$inferSelect;
+  status: "confirmation-required" | "already-active" | "suppressed";
+  confirmationToken: string | null;
+  confirmationTokenHash: string | null;
+};
 
-  await db
-    .insert(newsletterSubscribers)
-    .values(data)
-    .onDuplicateKeyUpdate({
-      set: { lang: data.lang ?? "en", isActive: 1 },
-    });
+async function getNewsletterSubscriberByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return null;
 
   const [row] = await db
     .select()
     .from(newsletterSubscribers)
-    .where(eq(newsletterSubscribers.email, data.email))
+    .where(eq(newsletterSubscribers.email, email))
     .limit(1);
+  return row ?? null;
+}
 
-  return row;
+async function createNewsletterTokenForSubscriber(subscriberId: number, purpose: NewsletterTokenPurpose) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const now = new Date();
+  const token = createNewsletterToken();
+  const tokenHash = hashNewsletterToken(token);
+
+  // A newer request supersedes any previously unused token for the same action.
+  await db
+    .update(newsletterSubscriptionTokens)
+    .set({ usedAt: now })
+    .where(and(
+      eq(newsletterSubscriptionTokens.subscriberId, subscriberId),
+      eq(newsletterSubscriptionTokens.purpose, purpose),
+      isNull(newsletterSubscriptionTokens.usedAt),
+    ));
+
+  await db.insert(newsletterSubscriptionTokens).values({
+    subscriberId,
+    purpose,
+    tokenHash,
+    expiresAt: getNewsletterTokenExpiry(now, purpose),
+  });
+
+  return { token, tokenHash };
+}
+
+/**
+ * A public signup never silently reactivates a prior unsubscribe. New and
+ * returning recipients must confirm a fresh one-time email link first.
+ */
+export async function requestNewsletterSubscription(data: NewsletterSubscriptionRequest): Promise<NewsletterSubscriptionRequestResult> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const now = new Date();
+  let subscriber = await getNewsletterSubscriberByEmail(data.email);
+
+  if (subscriber?.status === "active") {
+    return { subscriber, status: "already-active", confirmationToken: null, confirmationTokenHash: null };
+  }
+
+  if (subscriber?.status === "suppressed") {
+    return { subscriber, status: "suppressed", confirmationToken: null, confirmationTokenHash: null };
+  }
+
+  if (subscriber) {
+    await db.update(newsletterSubscribers).set({
+      lang: data.lang,
+      status: "pending",
+      isActive: 0,
+      confirmedAt: null,
+      lastRequestAt: now,
+    }).where(eq(newsletterSubscribers.id, subscriber.id));
+  } else {
+    const [result] = await db.insert(newsletterSubscribers).values({
+      email: data.email,
+      lang: data.lang,
+      status: "pending",
+      isActive: 0,
+      lastRequestAt: now,
+    });
+    subscriber = (await getNewsletterSubscriberByEmail(data.email)) ?? null;
+    if (!subscriber || !result.insertId) throw new Error("Newsletter subscription record could not be created");
+  }
+
+  const refreshed = await getNewsletterSubscriberByEmail(data.email);
+  if (!refreshed) throw new Error("Newsletter subscription record could not be loaded");
+  const token = await createNewsletterTokenForSubscriber(refreshed.id, "confirm");
+  return { subscriber: refreshed, status: "confirmation-required", confirmationToken: token.token, confirmationTokenHash: token.tokenHash };
+}
+
+async function findUsableNewsletterToken(rawToken: string, purpose: NewsletterTokenPurpose) {
+  const db = await getDb();
+  if (!db) return null;
+  const [token] = await db.select().from(newsletterSubscriptionTokens).where(and(
+    eq(newsletterSubscriptionTokens.tokenHash, hashNewsletterToken(rawToken)),
+    eq(newsletterSubscriptionTokens.purpose, purpose),
+    isNull(newsletterSubscriptionTokens.usedAt),
+    gt(newsletterSubscriptionTokens.expiresAt, new Date()),
+  )).limit(1);
+  return token ?? null;
+}
+
+export async function confirmNewsletterSubscription(rawToken: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const token = await findUsableNewsletterToken(rawToken, "confirm");
+  if (!token) return null;
+
+  const subscriber = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.id, token.subscriberId)).limit(1);
+  if (!subscriber[0] || subscriber[0].status === "suppressed") return null;
+
+  const now = new Date();
+  await db.update(newsletterSubscriptionTokens).set({ usedAt: now }).where(eq(newsletterSubscriptionTokens.id, token.id));
+  await db.update(newsletterSubscribers).set({ status: "active", isActive: 1, confirmedAt: now, unsubscribedAt: null }).where(eq(newsletterSubscribers.id, token.subscriberId));
+  const unsubscribe = await createNewsletterTokenForSubscriber(token.subscriberId, "unsubscribe");
+  const [updated] = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.id, token.subscriberId)).limit(1);
+  return updated ? { subscriber: updated, unsubscribeToken: unsubscribe.token, unsubscribeTokenHash: unsubscribe.tokenHash } : null;
+}
+
+export async function unsubscribeNewsletterSubscriber(rawToken: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const token = await findUsableNewsletterToken(rawToken, "unsubscribe");
+  if (!token) return null;
+
+  const now = new Date();
+  await db.update(newsletterSubscriptionTokens).set({ usedAt: now }).where(eq(newsletterSubscriptionTokens.id, token.id));
+  await db.update(newsletterSubscribers).set({ status: "unsubscribed", isActive: 0, unsubscribedAt: now }).where(eq(newsletterSubscribers.id, token.subscriberId));
+  const [subscriber] = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.id, token.subscriberId)).limit(1);
+  return subscriber ?? null;
+}
+
+export async function subscribeToNewsletter(data: InsertNewsletterSubscriber) {
+  // Deprecated compatibility wrapper. New public callers must use requestNewsletterSubscription.
+  return requestNewsletterSubscription({ email: data.email, lang: data.lang ?? "en" });
 }
 
 export async function listNewsletterSubscribers() {
@@ -239,8 +359,7 @@ export async function listNewsletterSubscribers() {
   return db
     .select()
     .from(newsletterSubscribers)
-    .where(eq(newsletterSubscribers.isActive, 1))
-    .orderBy(desc(newsletterSubscribers.createdAt));
+    .orderBy(desc(newsletterSubscribers.lastRequestAt), desc(newsletterSubscribers.createdAt));
 }
 
 // ── Weekly Newsletter Issues ─────────────────────────────────────────────────

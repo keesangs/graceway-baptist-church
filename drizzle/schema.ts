@@ -81,14 +81,40 @@ export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
   email: varchar("email", { length: 320 }).notNull().unique(),
   /** Preferred language at signup time, used when sending the newsletter. */
   lang: mysqlEnum("lang", ["en", "ko"]).default("en").notNull(),
+  /** Existing subscribers default to active; new public requests explicitly begin pending confirmation. */
+  status: mysqlEnum("status", ["pending", "active", "unsubscribed", "suppressed"]).default("active").notNull(),
   /** Set to false instead of deleting the row, so unsubscribes stay auditable. */
   isActive: int("isActive").default(1).notNull(),
+  /** Set only after the recipient uses a valid confirmation link. */
+  confirmedAt: timestamp("confirmedAt"),
+  /** Preserved for staff audit when a recipient leaves the newsletter. */
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  /** Latest public signup request, including a re-subscription attempt. */
+  lastRequestAt: timestamp("lastRequestAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  statusCreatedIdx: index("newsletter_subscriber_status_created_idx").on(table.status, table.createdAt),
+}));
 
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+// One-time public tokens are persisted as hashes only. The email URL carries the
+// raw random token, which is never stored or emitted in application logs.
+export const newsletterSubscriptionTokens = mysqlTable("newsletter_subscription_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  subscriberId: int("subscriberId").notNull(),
+  purpose: mysqlEnum("purpose", ["confirm", "unsubscribe"]).notNull(),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  subscriberPurposeCreatedIdx: index("newsletter_token_subscriber_purpose_created_idx").on(table.subscriberId, table.purpose, table.createdAt),
+}));
+
+export type NewsletterSubscriptionToken = typeof newsletterSubscriptionTokens.$inferSelect;
 
 // Weekly newsletter issues — public PDF copies of the church bulletin. The PDF
 // bytes live in storage; this table tracks the Drive source, public status, and

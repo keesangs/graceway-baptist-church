@@ -71,6 +71,13 @@ const TOPIC_STYLES: Record<string, string> = {
   general: "bg-[#242A30]/8 text-[#242A30]/70 border-[#242A30]/15",
 };
 
+const SUBSCRIBER_STATUS_STYLES: Record<string, string> = {
+  pending: "bg-[#F6F0E5] text-[#8A6420]",
+  active: "bg-[#EDF5EE] text-[#315C3A]",
+  unsubscribed: "bg-[#E7EEF1] text-[#607A91]",
+  suppressed: "bg-red-50 text-red-700",
+};
+
 function formatDateTime(value: Date | string) {
   return new Date(value).toLocaleString("en-US", {
     year: "numeric",
@@ -223,8 +230,8 @@ export default function AdminInbox() {
       ]);
     } else if (tab === "subscribers") {
       downloadCsv("graceway-newsletter-subscribers.csv", [
-        ["Subscribed", "Email", "Language"],
-        ...subscribers.map(s => [formatDateTime(s.createdAt), s.email, s.lang.toUpperCase()]),
+        ["Requested", "Email", "Language", "Status", "Confirmed", "Unsubscribed"],
+        ...subscribers.map(s => [formatDateTime(s.lastRequestAt ?? s.createdAt), s.email, s.lang.toUpperCase(), s.status, s.confirmedAt ? formatDateTime(s.confirmedAt) : "", s.unsubscribedAt ? formatDateTime(s.unsubscribedAt) : ""]),
       ]);
     }
   };
@@ -433,16 +440,34 @@ export default function AdminInbox() {
           <EmptyState
             icon={Mail}
             title="No subscribers yet"
-            body="Visitors who sign up through the newsletter form on the Home page will be listed here."
+            body="Newsletter requests and their confirmation status will appear here."
           />
         ) : (
-          <div className="overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB]">
-            <table className="w-full text-sm">
+          <>
+            <div className="space-y-3 md:hidden">
+              {subscribers.map(s => (
+                <article key={s.id} className="rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <a href={`mailto:${s.email}`} className="min-w-0 truncate text-sm font-semibold text-[#163B59] hover:underline">{s.email}</a>
+                    <span className={`shrink-0 rounded-sm px-2 py-1 text-xs font-semibold ${SUBSCRIBER_STATUS_STYLES[s.status] ?? SUBSCRIBER_STATUS_STYLES.pending}`}>{s.status}</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#DCE4E7] pt-3 text-xs text-[#607A91]">
+                    <p><span className="block font-semibold uppercase tracking-wide text-[#163B59]">Language</span><span className="mt-1 inline-block rounded-sm bg-[#E7EEF1] px-2 py-0.5 font-semibold text-[#163B59]">{s.lang.toUpperCase()}</span></p>
+                    <p><span className="block font-semibold uppercase tracking-wide text-[#163B59]">Requested</span><span className="mt-1 block leading-relaxed">{formatDateTime(s.lastRequestAt ?? s.createdAt)}</span></p>
+                    <p className="col-span-2"><span className="block font-semibold uppercase tracking-wide text-[#163B59]">Confirmed</span><span className="mt-1 block leading-relaxed">{s.confirmedAt ? formatDateTime(s.confirmedAt) : "—"}</span></p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] md:block">
+              <table className="min-w-[760px] w-full text-sm">
               <thead>
                 <tr className="bg-[#E7EEF1] text-left">
                   <th className="px-6 py-3 font-semibold text-[#163B59]">Email</th>
                   <th className="w-32 px-6 py-3 font-semibold text-[#163B59]">Language</th>
-                  <th className="w-56 px-6 py-3 font-semibold text-[#163B59]">Subscribed</th>
+                  <th className="w-36 px-6 py-3 font-semibold text-[#163B59]">Status</th>
+                  <th className="w-48 px-6 py-3 font-semibold text-[#163B59]">Requested</th>
+                  <th className="w-48 px-6 py-3 font-semibold text-[#163B59]">Confirmed</th>
                 </tr>
               </thead>
               <tbody>
@@ -465,13 +490,20 @@ export default function AdminInbox() {
                       </span>
                     </td>
                     <td className="px-6 py-3.5 text-[#607A91]">
-                      {formatDateTime(s.createdAt)}
+                      <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${SUBSCRIBER_STATUS_STYLES[s.status] ?? SUBSCRIBER_STATUS_STYLES.pending}`}>{s.status}</span>
+                    </td>
+                    <td className="px-6 py-3.5 text-[#607A91]">
+                      {formatDateTime(s.lastRequestAt ?? s.createdAt)}
+                    </td>
+                    <td className="px-6 py-3.5 text-[#607A91]">
+                      {s.confirmedAt ? formatDateTime(s.confirmedAt) : "—"}
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         ) : tab === "events" ? <AdminEventsPanel /> : tab === "gallery" ? <AdminGalleryPanel /> : <AdminWeeklyNewsletterPanel />}
       </div>
 
