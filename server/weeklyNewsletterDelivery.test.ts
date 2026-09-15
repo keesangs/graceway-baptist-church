@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { buildWeeklyNewsletterEmail } from "./weeklyNewsletterDelivery";
+import { buildWeeklyNewsletterBulletinUrl, buildWeeklyNewsletterEmail } from "./weeklyNewsletterDelivery";
 import { isSundayMorningNewsletterSyncTime } from "./weeklyNewsletterScheduledHandler";
 
 const deliveryService = readFileSync(new URL("./weeklyNewsletterDelivery.ts", import.meta.url), "utf8");
@@ -27,6 +27,24 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain("9월 20일 주보");
     expect(email.html).toContain("safe-test-token");
     expect(email.text).toContain("뉴스레터 구독 취소");
+  });
+
+  it("converts site-local bulletin storage paths to canonical HTTPS links for email clients", () => {
+    const bulletinUrl = buildWeeklyNewsletterBulletinUrl("/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf");
+    const email = buildWeeklyNewsletterEmail({
+      email: "reader@example.com",
+      lang: "en",
+      issueDate: "2026-09-13",
+      titleKo: "9월 13일 주보",
+      titleEn: "September 13 Bulletin",
+      bulletinUrl: "/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf",
+      unsubscribeToken: "safe-test-token",
+    });
+
+    expect(bulletinUrl).toBe("https://graceway-baptist.org/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf");
+    expect(email.html).toContain(`href="${bulletinUrl}"`);
+    expect(email.text).toContain(bulletinUrl);
+    expect(email.html).not.toContain("http:///");
   });
 
   it("uses issue and subscriber uniqueness plus provider idempotency to prevent duplicate sends", () => {

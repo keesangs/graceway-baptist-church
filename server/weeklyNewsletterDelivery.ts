@@ -16,7 +16,7 @@ import {
   refreshWeeklyNewsletterCampaignCounts,
   updateWeeklyNewsletterDeliverySettings,
 } from "./db";
-import { buildNewsletterSubscriptionUrl } from "./newsletterSubscription";
+import { buildNewsletterSubscriptionUrl, NEWSLETTER_PUBLIC_ORIGIN } from "./newsletterSubscription";
 import { NEWSLETTER_FROM, NEWSLETTER_NOTIFICATION_RECIPIENT } from "./newsletterSubscriptionEmail";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
@@ -43,6 +43,16 @@ function campaignSubject(issueDate: string) {
   return `Graceway Weekly Bulletin — ${issueDate}`;
 }
 
+export function buildWeeklyNewsletterBulletinUrl(storedUrl: string) {
+  const candidate = storedUrl.trim();
+  const resolved = new URL(candidate || "/events", NEWSLETTER_PUBLIC_ORIGIN);
+
+  // The bulletin archive stores site-local paths such as /manus-storage/….
+  // Email clients require a complete HTTPS URL and must never receive http:///….
+  if (resolved.origin === NEWSLETTER_PUBLIC_ORIGIN) return resolved.toString();
+  return resolved.protocol === "https:" ? resolved.toString() : new URL("/events", NEWSLETTER_PUBLIC_ORIGIN).toString();
+}
+
 export function buildWeeklyNewsletterEmail(input: {
   email: string;
   lang: "ko" | "en";
@@ -56,6 +66,7 @@ export function buildWeeklyNewsletterEmail(input: {
   const title = (ko ? input.titleKo : input.titleEn) || input.titleKo;
   const date = bulletinDate(input.issueDate, input.lang);
   const unsubscribeUrl = buildNewsletterSubscriptionUrl("unsubscribe", input.unsubscribeToken);
+  const bulletinUrl = buildWeeklyNewsletterBulletinUrl(input.bulletinUrl);
   const heading = ko ? "이번 주 교회 주보" : "This Week's Church Bulletin";
   const intro = ko
     ? "그레이스웨이 침례교회의 이번 주 주보와 주요 안내를 확인해 주세요."
@@ -69,15 +80,15 @@ export function buildWeeklyNewsletterEmail(input: {
     to: [input.email],
     replyTo: NEWSLETTER_NOTIFICATION_RECIPIENT,
     subject: ko ? `그레이스웨이 주간 주보 — ${date}` : `Graceway Weekly Bulletin — ${date}`,
-    text: [heading, "", title, intro, "", `${viewLabel}: ${input.bulletinUrl}`, `${downloadLabel}: ${input.bulletinUrl}`, "", `${unsubscribeLabel}: ${unsubscribeUrl}`].join("\n"),
+    text: [heading, "", title, intro, "", `${viewLabel}: ${bulletinUrl}`, `${downloadLabel}: ${bulletinUrl}`, "", `${unsubscribeLabel}: ${unsubscribeUrl}`].join("\n"),
     html: [
       '<div style="max-width:620px;margin:0 auto;font-family:Arial,sans-serif;color:#242A30;line-height:1.6">',
       '<p style="color:#C9973E;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">Graceway Baptist Church</p>',
       `<h1 style="color:#17324D;font-family:Georgia,serif">${escapeHtml(heading)}</h1>`,
       `<p style="font-size:18px;font-weight:700;color:#17324D">${escapeHtml(title)}</p>`,
       `<p>${escapeHtml(intro)}</p>`,
-      `<p><a href="${escapeHtml(input.bulletinUrl)}" style="display:inline-block;background:#17324D;color:#fff;padding:12px 18px;text-decoration:none">${escapeHtml(viewLabel)}</a></p>`,
-      `<p><a href="${escapeHtml(input.bulletinUrl)}" style="color:#2F6F9F">${escapeHtml(downloadLabel)}</a></p>`,
+      `<p><a href="${escapeHtml(bulletinUrl)}" style="display:inline-block;background:#17324D;color:#fff;padding:12px 18px;text-decoration:none">${escapeHtml(viewLabel)}</a></p>`,
+      `<p><a href="${escapeHtml(bulletinUrl)}" style="color:#2F6F9F">${escapeHtml(downloadLabel)}</a></p>`,
       '<hr style="border:0;border-top:1px solid #e2e8ea;margin:28px 0">',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
       "</div>",
