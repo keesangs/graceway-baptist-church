@@ -338,7 +338,7 @@ export default function Events() {
           </div>
         </section>
 
-        <div id="events-calendar" className="scroll-mt-24 grid gap-7 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)] xl:items-start">
+        <div id="events-calendar" className="scroll-mt-24 grid gap-7 2xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)] 2xl:items-start">
           <section className="brand-surface min-w-0 rounded-xl border border-[#DCE4E7] p-4 sm:p-6">
             <div className="mb-5 flex items-start gap-3">
               <div className="mt-1 rounded-sm bg-[#F6F0E5] p-2 text-[#8A6420]"><CalendarDays className="size-5" /></div>

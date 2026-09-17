@@ -309,3 +309,4 @@
 - [x] iPad monthly calendar readability: 월간 일정 안내 문구를 달력 날짜 그리드 밖의 전용 영역에 배치하고 iPad·모바일·데스크톱에서 겹침 없이 검증
 - [x] Production default domain: graceway-baptist.org를 운영 배포의 정식 기본 주소로 확인·설정하고 Manus 서브도메인 링크가 기본 공개 주소로 사용되지 않도록 검증
 - [x] iPad calendar detail-panel overlap fix: iPad Safari에서 월간 일정 날짜 그리드와 ‘행사 안내’ 상세 패널을 독립 흐름·안전 여백으로 분리하고 실제 기기 폭에서 재검증
+- [x] iPad Safari calendar detail-panel hard separation: iPad Safari에서 계속되는 행사 안내 패널 겹침을 해결하기 위해 상세 패널을 달력 그리드의 DOM 흐름과 완전히 분리하고 태블릿 실제 폭에서 재검증
