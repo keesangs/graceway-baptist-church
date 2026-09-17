@@ -6,7 +6,16 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { startLogin } from "./const";
+import { canonicalPublicUrlForBrowser } from "./lib/canonicalPublicDomain";
 import "./index.css";
+
+const canonicalPublicUrl = canonicalPublicUrlForBrowser(window.location);
+if (canonicalPublicUrl) {
+  // The managed transparent proxy may replace the original host before it
+  // reaches Express. Redirect in the browser as a safe final guard so shared
+  // Manus aliases never become the public address of record.
+  window.location.replace(canonicalPublicUrl);
+}
 
 const queryClient = new QueryClient();
 
