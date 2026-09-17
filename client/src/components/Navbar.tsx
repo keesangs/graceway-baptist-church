@@ -43,7 +43,7 @@ export default function Navbar() {
   ];
 
   const navLinkClass = (active: boolean) =>
-    `group relative rounded-sm text-sm font-medium tracking-wide transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D9B87A] ${
+    `group relative inline-flex min-h-11 items-center whitespace-nowrap rounded-sm px-1.5 text-sm font-medium leading-none tracking-wide transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D9B87A] ${
       active ? "text-[#D9B87A]" : "text-white/82 hover:text-white"
     }`;
 
@@ -74,7 +74,7 @@ export default function Navbar() {
           <BrandLogo variant="on-dark" priority />
         </Link>
 
-        <nav className={`hidden items-center transition-[gap] duration-300 md:flex ${scrolled ? "gap-4 lg:gap-5" : "gap-5 lg:gap-6"}`} aria-label="Primary navigation">
+        <nav className={`hidden items-center transition-[gap] duration-300 xl:flex ${scrolled ? "gap-2 2xl:gap-5" : "gap-3 2xl:gap-6"}`} aria-label="Primary navigation">
           {navLinks.map((link) => {
             const active = location === link.href;
             return (
@@ -127,12 +127,12 @@ export default function Navbar() {
             <span className={lang === "en" ? "text-[#D9B87A]" : "text-white/50"}>EN</span>
           </button>
 
-          <Link href="/connect" className="ml-1 rounded-sm bg-[#B9955E] px-5 py-2 text-sm font-semibold tracking-wide text-[#0B2C43] transition-colors duration-200 hover:bg-[#C8A977] active:scale-[0.97]">
+          <Link href="/connect" className="ml-1 whitespace-nowrap rounded-sm bg-[#B9955E] px-4 py-2.5 text-sm font-semibold leading-none tracking-wide text-[#0B2C43] transition-colors duration-200 hover:bg-[#C8A977] active:scale-[0.97]">
             {t("nav.planVisit")}
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3 md:hidden">
+        <div className="flex items-center gap-3 xl:hidden">
           <button
             onClick={toggleLang}
             className="flex items-center gap-1 rounded-full border border-white/25 px-2.5 py-1 text-[0.65rem] font-bold tracking-widest text-white/80 transition-all duration-200 hover:text-white"
@@ -149,8 +149,8 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-[#163B59] md:hidden">
-          <nav className="container flex flex-col gap-1 py-4" aria-label="Mobile navigation">
+        <div className="border-t border-white/10 bg-[#163B59] xl:hidden">
+          <nav className="container flex flex-col gap-1 py-4" aria-label="Compact navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

@@ -6,11 +6,11 @@ const source = (relativePath: string) =>
   readFileSync(resolve(process.cwd(), relativePath), "utf8");
 
 describe("critical navigation and contact-form accessibility", () => {
-  it("keeps primary and mobile navigation labelled with visible keyboard focus treatment", () => {
+  it("keeps primary and compact navigation labelled with visible keyboard focus treatment", () => {
     const navbar = source("client/src/components/Navbar.tsx");
 
     expect(navbar).toContain('aria-label="Primary navigation"');
-    expect(navbar).toContain('aria-label="Mobile navigation"');
+    expect(navbar).toContain('aria-label="Compact navigation"');
     expect(navbar).toContain("aria-expanded={mobileOpen}");
     expect(navbar).toContain("focus-visible:outline-[#D9B87A]");
   });

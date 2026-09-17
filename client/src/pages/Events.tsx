@@ -360,6 +360,10 @@ export default function Events() {
                 ))}
               </div>
             </div>
+            <div aria-label={lang === "ko" ? "월간 일정 안내" : "Monthly calendar guidance"} className="mb-5 flex items-start gap-3 rounded-lg border border-[#DCE4E7] bg-[#F4F6F7] px-4 py-3">
+              <CalendarDays aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[#B07834]" />
+              <p className="text-xs leading-relaxed text-[#4F697E]">{lang === "ko" ? "금색으로 강조된 날짜에 예정된 일정이 있습니다. 날짜를 선택하면 자세한 내용을 확인할 수 있습니다. 모든 시간은 교회 현지 시간(PT) 기준입니다." : "Gold-highlighted dates have scheduled events. Select a date to see details. All times are shown in church local time (PT)."}</p>
+            </div>
             <Calendar
               mode="single"
               month={month}
@@ -370,7 +374,6 @@ export default function Events() {
               modifiersClassNames={{ hasEvent: "bg-[#C9973E]/20 text-[#163B59] font-bold" }}
               className="w-full p-0 [&_.rdp-root]:w-full [&_.rdp-month]:w-full [&_.rdp-month_grid]:w-full"
             />
-            <p className="mt-4 text-xs leading-relaxed text-[#607A91]">{lang === "ko" ? "금색으로 강조된 날짜에 예정된 일정이 있습니다. 날짜를 선택하면 자세한 내용을 확인할 수 있습니다. 모든 시간은 교회 현지 시간(PT) 기준입니다." : "Gold-highlighted dates have scheduled events. Select a date to see details. All times are shown in church local time (PT)."}</p>
           </section>
 
           <section aria-live="polite" className="rounded-xl border border-[#DCE4E7] bg-white p-5 sm:p-6">

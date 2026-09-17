@@ -305,3 +305,5 @@
 - [x] Weekly newsletter Sunday schedule: 매주 일요일 오전 9시 America/Los_Angeles에 최신 주보를 한 번만 발송하는 인증·멱등 예약 작업을 생성·활성화
 - [ ] Weekly newsletter live verification: 실제 활성 구독자 발송·예약 실행·발송 이력·관리자 운영 알림을 검증
 - [x] Weekly newsletter email PDF link repair: 상대 저장소 경로가 `http:///`로 변환되는 문제를 정식 HTTPS 주보 링크로 수정하고 실제 이메일 수신·보기·다운로드 흐름을 재검증
+- [x] iPad navigation spacing: iPad 가로 폭에서 상단 메뉴가 줄바꿈·밀집되지 않도록 태블릿 전용 탐색 전환과 터치 영역을 구현·검증
+- [x] iPad monthly calendar readability: 월간 일정 안내 문구를 달력 날짜 그리드 밖의 전용 영역에 배치하고 iPad·모바일·데스크톱에서 겹침 없이 검증
