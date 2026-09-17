@@ -9,3 +9,5 @@
 ## 2026-09-17 final production check
 
 After adding the browser-entry fallback for the two project-owned Manus aliases, a visit to `https://graceway-baptist.manus.space/events?month=2026-09` completed at `https://graceway-baptist.org/events?month=2026-09`. The Events path and `month=2026-09` query were retained. The apex custom domain therefore remains the public address shown after navigation even when a legacy Manus alias is opened directly.
+
+The established `https://www.graceway-baptist.org/events?month=2026-09` route also completed at the same apex address with its path and query preserved. The current public-address behavior is therefore `www` and project-owned Manus aliases → `https://graceway-baptist.org`.
