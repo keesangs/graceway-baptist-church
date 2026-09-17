@@ -338,8 +338,8 @@ export default function Events() {
           </div>
         </section>
 
-        <div id="events-calendar" className="scroll-mt-24 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
-          <section className="brand-surface rounded-xl border border-[#DCE4E7] p-4 sm:p-6">
+        <div id="events-calendar" className="scroll-mt-24 grid gap-7 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)] xl:items-start">
+          <section className="brand-surface min-w-0 rounded-xl border border-[#DCE4E7] p-4 sm:p-6">
             <div className="mb-5 flex items-start gap-3">
               <div className="mt-1 rounded-sm bg-[#F6F0E5] p-2 text-[#8A6420]"><CalendarDays className="size-5" /></div>
               <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">{t("home.calendar")}</p><h2 className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{lang === "ko" ? "월간 일정" : "Monthly calendar"}</h2></div>
@@ -376,7 +376,7 @@ export default function Events() {
             />
           </section>
 
-          <section aria-live="polite" className="rounded-xl border border-[#DCE4E7] bg-white p-5 sm:p-6">
+          <section aria-live="polite" className="min-w-0 rounded-xl border border-[#DCE4E7] bg-white p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">{selectedDate ? (lang === "ko" ? "선택한 날짜" : "Selected date") : (lang === "ko" ? "행사 안내" : "Event details")}</p>
             <h2 className="mt-1 font-serif text-2xl font-semibold text-[#163B59]">{selectedDate ? selectedDate.toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", { month: "long", day: "numeric", weekday: "long" }) : (lang === "ko" ? "날짜를 선택하세요" : "Select a date")}</h2>
             <div className="mt-5 space-y-3">

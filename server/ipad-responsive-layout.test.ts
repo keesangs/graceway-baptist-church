@@ -20,4 +20,12 @@ describe("iPad responsive layout", () => {
     expect(eventsSource.indexOf(guidance)).toBeLessThan(eventsSource.indexOf("<Calendar\n"));
     expect(eventsSource).toContain("rounded-lg border border-[#DCE4E7] bg-[#F4F6F7]");
   });
+
+  it("stacks the calendar and event-details panel throughout iPad widths before using the desktop two-column layout", () => {
+    const calendarLayout = 'id="events-calendar" className="scroll-mt-24 grid gap-7 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)] xl:items-start"';
+
+    expect(eventsSource).toContain(calendarLayout);
+    expect(eventsSource).toContain('aria-live="polite" className="min-w-0 rounded-xl');
+    expect(eventsSource).not.toContain('id="events-calendar" className="scroll-mt-24 grid gap-7 lg:grid-cols');
+  });
 });
