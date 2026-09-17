@@ -11,6 +11,7 @@ import { serveStatic, setupVite } from "./vite";
 import { registerWeeklyNewsletterScheduledHandler } from "../weeklyNewsletterScheduledHandler";
 import { registerWeeklyNewsletterDeliveryWebhook } from "../weeklyNewsletterDeliveryWebhook";
 import { registerGooglePhotosRoutes } from "../googlePhotosRoutes";
+import { registerCanonicalPublicDomainRedirect } from "../canonicalDomain";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -34,6 +35,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  registerCanonicalPublicDomainRedirect(app);
   registerWeeklyNewsletterDeliveryWebhook(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
