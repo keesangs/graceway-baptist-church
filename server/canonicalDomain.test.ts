@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CANONICAL_PUBLIC_ORIGIN, canonicalPublicUrlForHost } from "./canonicalDomain";
+import { CANONICAL_PUBLIC_ORIGIN, canonicalPublicUrlForHost, originalPublicHostname } from "./canonicalDomain";
 
 describe("canonical public domain", () => {
   it("redirects project-owned Manus public aliases to the HTTPS apex domain while preserving the path and query", () => {
@@ -16,5 +16,21 @@ describe("canonical public domain", () => {
     expect(canonicalPublicUrlForHost("www.graceway-baptist.org", "/")).toBeNull();
     expect(canonicalPublicUrlForHost("3000-preview.manus.computer", "/")).toBeNull();
     expect(canonicalPublicUrlForHost("example.test", "/")).toBeNull();
+  });
+
+  it("uses the original proxy host when the managed deployment proxy replaces the request hostname", () => {
+    expect(
+      originalPublicHostname({
+        hostname: "internal.manus.service",
+        get: header => (header === "x-forwarded-host" ? "graceway-baptist.manus.space" : undefined),
+      }),
+    ).toBe("graceway-baptist.manus.space");
+
+    expect(
+      originalPublicHostname({
+        hostname: "graceway-baptist.org",
+        get: () => undefined,
+      }),
+    ).toBe("graceway-baptist.org");
   });
 });
