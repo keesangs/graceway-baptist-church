@@ -37,7 +37,17 @@ const staff = [
     ministryEn: "Bridgeway Baptist Church, Palo Alto (Associate Pastor) | Graceway Baptist Church, Fremont (Lead Pastor)",
     ministryKo: "Bridgeway Baptist Church, Palo Alto 전도사 | Graceway Baptist Church, Fremont 담임목사",
   },
-  { nameEn: "Pastor MyeongJe Cho", nameKo: "조명제 전도사", roleEn: "Pastoral Staff", roleKo: "목회 스태프", img: MYEONGJE_IMG },
+  {
+    nameEn: "Pastor MyeongJe Cho",
+    nameKo: "조명제 전도사",
+    roleEn: "Pastoral Staff",
+    roleKo: "목회 스태프",
+    img: MYEONGJE_IMG,
+    educationEn: "Ph.D. in Agricultural Sciences, University of Illinois at Urbana-Champaign | Master’s Studies in Theology, Midwestern Seminary",
+    educationKo: "농학 박사, University of Illinois at Urbana-Champaign | 신학 석사 과정, Midwestern Seminary",
+    ministryEn: "Pastoral Staff, Gracepoint Fellowship Church, Berkeley | Bridgeway Baptist Church, Palo Alto | Graceway Baptist Church, Fremont",
+    ministryKo: "전도사, Gracepoint Fellowship Church, Berkeley | Bridgeway Baptist Church, Palo Alto | Graceway Baptist Church, Fremont",
+  },
 ];
 
 export default function About() {
@@ -148,9 +158,11 @@ export default function About() {
                   </h3>
                   <p className="text-[#C9973E] text-xs tracking-wide mt-1">{isKo ? s.roleKo : s.roleEn}</p>
                 </div>
-                {s.bioEn && (
+                {(s.bioEn || s.educationEn || s.ministryEn) && (
                   <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-4">
-                    <p className="text-white/80 text-sm leading-relaxed italic">“{isKo ? s.bioKo : s.bioEn}”</p>
+                    {s.bioEn && (
+                      <p className="text-white/80 text-sm leading-relaxed italic">“{isKo ? s.bioKo : s.bioEn}”</p>
+                    )}
                     {s.educationEn && (
                       <div>
                         <p className="text-[#C9973E] text-xs tracking-wide uppercase font-semibold mb-2">{isKo ? "학력" : "Education"}</p>
