@@ -12,6 +12,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
+import { getSermonDateTimestamp } from "@/lib/sermonDisplay";
 
 const WORSHIP_IMG = brandVisualAssets.worshipCover;
 
@@ -181,7 +182,12 @@ export default function Worship() {
       .map((video) => ({
         titleEn: video.title,
         titleKo: video.title,
-        date: new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        date: new Date(getSermonDateTimestamp(video.title, video.publishedAt)).toLocaleDateString("en-US", {
+          timeZone: "UTC",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
         duration: "New",
         series: "Sunday Worship",
         videoId: video.videoId,

@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { extractSermonSpeaker, extractSermonScripture, fetchPlaylistVideos } from "./youtube";
+import {
+  extractSermonSpeaker,
+  extractSermonScripture,
+  fetchPlaylistVideos,
+  isOfficialChannelSyncEligible,
+  OFFICIAL_CHANNEL_SYNC_CUTOVER,
+  YOUTUBE_PLAYLISTS,
+} from "./youtube";
 
 const originalFetch = global.fetch;
 
@@ -17,8 +24,8 @@ describe("YouTube playlist sync", () => {
             {
               id: "playlist-item-1",
               snippet: {
-                title: "Sunday sermon",
-                publishedAt: "2026-08-23T20:00:00Z",
+                title: "2026. 09.20 Sunday sermon",
+                publishedAt: "2026-09-20T20:00:00Z",
                 position: 0,
                 resourceId: { videoId: "video-1" },
                 thumbnails: { high: { url: "https://img.youtube.com/vi/video-1/hqdefault.jpg" } },
@@ -42,7 +49,7 @@ describe("YouTube playlist sync", () => {
         videoKind: "sermon",
         videoId: "video-1",
         playlistItemId: "playlist-item-1",
-        title: "Sunday sermon",
+        title: "2026. 09.20 Sunday sermon",
         speaker: "조명제 전도사",
         scripture: "요한복음 17장 3절",
         playlistPosition: 0,
@@ -58,8 +65,8 @@ describe("YouTube playlist sync", () => {
         items: [{
           id: "playlist-item-2",
           snippet: {
-            title: "Sunday worship",
-            publishedAt: "2026-08-02T20:00:00Z",
+            title: "2026. 09.20 Sunday worship",
+            publishedAt: "2026-09-20T20:00:00Z",
             position: 1,
             resourceId: { videoId: "video-2" },
             thumbnails: {
@@ -86,5 +93,17 @@ describe("YouTube playlist sync", () => {
     expect(extractSermonScripture("설교자: 조명제 전도사\n본문: 요한복음 17장 3절"))
       .toBe("요한복음 17장 3절");
     expect(extractSermonScripture("요한복음 17장 3절을 함께 읽습니다.")).toBeUndefined();
+  });
+
+  it("reads only the official-channel playlists from the September 20 cutover onward", () => {
+    expect(YOUTUBE_PLAYLISTS).toEqual({
+      sermon: "PLKTwigm12OYo",
+      worship: "PLdEsmN364dmw",
+    });
+    expect(OFFICIAL_CHANNEL_SYNC_CUTOVER).toBe("2026-09-20");
+    expect(isOfficialChannelSyncEligible({ title: "2026. 09.13 주일예배 찬양" })).toBe(false);
+    expect(isOfficialChannelSyncEligible({ title: "2026. 09.20 주일예배 설교" })).toBe(true);
+    expect(isOfficialChannelSyncEligible({ title: "2026. 09.27 주일예배 찬양" })).toBe(true);
+    expect(isOfficialChannelSyncEligible({ title: "Sunday Worship" })).toBe(false);
   });
 });

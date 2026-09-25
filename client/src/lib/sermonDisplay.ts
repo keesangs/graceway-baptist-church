@@ -48,7 +48,9 @@ export function getPublicSermonSpeaker(speaker: string | null | undefined) {
 }
 
 function getDateFromLabel(value: string) {
-  const match = value.match(/(20\d{2})\.\s*(\d{1,2})\.(\d{1,2})/);
+  // YouTube titles may include extra spacing around punctuation, for example
+  // `2026.  09. 20 주일예배 설교`. Treat that as the same Sunday-service date.
+  const match = value.match(/(20\d{2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{1,2})/);
   if (!match) return null;
   return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
 }

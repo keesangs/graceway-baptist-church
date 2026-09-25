@@ -1,9 +1,21 @@
 export type YouTubeVideoKind = "sermon" | "worship";
 
+/**
+ * Official Graceway Baptist Church channel playlists. The legacy channel remains
+ * represented by persisted archive records; manual syncs must only read these
+ * official-channel sources.
+ */
 export const YOUTUBE_PLAYLISTS: Record<YouTubeVideoKind, string> = {
-  sermon: "PLaopWsEpktrg",
-  worship: "PLbz1T5cqPAns",
+  sermon: "PLKTwigm12OYo",
+  worship: "PLdEsmN364dmw",
 };
+
+/**
+ * The archive was intentionally preserved when the church moved to its official
+ * channel. Only services dated on or after this Sunday may enter from the new
+ * playlists, even if a previously published service is later added to them.
+ */
+export const OFFICIAL_CHANNEL_SYNC_CUTOVER = "2026-09-20";
 
 export type PlaylistVideo = {
   videoKind: YouTubeVideoKind;
@@ -16,6 +28,33 @@ export type PlaylistVideo = {
   thumbnailUrl: string;
   playlistPosition: number;
 };
+
+function getServiceDateFromTitle(title: string) {
+  const match = title.match(/\b(20\d{2})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{1,2})\b/);
+  if (!match) return null;
+
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day
+    ? `${yearText}-${monthText.padStart(2, "0")}-${dayText.padStart(2, "0")}`
+    : null;
+}
+
+/**
+ * Sync only dated Sunday-service titles at or after the official-channel
+ * handoff. Skipping undated playlist items is deliberate: it protects the
+ * legacy archive from accidental backfills from the new channel.
+ */
+export function isOfficialChannelSyncEligible(video: Pick<PlaylistVideo, "title">) {
+  const serviceDate = getServiceDateFromTitle(video.title);
+  return serviceDate !== null && serviceDate >= OFFICIAL_CHANNEL_SYNC_CUTOVER;
+}
 
 type PlaylistItemsResponse = {
   nextPageToken?: string;
@@ -180,10 +219,12 @@ export async function fetchPlaylistVideos(
     if (pageToken) seenTokens.add(pageToken);
   } while (pageToken);
 
-  if (videoKind !== "sermon" || videos.length === 0) return videos;
+  const eligibleVideos = videos.filter(isOfficialChannelSyncEligible);
 
-  const metadataByVideoId = await fetchSermonMetadata(videos.map((video) => video.videoId), apiKey);
-  return videos.map((video) => ({
+  if (videoKind !== "sermon" || eligibleVideos.length === 0) return eligibleVideos;
+
+  const metadataByVideoId = await fetchSermonMetadata(eligibleVideos.map((video) => video.videoId), apiKey);
+  return eligibleVideos.map((video) => ({
     ...video,
     speaker: metadataByVideoId.get(video.videoId)?.speaker,
     scripture: metadataByVideoId.get(video.videoId)?.scripture,

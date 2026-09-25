@@ -84,6 +84,20 @@ describe("sermon card metadata display", () => {
       .toBe(Date.UTC(2026, 7, 23));
   });
 
+  it("accepts YouTube titles that include extra spaces around the Sunday date punctuation", () => {
+    const spacedTitle = "2026.  09. 20 주일예배 설교";
+
+    expect(getSermonDateTimestamp(spacedTitle, "2026-09-21T04:31:00.000Z"))
+      .toBe(Date.UTC(2026, 8, 20));
+    expect(getSermonMetadataLines({
+      date: "September 21, 2026",
+      title: spacedTitle,
+      titleKo: spacedTitle,
+      scripture: "사도행전 4장 5절 - 21절",
+      scriptureEn: "Acts 4:5–21",
+    }, "ko").date).toBe("2026. 09.20 주일예배 말씀");
+  });
+
   it("uses a curated English service date instead of the later YouTube upload timestamp", () => {
     expect(getSermonDateTimestamp("August 2, 2026", "2026-08-03T06:05:00.000Z"))
       .toBe(new Date("August 2, 2026").getTime());
