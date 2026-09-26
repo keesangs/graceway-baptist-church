@@ -18,6 +18,14 @@ describe("footer social media links", () => {
     expect(footerSource).toContain('aria-label={`${label} (opens in a new tab)`}');
   });
 
+  it("follows a direct Facebook-compatible navigation gesture on touch-first browsers", () => {
+    expect(footerSource).toContain('window.matchMedia("(pointer: coarse)").matches');
+    expect(footerSource).toContain("window.location.assign(href)");
+    expect(footerSource).toContain("followSocialLinkOnTouch(event, href)");
+    expect(footerSource).toContain("touch-manipulation");
+    expect(footerSource).toContain("h-11 w-11");
+  });
+
   it("uses each platform color with a gentle, motion-aware hover scale", () => {
     expect(footerSource).toContain('hover:bg-[#1877F2]');
     expect(footerSource).toContain('hover:bg-[#E4405F]');

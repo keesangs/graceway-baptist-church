@@ -4,6 +4,27 @@ import { Facebook, Instagram, Youtube, Mail, MapPin, Clock } from "lucide-react"
 import { useLang } from "@/contexts/LanguageContext";
 import { BrandLogo } from "@/components/BrandLogo";
 
+/**
+ * Some mobile/in-app browsers silently suppress a target=_blank social link.
+ * Keep the desktop new-tab behavior, while following a direct user gesture in
+ * the current tab on touch-first devices so visitors always reach the profile.
+ */
+function followSocialLinkOnTouch(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+  if (
+    event.defaultPrevented
+    || event.button !== 0
+    || event.metaKey
+    || event.ctrlKey
+    || event.shiftKey
+    || event.altKey
+    || typeof window === "undefined"
+    || !window.matchMedia("(pointer: coarse)").matches
+  ) return;
+
+  event.preventDefault();
+  window.location.assign(href);
+}
+
 const officialSocialLinks = [
   {
     icon: Facebook,
@@ -26,7 +47,7 @@ const officialSocialLinks = [
 ] as const;
 
 const socialIconBaseClass =
-  "flex h-9 w-9 origin-center items-center justify-center rounded-full border border-white/20 text-white/60 transition-[transform,color,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59]";
+  "flex h-11 w-11 touch-manipulation origin-center items-center justify-center rounded-full border border-white/20 text-white/60 transition-[transform,color,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:hover:scale-110 active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59]";
 
 export default function Footer() {
   const { lang, t } = useLang();
@@ -111,6 +132,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${label} (opens in a new tab)`}
+                  onClick={event => followSocialLinkOnTouch(event, href)}
                   className={`${socialIconBaseClass} ${brandClassName}`}
                 >
                   <Icon size={16} />
