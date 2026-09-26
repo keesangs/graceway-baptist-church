@@ -4,6 +4,24 @@ import { Facebook, Instagram, Youtube, Mail, MapPin, Clock } from "lucide-react"
 import { useLang } from "@/contexts/LanguageContext";
 import { BrandLogo } from "@/components/BrandLogo";
 
+const officialSocialLinks = [
+  {
+    icon: Facebook,
+    label: "Facebook",
+    href: "https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/",
+  },
+  {
+    icon: Instagram,
+    label: "Instagram",
+    href: "https://www.instagram.com/gracewaybaptistchurchfremont",
+  },
+  {
+    icon: Youtube,
+    label: "YouTube",
+    href: "https://www.youtube.com/@Graceway-Baptist",
+  },
+] as const;
+
 export default function Footer() {
   const { lang, t } = useLang();
   const quickLinks = [
@@ -80,15 +98,13 @@ export default function Footer() {
               </a>
             </div>
             <div className="flex gap-3">
-              {[
-                { icon: Facebook, label: "Facebook", href: "#" },
-                { icon: Instagram, label: "Instagram", href: "#" },
-                { icon: Youtube, label: "YouTube", href: "#" },
-              ].map(({ icon: Icon, label, href }) => (
+              {officialSocialLinks.map(({ icon: Icon, label, href }) => (
                 <a
                   key={label}
                   href={href}
-                  aria-label={label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${label} (opens in a new tab)`}
                   className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/60 transition-all duration-200 hover:border-[#D9B87A] hover:text-[#D9B87A]"
                 >
                   <Icon size={16} />
