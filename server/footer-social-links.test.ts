@@ -17,4 +17,13 @@ describe("footer social media links", () => {
     expect(footerSource).toContain('rel="noopener noreferrer"');
     expect(footerSource).toContain('aria-label={`${label} (opens in a new tab)`}');
   });
+
+  it("uses each platform color with a gentle, motion-aware hover scale", () => {
+    expect(footerSource).toContain('hover:bg-[#1877F2]');
+    expect(footerSource).toContain('hover:bg-[#E4405F]');
+    expect(footerSource).toContain('hover:bg-[#FF0000]');
+    expect(footerSource).toContain('motion-safe:hover:scale-110');
+    expect(footerSource).toContain('duration-200');
+    expect(footerSource).toContain('motion-reduce:hover:scale-100');
+  });
 });

@@ -9,18 +9,24 @@ const officialSocialLinks = [
     icon: Facebook,
     label: "Facebook",
     href: "https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/",
+    brandClassName: "hover:border-[#1877F2] hover:bg-[#1877F2] hover:text-white",
   },
   {
     icon: Instagram,
     label: "Instagram",
     href: "https://www.instagram.com/gracewaybaptistchurchfremont",
+    brandClassName: "hover:border-[#E4405F] hover:bg-[#E4405F] hover:text-white",
   },
   {
     icon: Youtube,
     label: "YouTube",
     href: "https://www.youtube.com/@Graceway-Baptist",
+    brandClassName: "hover:border-[#FF0000] hover:bg-[#FF0000] hover:text-white",
   },
 ] as const;
+
+const socialIconBaseClass =
+  "flex h-9 w-9 origin-center items-center justify-center rounded-full border border-white/20 text-white/60 transition-[transform,color,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59]";
 
 export default function Footer() {
   const { lang, t } = useLang();
@@ -98,14 +104,14 @@ export default function Footer() {
               </a>
             </div>
             <div className="flex gap-3">
-              {officialSocialLinks.map(({ icon: Icon, label, href }) => (
+              {officialSocialLinks.map(({ icon: Icon, label, href, brandClassName }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${label} (opens in a new tab)`}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/60 transition-all duration-200 hover:border-[#D9B87A] hover:text-[#D9B87A]"
+                  className={`${socialIconBaseClass} ${brandClassName}`}
                 >
                   <Icon size={16} />
                 </a>
