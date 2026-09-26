@@ -187,6 +187,7 @@ describe("events router", () => {
       startAt: new Date("2026-08-20T07:00:00.000Z"),
       allDay: true,
       venueKo: "",
+      featuredImageUrl: "/manus-storage/church-event-poster.png",
       recurrence: "none",
       status: "published",
     });
@@ -195,6 +196,7 @@ describe("events router", () => {
       titleKo: "교회 야유회",
       titleEn: null,
       venueKo: null,
+      featuredImageUrl: "/manus-storage/church-event-poster.png",
       allDay: 1,
       recurrenceUntil: null,
       createdBy: 9,

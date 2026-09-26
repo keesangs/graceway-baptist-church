@@ -63,6 +63,15 @@ describe("event card interactions", () => {
     expect(eventsSource).toContain("내 캘린더에 추가");
   });
 
+  it("supports a managed featured-event poster with an accessible expanded view and branded countdown cards", () => {
+    expect(routersSource).toContain("featuredImageUrl");
+    expect(eventsSource).toContain("featuredPosterUrl");
+    expect(eventsSource).toContain("포스터 확대 보기");
+    expect(eventsSource).toContain("DialogContent");
+    expect(eventsSource).toContain("grid-cols-3");
+    expect(eventsSource).toContain("예배 시작까지");
+  });
+
   it("calculates a readable countdown and announces when the featured event has started", () => {
     expect(getCountdownParts("2026-09-08T04:35:00.000Z", new Date("2026-09-06T03:04:00.000Z"))).toEqual({
       hasStarted: false,

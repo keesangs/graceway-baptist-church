@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, ExternalLink, Eye, FileText, MapPin, Sparkles } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CalendarPlus, ChevronRight, Clock3, Download, Expand, ExternalLink, Eye, FileText, MapPin, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLang } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
@@ -32,6 +33,7 @@ type EventOccurrence = {
   venueEn: string | null;
   descriptionKo: string | null;
   descriptionEn: string | null;
+  featuredImageUrl: string | null;
   eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
   isRecurring: boolean;
 };
@@ -123,7 +125,7 @@ function FeaturedCountdown({ startAt, lang }: { startAt: Date | string; lang: "k
 
   const countdown = getCountdownParts(startAt, now);
   if (countdown.hasStarted) {
-    return <p className="mt-4 text-sm font-medium text-[#E5C484]">{lang === "ko" ? "행사가 시작되었습니다" : "This event has started"}</p>;
+    return <p className="mt-5 inline-flex rounded-full border border-[#E5C484]/35 bg-[#0D2E49]/55 px-3 py-1.5 text-sm font-semibold text-[#E5C484]">{lang === "ko" ? "행사가 시작되었습니다" : "This event has started"}</p>;
   }
 
   const units = [
@@ -131,11 +133,15 @@ function FeaturedCountdown({ startAt, lang }: { startAt: Date | string; lang: "k
     [countdown.hours, lang === "ko" ? "시간" : "Hours"],
     [countdown.minutes, lang === "ko" ? "분" : "Min"],
   ] as const;
-  return (
-    <dl aria-label={lang === "ko" ? "행사 시작까지 남은 시간" : "Time remaining until the event"} className="mt-5 flex flex-wrap gap-2">
-      {units.map(([value, label]) => <div key={label} className="min-w-15 rounded-sm border border-white/15 bg-white/8 px-3 py-2 text-center"><dd className="font-serif text-xl font-semibold leading-none text-white">{String(value).padStart(2, "0")}</dd><dt className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-[#D7E4EA]">{label}</dt></div>)}
+  return <section aria-label={lang === "ko" ? "행사 시작까지 남은 시간" : "Time remaining until the event"} className="mt-6 max-w-md rounded-xl border border-[#E5C484]/25 bg-[#0B2D48]/50 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-4">
+    <div className="flex items-center justify-between gap-4">
+      <p className="text-[0.67rem] font-semibold uppercase tracking-[0.16em] text-[#E5C484]">{lang === "ko" ? "예배 시작까지" : "Time to worship"}</p>
+      <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-r from-[#E5C484]/50 to-transparent" />
+    </div>
+    <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
+      {units.map(([value, label]) => <div key={label} className="relative overflow-hidden rounded-lg border border-white/12 bg-[#143E5D]/75 px-2 py-3 text-center shadow-[0_8px_18px_rgba(6,28,45,0.18)]"><span aria-hidden="true" className="absolute inset-x-3 top-0 h-px bg-[#E5C484]/65" /><dd className="font-serif text-2xl font-semibold leading-none tracking-tight text-white sm:text-3xl">{String(value).padStart(2, "0")}</dd><dt className="mt-1.5 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-[#D7E4EA]">{label}</dt></div>)}
     </dl>
-  );
+  </section>;
 }
 
 function EventCard({ event, lang, id }: { event: EventOccurrence; lang: "ko" | "en"; id?: string }) {
@@ -177,6 +183,7 @@ export default function Events() {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
+  const [featuredPosterOpen, setFeaturedPosterOpen] = useState(false);
   const [previewIssue, setPreviewIssue] = useState<WeeklyNewsletterIssue | null>(null);
   const [newsletterYearFilter, setNewsletterYearFilter] = useState("all");
   const [newsletterMonthFilter, setNewsletterMonthFilter] = useState("all");
@@ -205,6 +212,7 @@ export default function Events() {
   const featuredTitle = featuredSpecial ? (lang === "en" && featuredSpecial.titleEn ? featuredSpecial.titleEn : featuredSpecial.titleKo) : "";
   const featuredVenue = featuredSpecial ? (lang === "en" && featuredSpecial.venueEn ? featuredSpecial.venueEn : featuredSpecial.venueKo) : null;
   const featuredDescription = featuredSpecial ? (lang === "en" && featuredSpecial.descriptionEn ? featuredSpecial.descriptionEn : featuredSpecial.descriptionKo) : null;
+  const featuredPosterUrl = featuredSpecial?.featuredImageUrl ?? null;
   const featuredCalendarUrl = featuredSpecial ? createGoogleCalendarUrl({
     title: featuredTitle,
     start: featuredSpecial.occurrenceStart,
@@ -272,7 +280,7 @@ export default function Events() {
           <section aria-labelledby="featured-event-title" onClick={event => { if (!(event.target as HTMLElement).closest("a, button")) showFeaturedDate(); }} className="relative mb-10 cursor-pointer overflow-hidden rounded-xl border border-[#B9955E]/40 bg-[#163B59] px-6 py-7 text-white shadow-[0_18px_36px_rgba(22,59,89,0.17)] sm:px-8 sm:py-8">
             <div aria-hidden="true" className="absolute -right-20 -top-28 size-72 rounded-full border border-[#C9973E]/25" />
             <div aria-hidden="true" className="absolute right-12 top-8 size-32 rounded-full bg-[#2F6F9F]/25 blur-3xl" />
-            <div className="relative grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div className={`relative grid items-center gap-7 ${featuredPosterUrl ? "xl:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] xl:gap-10" : "lg:grid-cols-[minmax(0,1fr)_auto]"}`}>
               <div>
                 <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C484]"><Sparkles className="size-3.5" />{lang === "ko" ? "추천 행사" : "Featured event"}</p>
                 <h2 id="featured-event-title" className="mt-3 font-serif text-3xl font-semibold tracking-tight text-white sm:text-4xl">{featuredTitle}</h2>
@@ -283,19 +291,30 @@ export default function Events() {
                 </div>
                 {featuredDescription && <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-6 text-[#D7E4EA]">{featuredDescription}</p>}
                 <FeaturedCountdown startAt={featuredSpecial.occurrenceStart} lang={lang} />
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button type="button" onClick={showFeaturedDate} className="inline-flex items-center gap-2 rounded-sm bg-[#C9973E] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color] duration-200 hover:bg-[#E5C484] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
+                    {lang === "ko" ? "일정 자세히 보기" : "View event details"}<ArrowUpRight className="size-4" />
+                  </button>
+                  <a href={featuredCalendarUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm border border-white/40 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 hover:border-[#E5C484] hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
+                    <CalendarPlus className="size-4 text-[#E5C484]" />{lang === "ko" ? "내 캘린더에 추가" : "Add to my calendar"}
+                  </a>
+                  <VideoShareButton title={featuredTitle} url={`${window.location.origin}/events#${featuredCardId}`} lang={lang} contentType="event" className="border-white/40 bg-white/5 text-white hover:border-[#E5C484] hover:bg-white/10 hover:text-white" />
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3 lg:justify-end">
-                <button type="button" onClick={showFeaturedDate} className="inline-flex items-center gap-2 rounded-sm bg-[#C9973E] px-4 py-2.5 text-sm font-semibold text-[#163B59] transition-[transform,background-color] duration-200 hover:bg-[#E5C484] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
-                  {lang === "ko" ? "일정 자세히 보기" : "View event details"}<ArrowUpRight className="size-4" />
-                </button>
-                <a href={featuredCalendarUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-sm border border-white/40 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 hover:border-[#E5C484] hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transition-none">
-                  <CalendarPlus className="size-4 text-[#E5C484]" />{lang === "ko" ? "내 캘린더에 추가" : "Add to my calendar"}
-                </a>
-                <VideoShareButton title={featuredTitle} url={`${window.location.origin}/events#${featuredCardId}`} lang={lang} contentType="event" className="border-white/40 bg-white/5 text-white hover:border-[#E5C484] hover:bg-white/10 hover:text-white" />
-              </div>
+              {featuredPosterUrl && <button type="button" onClick={event => { event.stopPropagation(); setFeaturedPosterOpen(true); }} aria-label={lang === "ko" ? `${featuredTitle} 포스터 확대 보기` : `Expand ${featuredTitle} poster`} className="group relative mx-auto block w-full max-w-[20rem] overflow-hidden rounded-xl border border-[#E5C484]/60 bg-[#0D2E49]/70 p-2 text-left shadow-[0_20px_38px_rgba(5,29,47,0.34)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-[#E5C484] hover:shadow-[0_24px_42px_rgba(5,29,47,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C484] focus-visible:ring-offset-2 focus-visible:ring-offset-[#163B59] motion-reduce:transform-none motion-reduce:transition-none xl:justify-self-end"><img src={featuredPosterUrl} alt="" className="aspect-[2/3] w-full rounded-lg bg-[#F4F6F7] object-contain" /><span className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-3 rounded-b-lg bg-[#0D2E49]/92 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"><span>{lang === "ko" ? "포스터 확대 보기" : "Expand poster"}</span><Expand className="size-4 text-[#E5C484]" /></span></button>}
             </div>
           </section>
         )}
+
+        {featuredSpecial && featuredPosterUrl && <Dialog open={featuredPosterOpen} onOpenChange={setFeaturedPosterOpen}>
+          <DialogContent className="max-h-[94vh] max-w-[min(92vw,42rem)] overflow-y-auto border-[#E5C484]/50 bg-[#0D2E49] p-4 text-white sm:p-5" aria-describedby="featured-poster-dialog-description">
+            <DialogHeader className="pr-8 text-left">
+              <DialogTitle className="font-serif text-xl text-white sm:text-2xl">{featuredTitle}</DialogTitle>
+              <DialogDescription id="featured-poster-dialog-description" className="text-[#D7E4EA]">{lang === "ko" ? "특별 행사 포스터를 확대하여 확인하세요." : "View the special-event poster in full."}</DialogDescription>
+            </DialogHeader>
+            <img src={featuredPosterUrl} alt={lang === "ko" ? `${featuredTitle} 행사 포스터` : `${featuredTitle} event poster`} className="mx-auto h-auto max-h-[72vh] w-auto max-w-full rounded-lg border border-white/15 bg-[#F4F6F7] object-contain shadow-2xl" />
+          </DialogContent>
+        </Dialog>}
 
         <section aria-labelledby="weekly-newsletter-title" className="mb-12 overflow-hidden rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] shadow-[0_14px_32px_rgba(22,59,89,0.06)]">
           <div className="border-b border-[#DCE4E7] bg-[linear-gradient(110deg,#F6F0E5_0%,#FFFEFB_58%,#E7EEF1_100%)] px-5 py-5 sm:px-7 sm:py-6">

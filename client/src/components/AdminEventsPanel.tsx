@@ -35,6 +35,7 @@ type EventRecord = {
   venueEn: string | null;
   descriptionKo: string | null;
   descriptionEn: string | null;
+  featuredImageUrl: string | null;
   eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
   status: "draft" | "published" | "cancelled";
   recurrence: "none" | "weekly";
@@ -50,6 +51,7 @@ type EventForm = {
   venueEn: string;
   descriptionKo: string;
   descriptionEn: string;
+  featuredImageUrl: string;
   eventType: "worship" | "prayer" | "fellowship" | "ministry" | "special" | "other";
   status: "draft" | "published" | "cancelled";
   recurrence: "none" | "weekly";
@@ -121,6 +123,7 @@ function emptyEventForm(): EventForm {
     venueEn: "",
     descriptionKo: "",
     descriptionEn: "",
+    featuredImageUrl: "",
     eventType: "other",
     status: "draft",
     recurrence: "none",
@@ -139,6 +142,7 @@ function eventToForm(event: EventRecord): EventForm {
     venueEn: event.venueEn ?? "",
     descriptionKo: event.descriptionKo ?? "",
     descriptionEn: event.descriptionEn ?? "",
+    featuredImageUrl: event.featuredImageUrl ?? "",
     eventType: event.eventType,
     status: event.status,
     recurrence: event.recurrence,
@@ -160,6 +164,7 @@ function formToEventInput(form: EventForm) {
     venueEn: form.venueEn || null,
     descriptionKo: form.descriptionKo || null,
     descriptionEn: form.descriptionEn || null,
+    featuredImageUrl: form.featuredImageUrl || null,
     eventType: form.eventType,
     status: form.status,
     recurrence: form.recurrence,
@@ -191,6 +196,7 @@ export default function AdminEventsPanel() {
     await utils.events.listAdmin.invalidate();
     await utils.events.listRange.invalidate();
     await utils.events.upcoming.invalidate();
+    await utils.events.featuredSpecial.invalidate();
     setNotice({ kind: "success", text });
   };
 
@@ -298,6 +304,7 @@ export default function AdminEventsPanel() {
             {form.recurrence === "weekly" && <label className="text-sm font-semibold text-[#17324D]">{lang === "ko" ? "반복 종료일 (선택)" : "Repeat until (optional)"}<Input type="date" value={form.recurrenceUntil} onChange={event => setValue("recurrenceUntil", event.target.value)} className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal text-[#607A91]">{lang === "ko" ? "비워두면 계속 반복됩니다. 개별 날짜 예외는 현재 지원하지 않습니다." : "Leave blank to continue. Individual occurrence exceptions are not yet supported."}</span></label>}
             <label className="text-sm font-semibold text-[#17324D] md:col-span-2">{lang === "ko" ? "설명 (한국어)" : "Korean description"}<Textarea value={form.descriptionKo} onChange={event => setValue("descriptionKo", event.target.value)} className="mt-2 min-h-24 bg-white" /></label>
             <label className="text-sm font-semibold text-[#17324D] md:col-span-2">{lang === "ko" ? "영문 설명" : "English description"}<Textarea value={form.descriptionEn} onChange={event => setValue("descriptionEn", event.target.value)} className="mt-2 min-h-24 bg-white" /></label>
+            <label className="text-sm font-semibold text-[#17324D] md:col-span-2">{lang === "ko" ? "추천 행사 포스터 URL (선택)" : "Featured event poster URL (optional)"}<Input type="url" value={form.featuredImageUrl} onChange={event => setValue("featuredImageUrl", event.target.value)} placeholder="/manus-storage/event-poster.png" className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal leading-relaxed text-[#607A91]">{lang === "ko" ? "특별 행사에 포스터를 연결하면 공개 추천 행사 배너에서 전체 포스터와 확대 보기가 제공됩니다. 관리된 /manus-storage/ 경로나 HTTPS 이미지 주소를 입력하세요." : "A connected poster appears in the public featured-event banner with an enlarged view. Use a managed /manus-storage/ path or HTTPS image URL."}</span></label>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button disabled={pending} type="submit" className="bg-[#163B59] text-white hover:bg-[#245170]"><Plus className="mr-2 size-4" />{editingId ? (lang === "ko" ? "수정 저장" : "Save changes") : (lang === "ko" ? "일정 저장" : "Save event")}</Button>

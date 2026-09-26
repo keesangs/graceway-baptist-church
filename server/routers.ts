@@ -103,6 +103,10 @@ const calendarEventValues = {
   venueEn: z.string().trim().max(255).nullable().optional(),
   descriptionKo: z.string().trim().max(8000).nullable().optional(),
   descriptionEn: z.string().trim().max(8000).nullable().optional(),
+  featuredImageUrl: z.string().trim().max(1024)
+    .refine(value => value.startsWith("/manus-storage/") || /^https:\/\//.test(value), "Use a secure image URL or a /manus-storage/ path")
+    .nullable()
+    .optional(),
   eventType: z.enum(["worship", "prayer", "fellowship", "ministry", "special", "other"]).default("other"),
   status: z.enum(["draft", "published", "cancelled"]).default("draft"),
   recurrence: z.enum(["none", "weekly"]).default("none"),
@@ -191,6 +195,7 @@ function mapCalendarEventInput(input: z.infer<typeof calendarEventCreateInput>) 
     venueEn: nullableText(input.venueEn),
     descriptionKo: nullableText(input.descriptionKo),
     descriptionEn: nullableText(input.descriptionEn),
+    featuredImageUrl: nullableText(input.featuredImageUrl),
     eventType: input.eventType,
     status: input.status,
     recurrence: input.recurrence,

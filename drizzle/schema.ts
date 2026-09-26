@@ -375,6 +375,8 @@ export const calendarEvents = mysqlTable("calendar_events", {
   venueEn: varchar("venueEn", { length: 255 }),
   descriptionKo: text("descriptionKo"),
   descriptionEn: text("descriptionEn"),
+  /** Optional managed image shown in the public featured-event banner. */
+  featuredImageUrl: varchar("featuredImageUrl", { length: 1024 }),
   eventType: mysqlEnum("eventType", ["worship", "prayer", "fellowship", "ministry", "special", "other"])
     .default("other")
     .notNull(),
