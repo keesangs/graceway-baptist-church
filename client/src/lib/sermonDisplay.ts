@@ -25,6 +25,7 @@ export type CanonicalSermonCard = SermonDisplayData & {
 export type SyncedSermonVideo = {
   videoId: string;
   title: string;
+  sermonTitle?: string | null;
   speaker?: string | null;
   scripture?: string | null;
   publishedAt: Date | string;
@@ -101,12 +102,15 @@ export function getCanonicalSermonCards(
   const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
   const syncedCards = syncedVideos.map<CanonicalSermonCard>((video) => {
     const legacy = legacyByVideoId.get(video.videoId);
+    const syncedMessageTitle = video.sermonTitle?.trim();
     return {
-      title: legacy?.title ?? video.title,
-      titleKo: legacy?.titleKo ?? video.title,
+      title: legacy?.title ?? syncedMessageTitle ?? video.title,
+      titleKo: legacy?.titleKo ?? syncedMessageTitle ?? video.title,
       scripture: video.scripture?.trim() || legacy?.scripture || "",
       scriptureEn: legacy?.scriptureEn ?? video.scripture?.trim() ?? "",
-      date: legacy?.date ?? new Date(video.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+      // Keep the raw dated playlist title in `date`; the message title is a
+      // separate field and must never replace the service-date source.
+      date: legacy?.date ?? video.title,
       speaker: getPublicSermonSpeaker(video.speaker?.trim() || legacy?.speaker || DEFAULT_SERMON_SPEAKER),
       duration: legacy?.duration ?? "New",
       series: legacy?.series ?? "Sunday Sermon",
@@ -154,7 +158,10 @@ export function getCanonicalSermonCards(
 }
 
 export function formatSermonServiceDate({ date, title }: Pick<SermonDisplayData, "date" | "title">, lang: "ko" | "en") {
-  const serviceDate = getDateFromLabel(title) ?? new Date(date);
+  // The playlist label carries the service date while the description title
+  // carries the actual message title. Prefer the date field so these concerns
+  // remain independent after a synchronized video receives a semantic title.
+  const serviceDate = getDateFromLabel(date) ?? getDateFromLabel(title) ?? new Date(date);
   if (Number.isNaN(serviceDate.getTime())) return lang === "ko" ? "주일예배 말씀" : "Sunday Worship Message";
 
   if (lang === "ko") {

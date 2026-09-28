@@ -79,6 +79,27 @@ describe("sermon card metadata display", () => {
     expect(getPublicSermonSpeaker("조명제 전도사")).toBe("Staff Pastor MyeongJe Cho");
   });
 
+  it("uses the labelled YouTube description title instead of the dated playlist title", () => {
+    const [card] = getCanonicalSermonCards([], [{
+      videoId: "sep-13-sermon",
+      title: "2026. 09.13 주일예배 말씀",
+      sermonTitle: "영생과 천국 - 하나님을 알고 다시 하나님께",
+      publishedAt: "2026-09-14T04:35:11.000Z",
+      thumbnailUrl: "https://example.com/sep-13.jpg",
+      playlistPosition: 1,
+    }]);
+
+    expect(card).toMatchObject({
+      titleKo: "영생과 천국 - 하나님을 알고 다시 하나님께",
+      date: "2026. 09.13 주일예배 말씀",
+    });
+    expect(getSermonMetadataLines(card, "ko")).toEqual({
+      date: "2026. 09.13 주일예배 말씀",
+      title: "영생과 천국 - 하나님을 알고 다시 하나님께",
+      scripture: "본문: ",
+    });
+  });
+
   it("derives the actual Sunday from a synced playlist title rather than its upload timestamp", () => {
     expect(getSermonDateTimestamp("2026. 08.23 주일예배 말씀", "2026-08-26T02:51:54.000Z"))
       .toBe(Date.UTC(2026, 7, 23));

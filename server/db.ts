@@ -176,6 +176,20 @@ export async function listYouTubeVideos(videoKind: YouTubeVideoKind) {
  * Inserts playlist videos once and refreshes source metadata on later manual
  * syncs. The unique video-kind key prevents duplicate public cards.
  */
+export function getYouTubeVideoSyncUpdate(video: InsertYouTubeVideo, syncTime: Date) {
+  return {
+    playlistItemId: video.playlistItemId,
+    title: video.title,
+    sermonTitle: video.sermonTitle ?? null,
+    speaker: video.speaker ?? null,
+    scripture: video.scripture ?? null,
+    publishedAt: video.publishedAt,
+    thumbnailUrl: video.thumbnailUrl,
+    playlistPosition: video.playlistPosition,
+    lastSyncedAt: syncTime,
+  };
+}
+
 export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -194,16 +208,7 @@ export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
     if (existing) {
       await db
         .update(youtubeVideos)
-        .set({
-          playlistItemId: video.playlistItemId,
-          title: video.title,
-          speaker: video.speaker ?? null,
-          scripture: video.scripture ?? null,
-          publishedAt: video.publishedAt,
-          thumbnailUrl: video.thumbnailUrl,
-          playlistPosition: video.playlistPosition,
-          lastSyncedAt: syncTime,
-        })
+        .set(getYouTubeVideoSyncUpdate(video, syncTime))
         .where(eq(youtubeVideos.id, existing.id));
       updated += 1;
     } else {

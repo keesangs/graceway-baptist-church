@@ -58,6 +58,8 @@ export const youtubeVideos = mysqlTable("youtube_videos", {
   videoId: varchar("videoId", { length: 32 }).notNull(),
   playlistItemId: varchar("playlistItemId", { length: 128 }).notNull(),
   title: varchar("title", { length: 500 }).notNull(),
+  /** The message title read from the labelled YouTube description line. */
+  sermonTitle: varchar("sermonTitle", { length: 500 }),
   speaker: varchar("speaker", { length: 160 }),
   scripture: varchar("scripture", { length: 500 }),
   publishedAt: timestamp("publishedAt").notNull(),

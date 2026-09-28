@@ -97,6 +97,19 @@ export function extractSermonSpeaker(description: string | undefined) {
   return undefined;
 }
 
+/** Reads the first non-empty labelled message title from a YouTube description. */
+export function extractSermonTitle(description: string | undefined) {
+  if (!description) return undefined;
+
+  for (const line of description.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:제목|title|sermon\s+title|message\s+title)\s*[:：]\s*(.+?)\s*$/i);
+    const sermonTitle = match?.[1]?.trim();
+    if (sermonTitle) return sermonTitle.slice(0, 500);
+  }
+
+  return undefined;
+}
+
 /** Reads the first non-empty `본문:` line from a YouTube video description. */
 export function extractSermonScripture(description: string | undefined) {
   if (!description) return undefined;
@@ -111,6 +124,7 @@ export function extractSermonScripture(description: string | undefined) {
 }
 
 type SermonVideoMetadata = {
+  sermonTitle?: string;
   speaker?: string;
   scripture?: string;
 };
@@ -131,10 +145,11 @@ async function fetchSermonMetadata(videoIds: string[], apiKey: string) {
       const payload = (await response.json()) as VideosResponse;
       for (const item of payload.items ?? []) {
         const videoId = item.id?.trim();
+        const sermonTitle = extractSermonTitle(item.snippet?.description);
         const speaker = extractSermonSpeaker(item.snippet?.description);
         const scripture = extractSermonScripture(item.snippet?.description);
-        if (videoId && (speaker || scripture)) {
-          metadataByVideoId.set(videoId, { speaker, scripture });
+        if (videoId && (sermonTitle || speaker || scripture)) {
+          metadataByVideoId.set(videoId, { sermonTitle, speaker, scripture });
         }
       }
     } catch {
@@ -226,6 +241,7 @@ export async function fetchPlaylistVideos(
   const metadataByVideoId = await fetchSermonMetadata(eligibleVideos.map((video) => video.videoId), apiKey);
   return eligibleVideos.map((video) => ({
     ...video,
+    sermonTitle: metadataByVideoId.get(video.videoId)?.sermonTitle,
     speaker: metadataByVideoId.get(video.videoId)?.speaker,
     scripture: metadataByVideoId.get(video.videoId)?.scripture,
   }));

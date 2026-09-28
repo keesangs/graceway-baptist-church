@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   extractSermonSpeaker,
   extractSermonScripture,
+  extractSermonTitle,
   fetchPlaylistVideos,
   isOfficialChannelSyncEligible,
   OFFICIAL_CHANNEL_SYNC_CUTOVER,
@@ -38,7 +39,7 @@ describe("YouTube playlist sync", () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          items: [{ id: "video-1", snippet: { description: "설교자: 조명제 전도사\n본문: 요한복음 17장 3절" } }],
+          items: [{ id: "video-1", snippet: { description: "제목: 영생과 천국 - 하나님을 알고 다시 하나님께\n설교자: 조명제 전도사\n본문: 요한복음 17장 3절" } }],
         }),
       }) as unknown as typeof fetch;
 
@@ -50,6 +51,7 @@ describe("YouTube playlist sync", () => {
         videoId: "video-1",
         playlistItemId: "playlist-item-1",
         title: "2026. 09.20 Sunday sermon",
+        sermonTitle: "영생과 천국 - 하나님을 알고 다시 하나님께",
         speaker: "조명제 전도사",
         scripture: "요한복음 17장 3절",
         playlistPosition: 0,
@@ -93,6 +95,13 @@ describe("YouTube playlist sync", () => {
     expect(extractSermonScripture("설교자: 조명제 전도사\n본문: 요한복음 17장 3절"))
       .toBe("요한복음 17장 3절");
     expect(extractSermonScripture("요한복음 17장 3절을 함께 읽습니다.")).toBeUndefined();
+  });
+
+  it("extracts only a labelled message title from a YouTube description", () => {
+    expect(extractSermonTitle("제목: 영생과 천국 - 하나님을 알고 다시 하나님께\n설교자: 조명제 전도사"))
+      .toBe("영생과 천국 - 하나님을 알고 다시 하나님께");
+    expect(extractSermonTitle("영생과 천국 - 하나님을 알고 다시 하나님께\n설교자: 조명제 전도사"))
+      .toBeUndefined();
   });
 
   it("reads only the official-channel playlists from the September 20 cutover onward", () => {

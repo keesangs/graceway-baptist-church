@@ -1,0 +1,1 @@
+ALTER TABLE `youtube_videos` ADD `sermonTitle` varchar(500);

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { getYouTubeVideoSyncUpdate } from "./db";
 
 const projectFile = (relativePath: string) =>
   readFileSync(resolve(process.cwd(), relativePath), "utf8");
@@ -26,5 +27,23 @@ describe("YouTube manual playlist sync contract", () => {
     expect(sermons).toContain('getCanonicalSermonCards(legacyCards, syncedVideosQuery.data ?? [])');
     expect(worship).toContain('trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT)');
     expect(worship).toContain('return [...newSyncedWorships, ...refreshedLegacyWorships]');
+  });
+
+  it("persists the parsed sermon title when an official sync refreshes a row", () => {
+    const syncedAt = new Date("2026-09-28T06:00:00.000Z");
+    expect(getYouTubeVideoSyncUpdate({
+      videoKind: "sermon",
+      videoId: "video-1",
+      playlistItemId: "playlist-item-1",
+      title: "2026. 09.27 주일예배 설교",
+      sermonTitle: "하나님의 교회",
+      publishedAt: new Date("2026-09-28T03:25:55.000Z"),
+      thumbnailUrl: "https://img.youtube.com/vi/video-1/hqdefault.jpg",
+      playlistPosition: 0,
+    }, syncedAt)).toMatchObject({
+      title: "2026. 09.27 주일예배 설교",
+      sermonTitle: "하나님의 교회",
+      lastSyncedAt: syncedAt,
+    });
   });
 });
