@@ -21,6 +21,13 @@ import { NEWSLETTER_FROM, NEWSLETTER_NOTIFICATION_RECIPIENT } from "./newsletter
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
 const NEWSLETTER_BRAND_LOGO_URL = `${NEWSLETTER_PUBLIC_ORIGIN}/manus-storage/graceway-logo-dark-approved_ab158297.png`;
+const CHURCH_ADDRESS = "2791 Driscoll Rd, Fremont, CA 94539";
+const CHURCH_EMAIL = "info@graceway-baptist.org";
+const CHURCH_SOCIAL_LINKS = {
+  facebook: "https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/",
+  instagram: "https://www.instagram.com/gracewaybaptistchurchfremont",
+  youtube: "https://www.youtube.com/@Graceway-Baptist",
+} as const;
 
 function escapeHtml(value: string) {
   return value
@@ -77,13 +84,41 @@ export function buildWeeklyNewsletterEmail(input: {
   const unsubscribeLabel = ko ? "뉴스레터 구독 취소" : "Unsubscribe";
   const bannerLabel = ko ? "그레이스웨이 주간 주보" : "Graceway Weekly Newsletter";
   const churchName = "Graceway Baptist Church · 그레이스웨이 침례교회";
+  const footerHeading = ko ? "그레이스웨이 침례교회" : "Graceway Baptist Church";
+  const footerAddressLabel = ko ? "주소" : "Address";
+  const footerServiceLabel = ko ? "예배 시간" : "Service times";
+  const footerSocialLabel = ko ? "소셜 미디어" : "Social media";
+  const footerContactLabel = ko ? "문의" : "Contact";
+  const footerSunday = ko ? "주일 예배 · 오후 1:30" : "Sunday worship · 1:30 PM";
+  const footerWednesday = ko ? "수요 기도회 · 오후 8:00" : "Wednesday prayer · 8:00 PM";
+  const footerFacebook = ko ? "페이스북" : "Facebook";
+  const footerInstagram = ko ? "인스타그램" : "Instagram";
+  const footerYoutube = ko ? "유튜브" : "YouTube";
 
   return {
     from: NEWSLETTER_FROM,
     to: [input.email],
     replyTo: NEWSLETTER_NOTIFICATION_RECIPIENT,
     subject: ko ? `그레이스웨이 주간 주보 — ${date}` : `Graceway Weekly Bulletin — ${date}`,
-    text: [churchName, bannerLabel, "", heading, title, intro, "", `${viewLabel}: ${bulletinUrl}`, `${downloadLabel}: ${bulletinUrl}`, "", `${unsubscribeLabel}: ${unsubscribeUrl}`].join("\n"),
+    text: [
+      churchName,
+      bannerLabel,
+      "",
+      heading,
+      title,
+      intro,
+      "",
+      `${viewLabel}: ${bulletinUrl}`,
+      `${downloadLabel}: ${bulletinUrl}`,
+      "",
+      footerHeading,
+      `${footerAddressLabel}: ${CHURCH_ADDRESS}`,
+      `${footerServiceLabel}: ${footerSunday}; ${footerWednesday}`,
+      `${footerContactLabel}: ${CHURCH_EMAIL}`,
+      `${footerSocialLabel}: ${footerFacebook} ${CHURCH_SOCIAL_LINKS.facebook} · ${footerInstagram} ${CHURCH_SOCIAL_LINKS.instagram} · ${footerYoutube} ${CHURCH_SOCIAL_LINKS.youtube}`,
+      "",
+      `${unsubscribeLabel}: ${unsubscribeUrl}`,
+    ].join("\n"),
     html: [
       '<div style="max-width:620px;margin:0 auto;background:#FFFEFB;font-family:Arial,sans-serif;color:#242A30;line-height:1.6">',
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#17324D">',
@@ -99,6 +134,13 @@ export function buildWeeklyNewsletterEmail(input: {
       `<p><a href="${escapeHtml(bulletinUrl)}" style="display:inline-block;background:#17324D;color:#fff;padding:12px 18px;text-decoration:none">${escapeHtml(viewLabel)}</a></p>`,
       `<p><a href="${escapeHtml(bulletinUrl)}" style="color:#2F6F9F">${escapeHtml(downloadLabel)}</a></p>`,
       '<hr style="border:0;border-top:1px solid #e2e8ea;margin:28px 0">',
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;color:#607A91;font-size:12px;line-height:1.7">`,
+      `<tr><td style="padding-bottom:6px;color:#17324D;font-family:Georgia,serif;font-size:16px;font-weight:700">${escapeHtml(footerHeading)}</td></tr>`,
+      `<tr><td><strong style="color:#17324D">${escapeHtml(footerAddressLabel)}:</strong> ${escapeHtml(CHURCH_ADDRESS)}</td></tr>`,
+      `<tr><td><strong style="color:#17324D">${escapeHtml(footerServiceLabel)}:</strong> ${escapeHtml(footerSunday)} · ${escapeHtml(footerWednesday)}</td></tr>`,
+      `<tr><td><strong style="color:#17324D">${escapeHtml(footerContactLabel)}:</strong> <a href="mailto:${CHURCH_EMAIL}" style="color:#2F6F9F">${CHURCH_EMAIL}</a></td></tr>`,
+      `<tr><td style="padding-top:6px"><strong style="color:#17324D">${escapeHtml(footerSocialLabel)}:</strong> <a href="${CHURCH_SOCIAL_LINKS.facebook}" style="color:#2F6F9F">${escapeHtml(footerFacebook)}</a> · <a href="${CHURCH_SOCIAL_LINKS.instagram}" style="color:#2F6F9F">${escapeHtml(footerInstagram)}</a> · <a href="${CHURCH_SOCIAL_LINKS.youtube}" style="color:#2F6F9F">${escapeHtml(footerYoutube)}</a></td></tr>`,
+      '</table>',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
       '</div>',
       "</div>",
