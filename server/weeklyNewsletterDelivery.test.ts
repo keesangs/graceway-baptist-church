@@ -25,8 +25,29 @@ describe("weekly newsletter delivery", () => {
     expect(email.replyTo).toBe("info@graceway-baptist.org");
     expect(email.to).toEqual(["reader@example.com"]);
     expect(email.html).toContain("9월 20일 주보");
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/graceway-logo-dark-approved_ab158297.png");
+    expect(email.html).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
+    expect(email.html).toContain("그레이스웨이 주간 주보");
     expect(email.html).toContain("safe-test-token");
+    expect(email.text).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
     expect(email.text).toContain("뉴스레터 구독 취소");
+  });
+
+  it("keeps the email-safe banner accessible when the logo image is unavailable", () => {
+    const email = buildWeeklyNewsletterEmail({
+      email: "reader@example.com",
+      lang: "en",
+      issueDate: "2026-09-20",
+      titleKo: "9월 20일 주보",
+      titleEn: "September 20 Bulletin",
+      bulletinUrl: "https://example.com/bulletin.pdf",
+      unsubscribeToken: "safe-test-token",
+    });
+
+    expect(email.html).toContain('alt="Graceway Baptist Church · 그레이스웨이 침례교회"');
+    expect(email.text).toContain("Graceway Weekly Newsletter");
+    expect(email.html).not.toContain("<style");
+    expect(email.html).not.toContain("javascript:");
   });
 
   it("converts site-local bulletin storage paths to canonical HTTPS links for email clients", () => {

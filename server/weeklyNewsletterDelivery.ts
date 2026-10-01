@@ -20,6 +20,7 @@ import { buildNewsletterSubscriptionUrl, NEWSLETTER_PUBLIC_ORIGIN } from "./news
 import { NEWSLETTER_FROM, NEWSLETTER_NOTIFICATION_RECIPIENT } from "./newsletterSubscriptionEmail";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
+const NEWSLETTER_BRAND_LOGO_URL = `${NEWSLETTER_PUBLIC_ORIGIN}/manus-storage/graceway-logo-dark-approved_ab158297.png`;
 
 function escapeHtml(value: string) {
   return value
@@ -74,16 +75,24 @@ export function buildWeeklyNewsletterEmail(input: {
   const viewLabel = ko ? "주보 보기" : "View bulletin";
   const downloadLabel = ko ? "PDF 다운로드" : "Download PDF";
   const unsubscribeLabel = ko ? "뉴스레터 구독 취소" : "Unsubscribe";
+  const bannerLabel = ko ? "그레이스웨이 주간 주보" : "Graceway Weekly Newsletter";
+  const churchName = "Graceway Baptist Church · 그레이스웨이 침례교회";
 
   return {
     from: NEWSLETTER_FROM,
     to: [input.email],
     replyTo: NEWSLETTER_NOTIFICATION_RECIPIENT,
     subject: ko ? `그레이스웨이 주간 주보 — ${date}` : `Graceway Weekly Bulletin — ${date}`,
-    text: [heading, "", title, intro, "", `${viewLabel}: ${bulletinUrl}`, `${downloadLabel}: ${bulletinUrl}`, "", `${unsubscribeLabel}: ${unsubscribeUrl}`].join("\n"),
+    text: [churchName, bannerLabel, "", heading, title, intro, "", `${viewLabel}: ${bulletinUrl}`, `${downloadLabel}: ${bulletinUrl}`, "", `${unsubscribeLabel}: ${unsubscribeUrl}`].join("\n"),
     html: [
-      '<div style="max-width:620px;margin:0 auto;font-family:Arial,sans-serif;color:#242A30;line-height:1.6">',
-      '<p style="color:#C9973E;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">Graceway Baptist Church</p>',
+      '<div style="max-width:620px;margin:0 auto;background:#FFFEFB;font-family:Arial,sans-serif;color:#242A30;line-height:1.6">',
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#17324D">',
+      '<tr><td align="center" style="padding:26px 24px 18px">',
+      `<img src="${NEWSLETTER_BRAND_LOGO_URL}" width="300" alt="${escapeHtml(churchName)}" style="display:block;width:300px;max-width:100%;height:auto;border:0">`,
+      '</td></tr>',
+      `<tr><td align="center" style="padding:0 24px 24px;color:#E5C484;font-size:12px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase">${escapeHtml(bannerLabel)}</td></tr>`,
+      '</table>',
+      '<div style="padding:30px 24px 24px">',
       `<h1 style="color:#17324D;font-family:Georgia,serif">${escapeHtml(heading)}</h1>`,
       `<p style="font-size:18px;font-weight:700;color:#17324D">${escapeHtml(title)}</p>`,
       `<p>${escapeHtml(intro)}</p>`,
@@ -91,6 +100,7 @@ export function buildWeeklyNewsletterEmail(input: {
       `<p><a href="${escapeHtml(bulletinUrl)}" style="color:#2F6F9F">${escapeHtml(downloadLabel)}</a></p>`,
       '<hr style="border:0;border-top:1px solid #e2e8ea;margin:28px 0">',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
+      '</div>',
       "</div>",
     ].join(""),
   };
