@@ -1,6 +1,7 @@
 
 
 ## Latest Updates — September 30, 2026
-- [x] Weekly newsletter internal test: sent one approved test email to info@graceway-baptist.org using the latest published bulletin
-- [x] Weekly newsletter church footer: added address, service times, contact email, and official Facebook, Instagram, and YouTube links
-- [x] Weekly newsletter footer verification: inspected the rendered HTML email and confirmed the full test suite and production build pass
+- [x] Newsletter bilingual footer: add Korean address and worship-time information alongside the existing English footer
+- [x] Newsletter highlight section: include a safe bilingual image and short description for the nearest published upcoming church event
+- [x] Newsletter highlight fallback: preserve a useful bulletin email when no upcoming event has a public image or description
+- [x] Newsletter enhancement verification: inspect Korean and English previews, run the full test suite, TypeScript, and production build

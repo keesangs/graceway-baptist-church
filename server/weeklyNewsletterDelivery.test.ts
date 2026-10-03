@@ -19,6 +19,15 @@ describe("weekly newsletter delivery", () => {
       titleEn: "September 20 Bulletin",
       bulletinUrl: "https://example.com/bulletin.pdf",
       unsubscribeToken: "safe-test-token",
+      highlight: {
+        titleKo: "홈커밍 연합예배",
+        titleEn: "Homecoming Union Service",
+        descriptionKo: "함께 예배하며 은혜를 나누는 특별한 시간을 준비했습니다.",
+        descriptionEn: "Join us for a special time of worship and fellowship.",
+        date: "2026-10-04T20:30:00.000Z",
+        imageUrl: "/manus-storage/homecoming-poster.png",
+        href: "/events?event=42",
+      },
     });
 
     expect(email.from).toContain("newsletter@graceway-baptist.org");
@@ -33,10 +42,15 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain("https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/");
     expect(email.html).toContain("https://www.instagram.com/gracewaybaptistchurchfremont");
     expect(email.html).toContain("https://www.youtube.com/@Graceway-Baptist");
+    expect(email.html).toContain("다가오는 교회 행사");
+    expect(email.html).toContain("홈커밍 연합예배");
+    expect(email.html).toContain("함께 예배하며 은혜를 나누는 특별한 시간을 준비했습니다.");
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/homecoming-poster.png");
+    expect(email.html).toContain("https://graceway-baptist.org/events?event=42");
     expect(email.html).toContain("safe-test-token");
     expect(email.text).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
-    expect(email.text).toContain("2791 Driscoll Rd, Fremont, CA 94539");
-    expect(email.text).toContain("예배 시간: 주일 예배 · 오후 1:30; 수요 기도회 · 오후 8:00");
+    expect(email.text).toContain("주소 / Address: 미국 캘리포니아주 프리몬트 Driscoll Rd 2791 · 2791 Driscoll Rd, Fremont, CA 94539");
+    expect(email.text).toContain("예배 시간 / Service times: 주일 예배 · 오후 1:30 · 수요 기도회 · 오후 8:00");
     expect(email.text).toContain("뉴스레터 구독 취소");
   });
 
@@ -49,11 +63,24 @@ describe("weekly newsletter delivery", () => {
       titleEn: "September 20 Bulletin",
       bulletinUrl: "https://example.com/bulletin.pdf",
       unsubscribeToken: "safe-test-token",
+      highlight: {
+        titleKo: "Homecoming 연합예배",
+        titleEn: "Homecoming Union Service",
+        descriptionKo: "함께 예배하며 교제하는 특별한 예배입니다.",
+        descriptionEn: "A special service for worship and fellowship together.",
+        date: "2026-10-04T20:30:00.000Z",
+        imageUrl: "https://example.com/homecoming.png",
+        href: "https://graceway-baptist.org/events?event=42",
+      },
     });
 
     expect(email.html).toContain('alt="Graceway Baptist Church · 그레이스웨이 침례교회"');
     expect(email.text).toContain("Graceway Weekly Newsletter");
-    expect(email.text).toContain("Service times: Sunday worship · 1:30 PM; Wednesday prayer · 8:00 PM");
+    expect(email.text).toContain("주소 / Address: 미국 캘리포니아주 프리몬트 Driscoll Rd 2791 · 2791 Driscoll Rd, Fremont, CA 94539");
+    expect(email.text).toContain("예배 시간 / Service times: Sunday worship · 1:30 PM · Wednesday prayer · 8:00 PM");
+    expect(email.text).toContain("Upcoming at Graceway");
+    expect(email.text).toContain("Homecoming Union Service");
+    expect(email.text).not.toContain("홈커밍(Homecoming) 예배로 영어부과 연합으로 드립니다.");
     expect(email.html).not.toContain("<style");
     expect(email.html).not.toContain("javascript:");
   });
