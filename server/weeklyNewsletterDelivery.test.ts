@@ -42,6 +42,12 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain("https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/");
     expect(email.html).toContain("https://www.instagram.com/gracewaybaptistchurchfremont");
     expect(email.html).toContain("https://www.youtube.com/@Graceway-Baptist");
+    expect(email.html).toContain('aria-label="페이스북"');
+    expect(email.html).toContain('aria-label="인스타그램"');
+    expect(email.html).toContain('aria-label="유튜브"');
+    expect(email.html).toContain("background:#1877F2");
+    expect(email.html).toContain("background:#E4405F");
+    expect(email.html).toContain("background:#FF0000");
     expect(email.html).toContain("다가오는 교회 행사");
     expect(email.html).toContain("홈커밍 연합예배");
     expect(email.html).toContain("함께 예배하며 은혜를 나누는 특별한 시간을 준비했습니다.");
@@ -49,7 +55,7 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain("https://graceway-baptist.org/events?event=42");
     expect(email.html).toContain("safe-test-token");
     expect(email.text).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
-    expect(email.text).toContain("주소 / Address: 미국 캘리포니아주 프리몬트 Driscoll Rd 2791 · 2791 Driscoll Rd, Fremont, CA 94539");
+    expect(email.text).toContain("Address: 2791 Driscoll Rd, Fremont, CA 94539");
     expect(email.text).toContain("예배 시간 / Service times: 주일 예배 · 오후 1:30 · 수요 기도회 · 오후 8:00");
     expect(email.text).toContain("뉴스레터 구독 취소");
   });
@@ -76,7 +82,7 @@ describe("weekly newsletter delivery", () => {
 
     expect(email.html).toContain('alt="Graceway Baptist Church · 그레이스웨이 침례교회"');
     expect(email.text).toContain("Graceway Weekly Newsletter");
-    expect(email.text).toContain("주소 / Address: 미국 캘리포니아주 프리몬트 Driscoll Rd 2791 · 2791 Driscoll Rd, Fremont, CA 94539");
+    expect(email.text).toContain("Address: 2791 Driscoll Rd, Fremont, CA 94539");
     expect(email.text).toContain("예배 시간 / Service times: Sunday worship · 1:30 PM · Wednesday prayer · 8:00 PM");
     expect(email.text).toContain("Upcoming at Graceway");
     expect(email.text).toContain("Homecoming Union Service");
