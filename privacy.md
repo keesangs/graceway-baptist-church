@@ -1,3 +1,8 @@
+---
+title: Privacy Policy — Graceway Voice Bot
+permalink: /privacy.html
+---
+
 # Privacy Policy — Graceway Voice Bot
 
 **Last updated: October 11, 2026**

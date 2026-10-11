@@ -1,3 +1,8 @@
+---
+title: Terms of Service — Graceway Voice Bot
+permalink: /terms.html
+---
+
 # Terms of Service — Graceway Voice Bot
 
 **Last updated: October 11, 2026**
