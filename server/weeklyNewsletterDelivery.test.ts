@@ -34,7 +34,7 @@ describe("weekly newsletter delivery", () => {
     expect(email.replyTo).toBe("info@graceway-baptist.org");
     expect(email.to).toEqual(["reader@example.com"]);
     expect(email.html).toContain("9월 20일 주보");
-    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/graceway-logo-dark-approved_ab158297.png");
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/graceway-logo-dark-updated_bda9aced.png");
     expect(email.html).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
     expect(email.html).toContain("그레이스웨이 주간 주보");
     expect(email.html).toContain("2791 Driscoll Rd, Fremont, CA 94539");

@@ -22,7 +22,7 @@ import { NEWSLETTER_FROM, NEWSLETTER_NOTIFICATION_RECIPIENT } from "./newsletter
 import { getFeaturedSpecialCalendarEventOccurrence, getUpcomingCalendarEventOccurrences } from "./eventOccurrences";
 
 const CHURCH_TIME_ZONE = "America/Los_Angeles";
-const NEWSLETTER_BRAND_LOGO_URL = `${NEWSLETTER_PUBLIC_ORIGIN}/manus-storage/graceway-logo-dark-approved_ab158297.png`;
+const NEWSLETTER_BRAND_LOGO_URL = `${NEWSLETTER_PUBLIC_ORIGIN}/manus-storage/graceway-logo-dark-updated_bda9aced.png`;
 const CHURCH_ADDRESS = "2791 Driscoll Rd, Fremont, CA 94539";
 const CHURCH_EMAIL = "info@graceway-baptist.org";
 const CHURCH_SOCIAL_LINKS = {
@@ -124,7 +124,7 @@ export function buildWeeklyNewsletterEmail(input: {
     ? ((ko ? input.highlight.descriptionKo : input.highlight.descriptionEn) || (ko ? "다가오는 교회 행사와 소식을 확인해 주세요." : "See what is happening next at Graceway."))
     : null;
   const highlightDate = input.highlight ? bulletinDate(input.highlight.date.slice(0, 10), input.lang) : null;
-  const highlightImageUrl = buildNewsletterHttpsUrl(input.highlight?.imageUrl, "/manus-storage/graceway-logo-dark-approved_ab158297.png");
+  const highlightImageUrl = buildNewsletterHttpsUrl(input.highlight?.imageUrl, "/manus-storage/graceway-logo-dark-updated_bda9aced.png");
   const highlightHref = buildNewsletterHttpsUrl(input.highlight?.href, "/events");
   const highlightHeading = ko ? "다가오는 교회 행사" : "Upcoming at Graceway";
   const highlightDateLabel = ko ? "일정" : "Date";

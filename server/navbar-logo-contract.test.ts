@@ -6,7 +6,7 @@ import { brandLogoIntrinsicSizes, brandLogoSources } from "@/components/BrandLog
 const assetManifest = JSON.parse(
   readFileSync(resolve(process.cwd(), "docs/navbar-logo-asset-manifest.json"), "utf8"),
 ) as {
-  runtimePath: string;
+  runtimePaths: { onLight: string; onDark: string };
   format: string;
   intrinsicSize: { width: number; height: number };
   aspectRatio: number;
@@ -14,8 +14,9 @@ const assetManifest = JSON.parse(
 };
 
 describe("navbar reverse lockup contract", () => {
-  it("uses the finalized transparent high-resolution PNG at the declared wide lockup ratio", () => {
-    expect(assetManifest.runtimePath).toBe(brandLogoSources["on-dark"]);
+  it("uses the current transparent PNG variants at the declared wide lockup ratio", () => {
+    expect(assetManifest.runtimePaths.onLight).toBe(brandLogoSources["on-light"]);
+    expect(assetManifest.runtimePaths.onDark).toBe(brandLogoSources["on-dark"]);
     expect(assetManifest.format).toBe("PNG RGBA");
     expect(assetManifest.background).toBe("transparent");
     expect(assetManifest.intrinsicSize).toEqual(brandLogoIntrinsicSizes["on-dark"]);

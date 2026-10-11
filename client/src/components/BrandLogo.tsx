@@ -6,13 +6,13 @@ type BrandLogoProps = {
 };
 
 export const brandLogoSources = {
-  "on-light": "/manus-storage/graceway-logo-light_4da05d65.png",
-  "on-dark": "/manus-storage/graceway-logo-dark-approved_ab158297.png",
+  "on-light": "/manus-storage/graceway-logo-light-updated_e386b8f1.png",
+  "on-dark": "/manus-storage/graceway-logo-dark-updated_bda9aced.png",
 } as const;
 
 export const brandLogoIntrinsicSizes = {
-  "on-light": { width: 433, height: 113 },
-  "on-dark": { width: 2012, height: 522 },
+  "on-light": { width: 3086, height: 763 },
+  "on-dark": { width: 3086, height: 763 },
 } as const;
 
 /** Official Graceway bilingual lockup derived from the supplied logo template. */
