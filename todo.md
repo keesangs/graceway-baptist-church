@@ -1,6 +1,6 @@
 
 
-## Latest Updates — October 4, 2026
-- [x] Newsletter footer address: show only the English postal address in both language versions
-- [x] Newsletter social footer: replace text-only social links with separate accessible Facebook, Instagram, and YouTube icon links
-- [x] Newsletter footer verification: run focused tests, full suite, TypeScript, build, and bilingual preview checks
+## Latest Updates — October 19, 2026
+- [x] Weekly newsletter footer icons: replace text glyphs with homepage-matching Facebook, Instagram, and YouTube icon shapes
+- [x] Weekly newsletter icon accessibility: preserve bilingual labels, links, and readable fallback text for email clients
+- [x] Weekly newsletter icon verification: run focused/full tests, TypeScript, build, and inspect the rendered email HTML

@@ -63,9 +63,15 @@ function buildNewsletterHttpsUrl(storedUrl: string | null | undefined, fallbackP
   }
 }
 
-function socialIconLink(href: string, label: string, icon: string, color: string) {
-  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:30px;height:30px;margin-right:8px;border-radius:50%;background:${color};color:#fff;text-align:center;text-decoration:none;font-family:Arial,sans-serif;font-size:15px;font-weight:700;line-height:30px;vertical-align:middle">${icon}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${escapeHtml(label)}</span></a>`;
+function socialIconLink(href: string, label: string, iconSvg: string, color: string) {
+  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:30px;height:30px;margin-right:8px;border-radius:50%;background:${color};color:#fff;text-align:center;text-decoration:none;vertical-align:middle"><span style="display:inline-block;width:16px;height:16px;margin-top:7px;line-height:16px">${iconSvg}</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${escapeHtml(label)}</span></a>`;
 }
+
+const newsletterSocialIcons = {
+  facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
+  instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>',
+  youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>',
+} as const;
 
 export function buildWeeklyNewsletterBulletinUrl(storedUrl: string) {
   const candidate = storedUrl.trim();
@@ -186,7 +192,7 @@ export function buildWeeklyNewsletterEmail(input: {
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerAddressLabel)}:</strong> ${escapeHtml(CHURCH_ADDRESS)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerServiceLabel)}:</strong> ${escapeHtml(footerSunday)}<br>${escapeHtml(footerWednesday)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerContactLabel)}:</strong> <a href="mailto:${CHURCH_EMAIL}" style="color:#2F6F9F">${CHURCH_EMAIL}</a></td></tr>`,
-      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, footerFacebook, "f", "#1877F2")}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, footerInstagram, "◎", "#E4405F")}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, footerYoutube, "▶", "#FF0000")}</td></tr>`,
+      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, footerFacebook, newsletterSocialIcons.facebook, "#1877F2")}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, footerInstagram, newsletterSocialIcons.instagram, "#E4405F")}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, footerYoutube, newsletterSocialIcons.youtube, "#FF0000")}</td></tr>`,
       '</table>',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
       '</div>',

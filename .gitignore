@@ -109,6 +109,12 @@ temp/
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
 
+# Large print banner binaries are maintained outside Git and uploaded through
+# project File Storage when they need to be used by WebDev.
+docs/branding/banners/*.png
+docs/branding/banners/*.svg
+!docs/branding/banners/README.md
+
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
