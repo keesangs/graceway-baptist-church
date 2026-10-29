@@ -17,6 +17,12 @@ describe("worship archive pagination", () => {
     expect(source).toContain("paginatedWorships.map((w) => (");
   });
 
+  it("sorts synced and legacy worship cards by the embedded Sunday service date", () => {
+    const source = worshipSource();
+    expect(source).toContain("return [...newSyncedWorships, ...refreshedLegacyWorships].sort(");
+    expect(source).toContain("getSermonDateTimestamp(b.titleKo, b.date) - getSermonDateTimestamp(a.titleKo, a.date)");
+  });
+
   it("returns to the first page when the worship search changes", () => {
     const source = worshipSource();
     expect(source).toContain("setSearch(e.target.value);");

@@ -12,6 +12,6 @@ describe("Worship archive thumbnail refresh", () => {
     expect(source).toContain("const syncedByVideoId = new Map(");
     expect(source).toContain("const refreshedLegacyWorships = legacyWorships.map");
     expect(source).toContain("thumbnailUrl: `${synced.thumbnailUrl}${separator}cb=${thumbnailVersion}`");
-    expect(source).toContain("return [...newSyncedWorships, ...refreshedLegacyWorships];");
+    expect(source).toContain("return [...newSyncedWorships, ...refreshedLegacyWorships].sort(");
   });
 });

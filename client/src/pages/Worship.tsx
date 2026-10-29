@@ -193,7 +193,9 @@ export default function Worship() {
         videoId: video.videoId,
         thumbnailUrl: video.thumbnailUrl,
       }));
-    return [...newSyncedWorships, ...refreshedLegacyWorships];
+    return [...newSyncedWorships, ...refreshedLegacyWorships].sort(
+      (a, b) => getSermonDateTimestamp(b.titleKo, b.date) - getSermonDateTimestamp(a.titleKo, a.date),
+    );
   }, [syncedVideosQuery.data]);
 
   const filtered = worships.filter((w) => {
