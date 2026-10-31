@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { getMissingYouTubeVideoIds } from "./db";
+import { getMissingYouTubeVideoIds, isYouTubeVideoStale } from "./db";
 import { getServiceDateTimestamp, sortByServiceDateDesc } from "../client/src/lib/serviceDate";
 
 const readSource = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8");
@@ -10,6 +10,13 @@ describe("YouTube maintenance contracts", () => {
   it("identifies only persisted video IDs missing from a healthy playlist response", () => {
     expect(getMissingYouTubeVideoIds(["kept", "deleted", "legacy"], ["kept", "new"])).toEqual(["deleted", "legacy"]);
     expect(getMissingYouTubeVideoIds(["legacy"], [])).toEqual(["legacy"]);
+  });
+
+  it("uses a deterministic 90-day review window for visible stale videos", () => {
+    const now = new Date("2026-10-31T00:00:00Z");
+    expect(isYouTubeVideoStale("2026-07-31T00:00:00Z", now, 90)).toBe(true);
+    expect(isYouTubeVideoStale("2026-08-03T00:00:00Z", now, 90)).toBe(false);
+    expect(isYouTubeVideoStale("not-a-date", now, 90)).toBe(false);
   });
 
   it("orders both service lists with the shared date utility", () => {
@@ -31,8 +38,11 @@ describe("YouTube maintenance contracts", () => {
     expect(router).toContain("hideMissingYouTubePlaylistVideos(\"sermon\"");
     expect(router).toContain("listAdmin: adminProcedure");
     expect(router).toContain("deleteHidden: adminProcedure");
+    expect(router).toContain("hideStale: adminProcedure");
     expect(db).toContain("officialCutover = new Date(\"2026-09-20T00:00:00.000Z\")");
+    expect(db).toContain("Bulk-hide only visible records that are still stale");
     expect(admin).toContain("Hidden and older videos");
+    expect(admin).toContain("Hide older selected");
     expect(admin).toContain("Permanently delete");
     expect(admin).toContain("Restore");
   });

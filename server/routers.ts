@@ -46,7 +46,9 @@ import {
   listRecentWeeklyNewsletterCampaigns,
   listYouTubeVideos,
   listAllYouTubeVideos,
+  isYouTubeVideoStale,
   hideMissingYouTubePlaylistVideos,
+  hideStaleYouTubeVideos,
   saveYouTubePlaylistVideos,
   setYouTubeVideoHidden,
   deleteYouTubeVideos,
@@ -323,10 +325,31 @@ export const appRouter = router({
       .input(z.object({ videoKind: z.enum(["sermon", "worship"]).optional() }).optional())
       .query(({ input }) => listAllYouTubeVideos(input?.videoKind)),
 
+    /** Admin review feed separates hidden history from visible records older than the review window. */
+    maintenance: adminProcedure
+      .input(z.object({ staleAfterDays: z.number().int().min(30).max(3650).default(90) }).optional())
+      .query(async ({ input }) => {
+        const staleAfterDays = input?.staleAfterDays ?? 90;
+        const videos = await listAllYouTubeVideos();
+        const now = new Date();
+        return {
+          staleAfterDays,
+          videos,
+          staleIds: videos
+            .filter(video => !video.hiddenAt && isYouTubeVideoStale(video.publishedAt, now, staleAfterDays))
+            .map(video => video.id),
+        };
+      }),
+
     /** Hide or restore one retained playlist record without deleting history. */
     setHidden: adminProcedure
       .input(z.object({ id: z.number().int().positive(), hidden: z.boolean() }))
       .mutation(({ input }) => setYouTubeVideoHidden(input.id, input.hidden).then(() => ({ success: true }))),
+
+    /** Hide only selected visible records that still satisfy the stale review window. */
+    hideStale: adminProcedure
+      .input(z.object({ ids: z.array(z.number().int().positive()).min(1).max(100), staleAfterDays: z.number().int().min(30).max(3650).default(90) }))
+      .mutation(({ input }) => hideStaleYouTubeVideos(input.ids, input.staleAfterDays).then((hidden) => ({ success: true, hidden }))),
 
     /** Permanently remove only records already hidden from public pages. */
     deleteHidden: adminProcedure

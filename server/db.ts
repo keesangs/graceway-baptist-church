@@ -187,6 +187,17 @@ export async function listAllYouTubeVideos(videoKind?: YouTubeVideoKind) {
     .orderBy(desc(youtubeVideos.hiddenAt), asc(youtubeVideos.videoKind), asc(youtubeVideos.playlistPosition), desc(youtubeVideos.publishedAt));
 }
 
+/** A visible record is stale when its source publication date is older than the review window. */
+export function isYouTubeVideoStale(
+  publishedAt: Date | string,
+  now = new Date(),
+  staleAfterDays = 90,
+) {
+  const publishedTime = new Date(publishedAt).getTime();
+  if (!Number.isFinite(publishedTime) || !Number.isFinite(now.getTime())) return false;
+  return publishedTime < now.getTime() - staleAfterDays * 24 * 60 * 60 * 1000;
+}
+
 /**
  * Inserts playlist videos once and refreshes source metadata on later manual
  * syncs. The unique video-kind key prevents duplicate public cards.
@@ -263,6 +274,25 @@ export async function setYouTubeVideoHidden(id: number, hidden: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(youtubeVideos).set({ hiddenAt: hidden ? new Date() : null }).where(eq(youtubeVideos.id, id));
+}
+
+/** Bulk-hide only visible records that are still stale under the review window. */
+export async function hideStaleYouTubeVideos(ids: number[], staleAfterDays = 90, now = new Date()) {
+  const db = await getDb();
+  if (!db || ids.length === 0) return 0;
+  const candidates = await db
+    .select({ id: youtubeVideos.id, publishedAt: youtubeVideos.publishedAt, hiddenAt: youtubeVideos.hiddenAt })
+    .from(youtubeVideos)
+    .where(and(inArray(youtubeVideos.id, ids), isNull(youtubeVideos.hiddenAt)));
+  const staleIds = candidates
+    .filter((video) => isYouTubeVideoStale(video.publishedAt, now, staleAfterDays))
+    .map((video) => video.id);
+  if (staleIds.length === 0) return 0;
+  const result = await db
+    .update(youtubeVideos)
+    .set({ hiddenAt: now })
+    .where(and(inArray(youtubeVideos.id, staleIds), isNull(youtubeVideos.hiddenAt)));
+  return result[0]?.affectedRows ?? 0;
 }
 
 export async function deleteYouTubeVideos(ids: number[]) {
