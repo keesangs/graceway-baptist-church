@@ -26,7 +26,8 @@ describe("YouTube manual playlist sync contract", () => {
     expect(sermons).toContain('trpc.youtube.list.useQuery(SERMON_LIST_INPUT)');
     expect(sermons).toContain('getCanonicalSermonCards(legacyCards, syncedVideosQuery.data ?? [])');
     expect(worship).toContain('trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT)');
-    expect(worship).toContain('return [...newSyncedWorships, ...refreshedLegacyWorships]');
+    expect(worship).toContain('sortByServiceDateDesc(');
+    expect(schema).toContain('hiddenAt: timestamp("hiddenAt")');
   });
 
   it("persists the parsed sermon title when an official sync refreshes a row", () => {
@@ -43,6 +44,7 @@ describe("YouTube manual playlist sync contract", () => {
     }, syncedAt)).toMatchObject({
       title: "2026. 09.27 주일예배 설교",
       sermonTitle: "하나님의 교회",
+      hiddenAt: null,
       lastSyncedAt: syncedAt,
     });
   });

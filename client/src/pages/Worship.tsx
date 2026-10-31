@@ -12,7 +12,7 @@ import { VideoShareButton } from "@/components/VideoShareButton";
 import { useLang } from "@/contexts/LanguageContext";
 import { brandVisualAssets } from "@/lib/brandVisualAssets";
 import { trpc } from "@/lib/trpc";
-import { getSermonDateTimestamp } from "@/lib/sermonDisplay";
+import { getServiceDateTimestamp, sortByServiceDateDesc } from "@/lib/serviceDate";
 
 const WORSHIP_IMG = brandVisualAssets.worshipCover;
 
@@ -182,7 +182,7 @@ export default function Worship() {
       .map((video) => ({
         titleEn: video.title,
         titleKo: video.title,
-        date: new Date(getSermonDateTimestamp(video.title, video.publishedAt)).toLocaleDateString("en-US", {
+        date: new Date(getServiceDateTimestamp(video.title, video.publishedAt)).toLocaleDateString("en-US", {
           timeZone: "UTC",
           month: "long",
           day: "numeric",
@@ -193,8 +193,10 @@ export default function Worship() {
         videoId: video.videoId,
         thumbnailUrl: video.thumbnailUrl,
       }));
-    return [...newSyncedWorships, ...refreshedLegacyWorships].sort(
-      (a, b) => getSermonDateTimestamp(b.titleKo, b.date) - getSermonDateTimestamp(a.titleKo, a.date),
+    return sortByServiceDateDesc(
+      [...newSyncedWorships, ...refreshedLegacyWorships],
+      (worship) => worship.titleKo,
+      (worship) => worship.date,
     );
   }, [syncedVideosQuery.data]);
 

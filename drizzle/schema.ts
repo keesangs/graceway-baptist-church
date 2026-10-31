@@ -65,6 +65,8 @@ export const youtubeVideos = mysqlTable("youtube_videos", {
   publishedAt: timestamp("publishedAt").notNull(),
   thumbnailUrl: varchar("thumbnailUrl", { length: 1024 }).notNull(),
   playlistPosition: int("playlistPosition").notNull(),
+  /** Hidden when a healthy official playlist sync no longer contains the item. */
+  hiddenAt: timestamp("hiddenAt"),
   lastSyncedAt: timestamp("lastSyncedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

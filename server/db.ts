@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, isNotNull, isNull, notInArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   calendarEvents,
@@ -160,16 +160,31 @@ export async function deleteMediaFile(id: number) {
 
 export type YouTubeVideoKind = "sermon" | "worship";
 
+export function getMissingYouTubeVideoIds(existingVideoIds: readonly string[], activeVideoIds: readonly string[]) {
+  const activeIds = new Set(activeVideoIds);
+  return existingVideoIds.filter((videoId) => !activeIds.has(videoId));
+}
+
 export async function listYouTubeVideos(videoKind: YouTubeVideoKind) {
   const db = await getDb();
   if (!db) return [];
   return db
     .select()
     .from(youtubeVideos)
-    .where(eq(youtubeVideos.videoKind, videoKind))
+    .where(and(eq(youtubeVideos.videoKind, videoKind), isNull(youtubeVideos.hiddenAt)))
     // Playlist position is the church-curated newest-first source of truth.
     // Video upload timestamps can differ from the Sunday sermon date.
     .orderBy(asc(youtubeVideos.playlistPosition), desc(youtubeVideos.publishedAt));
+}
+
+export async function listAllYouTubeVideos(videoKind?: YouTubeVideoKind) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(youtubeVideos)
+    .where(videoKind ? eq(youtubeVideos.videoKind, videoKind) : undefined)
+    .orderBy(desc(youtubeVideos.hiddenAt), asc(youtubeVideos.videoKind), asc(youtubeVideos.playlistPosition), desc(youtubeVideos.publishedAt));
 }
 
 /**
@@ -186,6 +201,7 @@ export function getYouTubeVideoSyncUpdate(video: InsertYouTubeVideo, syncTime: D
     publishedAt: video.publishedAt,
     thumbnailUrl: video.thumbnailUrl,
     playlistPosition: video.playlistPosition,
+    hiddenAt: null,
     lastSyncedAt: syncTime,
   };
 }
@@ -218,6 +234,42 @@ export async function saveYouTubePlaylistVideos(videos: InsertYouTubeVideo[]) {
   }
 
   return { added, updated, total: videos.length };
+}
+
+/** Hide records absent from a healthy official playlist response, preserving history. */
+export async function hideMissingYouTubePlaylistVideos(
+  videoKind: YouTubeVideoKind,
+  activeVideoIds: string[],
+  hiddenAt = new Date(),
+) {
+  const db = await getDb();
+  if (!db || activeVideoIds.length === 0) return 0;
+  // Legacy archive rows predate the official-channel handoff and must remain
+  // visible even though they are not present in the new official playlists.
+  const officialCutover = new Date("2026-09-20T00:00:00.000Z");
+  const result = await db
+    .update(youtubeVideos)
+    .set({ hiddenAt })
+    .where(and(
+      eq(youtubeVideos.videoKind, videoKind),
+      notInArray(youtubeVideos.videoId, activeVideoIds),
+      isNull(youtubeVideos.hiddenAt),
+      gt(youtubeVideos.publishedAt, officialCutover),
+    ));
+  return result[0]?.affectedRows ?? 0;
+}
+
+export async function setYouTubeVideoHidden(id: number, hidden: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(youtubeVideos).set({ hiddenAt: hidden ? new Date() : null }).where(eq(youtubeVideos.id, id));
+}
+
+export async function deleteYouTubeVideos(ids: number[]) {
+  const db = await getDb();
+  if (!db || ids.length === 0) return 0;
+  const result = await db.delete(youtubeVideos).where(and(inArray(youtubeVideos.id, ids), isNotNull(youtubeVideos.hiddenAt)));
+  return result[0]?.affectedRows ?? 0;
 }
 
 export type NewsletterSubscriberStatus = "pending" | "active" | "unsubscribed" | "suppressed";

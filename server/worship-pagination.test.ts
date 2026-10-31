@@ -19,8 +19,9 @@ describe("worship archive pagination", () => {
 
   it("sorts synced and legacy worship cards by the embedded Sunday service date", () => {
     const source = worshipSource();
-    expect(source).toContain("return [...newSyncedWorships, ...refreshedLegacyWorships].sort(");
-    expect(source).toContain("getSermonDateTimestamp(b.titleKo, b.date) - getSermonDateTimestamp(a.titleKo, a.date)");
+    expect(source).toContain('import { getServiceDateTimestamp, sortByServiceDateDesc } from "@/lib/serviceDate";');
+    expect(source).toContain("return sortByServiceDateDesc(");
+    expect(source).toContain("(worship) => worship.titleKo");
   });
 
   it("returns to the first page when the worship search changes", () => {

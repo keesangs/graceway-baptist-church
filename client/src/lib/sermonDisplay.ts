@@ -1,3 +1,7 @@
+import { getServiceDateFromLabel, getServiceDateTimestamp as getSermonDateTimestamp, sortByServiceDateDesc } from "@/lib/serviceDate";
+
+export { getServiceDateTimestamp as getSermonDateTimestamp } from "@/lib/serviceDate";
+
 export type SermonDisplayData = {
   date: string;
   title: string;
@@ -48,28 +52,6 @@ export function getPublicSermonSpeaker(speaker: string | null | undefined) {
   return PUBLIC_SERMON_SPEAKER_NAMES[normalized] ?? normalized;
 }
 
-function getDateFromLabel(value: string) {
-  // YouTube titles may include extra spacing around punctuation, for example
-  // `2026.  09. 20 주일예배 설교`. Treat that as the same Sunday-service date.
-  const match = value.match(/(20\d{2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{1,2})/);
-  if (!match) return null;
-  return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
-}
-
-export function getSermonDateTimestamp(title: string, fallback: Date | string) {
-  const embeddedDate = getDateFromLabel(title);
-  if (embeddedDate) return embeddedDate.getTime();
-
-  // Curated legacy records use readable English service dates (for example,
-  // "August 2, 2026"). Resolve those before falling back to YouTube's upload
-  // timestamp, which can be days or weeks later than the actual Sunday.
-  const suppliedDate = new Date(title).getTime();
-  if (!Number.isNaN(suppliedDate)) return suppliedDate;
-
-  const parsed = new Date(fallback).getTime();
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 function getServiceDateKey(title: string, fallback: Date | string) {
   const timestamp = getSermonDateTimestamp(title, fallback);
   if (!timestamp) return `video:${title}`;
@@ -91,12 +73,12 @@ export function getCanonicalSermonCards(
   syncedVideos: SyncedSermonVideo[],
 ): CanonicalSermonCard[] {
   if (syncedVideos.length === 0) {
-    return [...legacySermons]
+    const legacyCards = [...legacySermons]
       .map((sermon) => ({
         ...sermon,
         sermonDateTimestamp: getSermonDateTimestamp(sermon.date, sermon.date),
-      }))
-      .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
+      }));
+    return sortByServiceDateDesc(legacyCards, (sermon) => sermon.date, (sermon) => sermon.date);
   }
 
   const legacyByVideoId = new Map(legacySermons.map((sermon) => [sermon.videoId, sermon]));
@@ -153,15 +135,18 @@ export function getCanonicalSermonCards(
     }
   }
 
-  return Array.from(canonicalByServiceDate.values())
-    .sort((a, b) => (b.sermonDateTimestamp ?? 0) - (a.sermonDateTimestamp ?? 0));
+  return sortByServiceDateDesc(
+    Array.from(canonicalByServiceDate.values()),
+    (sermon) => sermon.date,
+    (sermon) => sermon.publishedAt,
+  );
 }
 
 export function formatSermonServiceDate({ date, title }: Pick<SermonDisplayData, "date" | "title">, lang: "ko" | "en") {
   // The playlist label carries the service date while the description title
   // carries the actual message title. Prefer the date field so these concerns
   // remain independent after a synchronized video receives a semantic title.
-  const serviceDate = getDateFromLabel(date) ?? getDateFromLabel(title) ?? new Date(date);
+  const serviceDate = getServiceDateFromLabel(date) ?? getServiceDateFromLabel(title) ?? new Date(date);
   if (Number.isNaN(serviceDate.getTime())) return lang === "ko" ? "주일예배 말씀" : "Sunday Worship Message";
 
   if (lang === "ko") {

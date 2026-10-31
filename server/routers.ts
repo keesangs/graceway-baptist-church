@@ -45,7 +45,11 @@ import {
   listWeeklyNewsletterIssuesForAdmin,
   listRecentWeeklyNewsletterCampaigns,
   listYouTubeVideos,
+  listAllYouTubeVideos,
+  hideMissingYouTubePlaylistVideos,
   saveYouTubePlaylistVideos,
+  setYouTubeVideoHidden,
+  deleteYouTubeVideos,
   confirmNewsletterSubscription,
   requestNewsletterSubscription,
   toggleMeditationCommentLike,
@@ -306,8 +310,28 @@ export const appRouter = router({
         saveYouTubePlaylistVideos(worshipVideos),
       ]);
 
-      return { sermons, worship };
+      const [sermonsHidden, worshipHidden] = await Promise.all([
+        hideMissingYouTubePlaylistVideos("sermon", sermonVideos.map(video => video.videoId)),
+        hideMissingYouTubePlaylistVideos("worship", worshipVideos.map(video => video.videoId)),
+      ]);
+
+      return { sermons: { ...sermons, hidden: sermonsHidden }, worship: { ...worship, hidden: worshipHidden } };
     }),
+
+    /** Admin maintenance view includes hidden history for review and cleanup. */
+    listAdmin: adminProcedure
+      .input(z.object({ videoKind: z.enum(["sermon", "worship"]).optional() }).optional())
+      .query(({ input }) => listAllYouTubeVideos(input?.videoKind)),
+
+    /** Hide or restore one retained playlist record without deleting history. */
+    setHidden: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), hidden: z.boolean() }))
+      .mutation(({ input }) => setYouTubeVideoHidden(input.id, input.hidden).then(() => ({ success: true }))),
+
+    /** Permanently remove only records already hidden from public pages. */
+    deleteHidden: adminProcedure
+      .input(z.object({ ids: z.array(z.number().int().positive()).min(1).max(100) }))
+      .mutation(({ input }) => deleteYouTubeVideos(input.ids).then((deleted) => ({ success: true, deleted }))),
   }),
 
   // ── Church Calendar Events ────────────────────────────────────────────────

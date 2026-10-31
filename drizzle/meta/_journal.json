@@ -134,6 +134,13 @@
       "when": 1790574992269,
       "tag": "0018_first_human_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1793465122340,
+      "tag": "0019_cold_psynapse",
+      "breakpoints": true
     }
   ]
 }

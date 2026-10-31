@@ -33,6 +33,9 @@ import {
   Download,
   RefreshCw,
   Youtube,
+  Eye,
+  EyeOff,
+  Trash2,
   CalendarDays,
   FileText,
   Images,
@@ -116,21 +119,40 @@ export default function AdminInbox() {
   const subscribersQuery = trpc.newsletter.list.useQuery(undefined, { enabled: isAdmin });
   const sermonVideosQuery = trpc.youtube.list.useQuery(SERMON_LIST_INPUT, { enabled: isAdmin });
   const worshipVideosQuery = trpc.youtube.list.useQuery(WORSHIP_LIST_INPUT, { enabled: isAdmin });
+  const allYouTubeVideosQuery = trpc.youtube.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const eventsQuery = trpc.events.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const galleryQuery = trpc.gallery.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const weeklyNewsletterQuery = trpc.weeklyNewsletter.listAdmin.useQuery(undefined, { enabled: isAdmin });
   const [syncResult, setSyncResult] = useState<string | null>(null);
+  const [selectedHiddenVideoIds, setSelectedHiddenVideoIds] = useState<number[]>([]);
   const syncYouTubeMutation = trpc.youtube.sync.useMutation({
     onSuccess: async (result) => {
       setSyncResult(
-        `Synced ${result.sermons.total} sermon and ${result.worship.total} worship playlist videos. Added ${result.sermons.added + result.worship.added} new record(s).`,
+        `Synced ${result.sermons.total} sermon and ${result.worship.total} worship playlist videos. Added ${result.sermons.added + result.worship.added} new record(s); hidden ${result.sermons.hidden + result.worship.hidden} missing record(s).`,
       );
-      await Promise.all([sermonVideosQuery.refetch(), worshipVideosQuery.refetch()]);
+      await Promise.all([sermonVideosQuery.refetch(), worshipVideosQuery.refetch(), allYouTubeVideosQuery.refetch()]);
+    },
+  });
+  const setYouTubeHiddenMutation = trpc.youtube.setHidden.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        sermonVideosQuery.refetch(),
+        worshipVideosQuery.refetch(),
+        allYouTubeVideosQuery.refetch(),
+      ]);
+    },
+  });
+  const deleteHiddenYouTubeMutation = trpc.youtube.deleteHidden.useMutation({
+    onSuccess: async () => {
+      setSelectedHiddenVideoIds([]);
+      await allYouTubeVideosQuery.refetch();
     },
   });
 
   const messages = messagesQuery.data ?? [];
   const subscribers = subscribersQuery.data ?? [];
+  const allYouTubeVideos = allYouTubeVideosQuery.data ?? [];
+  const hiddenYouTubeVideos = allYouTubeVideos.filter((video) => video.hiddenAt);
 
   const counts = useMemo(
     () => ({ messages: messages.length, subscribers: subscribers.length, events: eventsQuery.data?.length ?? 0, gallery: galleryQuery.data?.length ?? 0, bulletins: weeklyNewsletterQuery.data?.length ?? 0 }),
@@ -366,6 +388,85 @@ export default function AdminInbox() {
           {syncResult && <p className="mt-4 rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]">{syncResult}</p>}
           {syncYouTubeMutation.error && (
             <p className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">Unable to sync playlists: {syncYouTubeMutation.error.message}</p>
+          )}
+        </section>
+
+        <section className="mb-8 rounded-xl border border-[#DCE4E7] bg-[#FFFEFB] p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#B07834]">Archive maintenance</p>
+              <h2 className="mt-1 text-lg font-bold text-[#163B59]" style={{ fontFamily: "'Source Serif 4', serif" }}>
+                Hidden and older videos
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#607A91]">
+                Videos missing from a healthy official playlist sync are hidden from public pages, not immediately erased. Restore a record if it was removed by mistake, or permanently delete selected hidden records after review.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#F6F0E5] px-3 py-1.5 text-xs font-semibold text-[#8A6420]">
+                {hiddenYouTubeVideos.length} hidden
+              </span>
+              <button
+                type="button"
+                disabled={selectedHiddenVideoIds.length === 0 || deleteHiddenYouTubeMutation.isPending}
+                onClick={() => {
+                  if (!window.confirm(`Permanently delete ${selectedHiddenVideoIds.length} hidden video record(s)? This cannot be undone.`)) return;
+                  deleteHiddenYouTubeMutation.mutate({ ids: selectedHiddenVideoIds });
+                }}
+                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Trash2 size={14} /> Delete selected
+              </button>
+            </div>
+          </div>
+          {allYouTubeVideosQuery.isLoading ? (
+            <div className="flex items-center gap-2 py-6 text-sm text-[#607A91]"><Loader2 size={16} className="animate-spin" /> Loading video history…</div>
+          ) : hiddenYouTubeVideos.length === 0 ? (
+            <p className="mt-5 rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]">No hidden videos need review.</p>
+          ) : (
+            <div className="mt-5 space-y-3">
+              {hiddenYouTubeVideos.map((video) => {
+                const selected = selectedHiddenVideoIds.includes(video.id);
+                return (
+                  <article key={video.id} className={`flex flex-col gap-3 rounded-lg border p-4 transition-colors sm:flex-row sm:items-center sm:justify-between ${selected ? "border-[#B9955E] bg-[#FDF9F0]" : "border-[#DCE4E7] bg-white"}`}>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={(event) => setSelectedHiddenVideoIds((current) => event.target.checked ? [...current, video.id] : current.filter((id) => id !== video.id))}
+                        aria-label={`Select ${video.title} for deletion`}
+                        className="mt-1 h-4 w-4 accent-[#163B59]"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#163B59]">{video.title}</p>
+                        <p className="mt-1 text-xs text-[#607A91]">{video.videoKind === "sermon" ? "Sermon" : "Worship"} · Published {formatDateTime(video.publishedAt)} · Hidden {video.hiddenAt ? formatDateTime(video.hiddenAt) : "Not hidden"}</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 pl-7 sm:pl-0">
+                      <button
+                        type="button"
+                        disabled={setYouTubeHiddenMutation.isPending}
+                        onClick={() => setYouTubeHiddenMutation.mutate({ id: video.id, hidden: false })}
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-[#C8D4D9] px-3 py-2 text-xs font-semibold text-[#163B59] transition-colors hover:bg-[#E7EEF1] disabled:opacity-50"
+                      >
+                        <Eye size={14} /> Restore
+                      </button>
+                      <button
+                        type="button"
+                        disabled={setYouTubeHiddenMutation.isPending}
+                        onClick={() => setYouTubeHiddenMutation.mutate({ id: video.id, hidden: true })}
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-[#C8D4D9] px-3 py-2 text-xs font-semibold text-[#607A91] transition-colors hover:bg-[#E7EEF1] disabled:opacity-50"
+                      >
+                        <EyeOff size={14} /> Keep hidden
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+          {(setYouTubeHiddenMutation.error || deleteHiddenYouTubeMutation.error) && (
+            <p className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">Unable to update video history. Please refresh and try again.</p>
           )}
         </section>
 
