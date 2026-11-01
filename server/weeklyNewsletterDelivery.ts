@@ -64,7 +64,7 @@ function buildNewsletterHttpsUrl(storedUrl: string | null | undefined, fallbackP
 }
 
 function socialIconLink(href: string, label: string, iconSvg: string, color: string) {
-  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:30px;height:30px;margin-right:8px;border-radius:50%;background:${color};color:#fff;text-align:center;text-decoration:none;vertical-align:middle"><span style="display:inline-block;width:16px;height:16px;margin-top:7px;line-height:16px">${iconSvg}</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${escapeHtml(label)}</span></a>`;
+  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:44px;height:44px;margin-right:8px;border:1px solid ${color};border-radius:50%;background:#FFFEFB;color:${color};text-align:center;text-decoration:none;vertical-align:middle;box-sizing:border-box"><span style="display:inline-block;width:16px;height:16px;margin-top:13px;line-height:16px">${iconSvg}</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${escapeHtml(label)}</span></a>`;
 }
 
 const newsletterSocialIcons = {
@@ -113,7 +113,7 @@ export function buildWeeklyNewsletterEmail(input: {
   const viewLabel = ko ? "주보 보기" : "View bulletin";
   const downloadLabel = ko ? "PDF 다운로드" : "Download PDF";
   const unsubscribeLabel = ko ? "뉴스레터 구독 취소" : "Unsubscribe";
-  const bannerLabel = ko ? "그레이스웨이 주간 주보" : "Graceway Weekly Newsletter";
+  const bannerLabel = "그레이스웨이 Weekly Newsletter";
   const churchName = "Graceway Baptist Church · 그레이스웨이 침례교회";
   const footerHeading = ko ? "그레이스웨이 침례교회" : "Graceway Baptist Church";
   const footerAddressLabel = "Address";

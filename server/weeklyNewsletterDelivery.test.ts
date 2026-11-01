@@ -36,7 +36,7 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain("9월 20일 주보");
     expect(email.html).toContain("https://graceway-baptist.org/manus-storage/graceway-logo-dark-updated_bda9aced.png");
     expect(email.html).toContain("Graceway Baptist Church · 그레이스웨이 침례교회");
-    expect(email.html).toContain("그레이스웨이 주간 주보");
+    expect(email.html).toContain("그레이스웨이 Weekly Newsletter");
     expect(email.html).toContain("2791 Driscoll Rd, Fremont, CA 94539");
     expect(email.html).toContain("주일 예배 · 오후 1:30");
     expect(email.html).toContain("https://www.facebook.com/people/Graceway-Baptist-Church/61594452553986/");
@@ -45,9 +45,12 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain('aria-label="페이스북"');
     expect(email.html).toContain('aria-label="인스타그램"');
     expect(email.html).toContain('aria-label="유튜브"');
-    expect(email.html).toContain("background:#1877F2");
-    expect(email.html).toContain("background:#E4405F");
-    expect(email.html).toContain("background:#FF0000");
+    expect(email.html).toContain("width:44px;height:44px");
+    expect(email.html).toContain("border:1px solid #1877F2");
+    expect(email.html).toContain("border:1px solid #E4405F");
+    expect(email.html).toContain("border:1px solid #FF0000");
+    expect(email.html).toContain("background:#FFFEFB;color:#1877F2");
+    expect(email.html).not.toContain("background:#1877F2;color:#fff");
     expect(email.html).toContain('viewBox="0 0 24 24"');
     expect(email.html).toContain('d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"');
     expect(email.html).toContain('d="M2.5 17a24.12 24.12 0 0 1 0-10');
@@ -87,7 +90,7 @@ describe("weekly newsletter delivery", () => {
     });
 
     expect(email.html).toContain('alt="Graceway Baptist Church · 그레이스웨이 침례교회"');
-    expect(email.text).toContain("Graceway Weekly Newsletter");
+    expect(email.text).toContain("그레이스웨이 Weekly Newsletter");
     expect(email.text).toContain("Address: 2791 Driscoll Rd, Fremont, CA 94539");
     expect(email.text).toContain("예배 시간 / Service times: Sunday worship · 1:30 PM · Wednesday prayer · 8:00 PM");
     expect(email.text).toContain("Upcoming at Graceway");
