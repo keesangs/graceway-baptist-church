@@ -30,6 +30,12 @@ const CHURCH_SOCIAL_LINKS = {
   instagram: "https://www.instagram.com/gracewaybaptistchurchfremont",
   youtube: "https://www.youtube.com/@Graceway-Baptist",
 } as const;
+const NEWSLETTER_LIGHT_LOGO_PATH = "/manus-storage/graceway-logo-light-updated_e386b8f1.png";
+const NEWSLETTER_SOCIAL_ICON_PATHS = {
+  facebook: "/manus-storage/facebook-outline_fabcd36e.png",
+  instagram: "/manus-storage/instagram-outline_0004a4f6.png",
+  youtube: "/manus-storage/youtube-outline_ab7c123b.png",
+} as const;
 
 function escapeHtml(value: string) {
   return value
@@ -63,15 +69,10 @@ function buildNewsletterHttpsUrl(storedUrl: string | null | undefined, fallbackP
   }
 }
 
-function socialIconLink(href: string, label: string, iconSvg: string, color: string) {
-  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:44px;height:44px;margin-right:8px;border:1px solid ${color};border-radius:50%;background:#FFFEFB;color:${color};text-align:center;text-decoration:none;vertical-align:middle;box-sizing:border-box"><span style="display:inline-block;width:16px;height:16px;margin-top:13px;line-height:16px">${iconSvg}</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${escapeHtml(label)}</span></a>`;
+function socialIconLink(href: string, label: string, iconPath: string) {
+  const iconUrl = new URL(iconPath, NEWSLETTER_PUBLIC_ORIGIN).toString();
+  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;margin-right:8px;text-decoration:none;vertical-align:middle"><img src="${escapeHtml(iconUrl)}" width="44" height="44" alt="${escapeHtml(label)}" style="display:block;width:44px;height:44px;border:0"></a>`;
 }
-
-const newsletterSocialIcons = {
-  facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
-  instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>',
-  youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>',
-} as const;
 
 export function buildWeeklyNewsletterBulletinUrl(storedUrl: string) {
   const candidate = storedUrl.trim();
@@ -130,7 +131,7 @@ export function buildWeeklyNewsletterEmail(input: {
     ? ((ko ? input.highlight.descriptionKo : input.highlight.descriptionEn) || (ko ? "다가오는 교회 행사와 소식을 확인해 주세요." : "See what is happening next at Graceway."))
     : null;
   const highlightDate = input.highlight ? bulletinDate(input.highlight.date.slice(0, 10), input.lang) : null;
-  const highlightImageUrl = buildNewsletterHttpsUrl(input.highlight?.imageUrl, "/manus-storage/graceway-logo-dark-updated_bda9aced.png");
+  const highlightImageUrl = buildNewsletterHttpsUrl(input.highlight?.imageUrl, NEWSLETTER_LIGHT_LOGO_PATH);
   const highlightHref = buildNewsletterHttpsUrl(input.highlight?.href, "/events");
   const highlightHeading = ko ? "다가오는 교회 행사" : "Upcoming at Graceway";
   const highlightDateLabel = ko ? "일정" : "Date";
@@ -163,7 +164,7 @@ export function buildWeeklyNewsletterEmail(input: {
     ].join("\n"),
     html: [
       '<div style="max-width:620px;margin:0 auto;background:#FFFEFB;font-family:Arial,sans-serif;color:#242A30;line-height:1.6">',
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#17324D">',
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#17324D" style="border-collapse:collapse;background:#17324D">',
       '<tr><td align="center" style="padding:26px 24px 18px">',
       `<img src="${NEWSLETTER_BRAND_LOGO_URL}" width="300" alt="${escapeHtml(churchName)}" style="display:block;width:300px;max-width:100%;height:auto;border:0">`,
       '</td></tr>',
@@ -176,7 +177,7 @@ export function buildWeeklyNewsletterEmail(input: {
       `<p><a href="${escapeHtml(bulletinUrl)}" style="display:inline-block;background:#17324D;color:#fff;padding:12px 18px;text-decoration:none">${escapeHtml(viewLabel)}</a></p>`,
       `<p><a href="${escapeHtml(bulletinUrl)}" style="color:#2F6F9F">${escapeHtml(downloadLabel)}</a></p>`,
       ...(input.highlight ? [
-        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:28px;background:#F4F6F7">',
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F4F6F7" style="border-collapse:collapse;margin-top:28px;background:#F4F6F7">',
         `<tr><td><img src="${escapeHtml(highlightImageUrl)}" width="572" alt="${escapeHtml(highlightTitle ?? highlightHeading)}" style="display:block;width:100%;max-width:572px;height:auto;border:0"></td></tr>`,
         '<tr><td style="padding:20px 20px 22px">',
         `<p style="margin:0;color:#B07834;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">${escapeHtml(highlightHeading)}</p>`,
@@ -192,7 +193,7 @@ export function buildWeeklyNewsletterEmail(input: {
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerAddressLabel)}:</strong> ${escapeHtml(CHURCH_ADDRESS)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerServiceLabel)}:</strong> ${escapeHtml(footerSunday)}<br>${escapeHtml(footerWednesday)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerContactLabel)}:</strong> <a href="mailto:${CHURCH_EMAIL}" style="color:#2F6F9F">${CHURCH_EMAIL}</a></td></tr>`,
-      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, footerFacebook, newsletterSocialIcons.facebook, "#1877F2")}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, footerInstagram, newsletterSocialIcons.instagram, "#E4405F")}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, footerYoutube, newsletterSocialIcons.youtube, "#FF0000")}</td></tr>`,
+      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, footerFacebook, NEWSLETTER_SOCIAL_ICON_PATHS.facebook)}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, footerInstagram, NEWSLETTER_SOCIAL_ICON_PATHS.instagram)}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, footerYoutube, NEWSLETTER_SOCIAL_ICON_PATHS.youtube)}</td></tr>`,
       '</table>',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
       '</div>',

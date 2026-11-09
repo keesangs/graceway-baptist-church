@@ -10,3 +10,8 @@
 - [x] Match newsletter footer social link icons to the homepage footer treatment
 - [x] Change the newsletter header label to “그레이스웨이 Weekly Newsletter”
 - [x] Verify the attached-email regression contract, full tests, build, and preview
+
+## Newsletter Email Rendering — November 8, 2026
+- [x] Replace inline SVG social links with email-safe hosted icon images and accessible text fallback
+- [x] Use a dark-logo/light-background event image treatment and explicit light-mode email colors
+- [ ] Re-send an internal test only after rendering tests and production validation pass

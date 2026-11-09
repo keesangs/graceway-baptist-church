@@ -45,16 +45,12 @@ describe("weekly newsletter delivery", () => {
     expect(email.html).toContain('aria-label="페이스북"');
     expect(email.html).toContain('aria-label="인스타그램"');
     expect(email.html).toContain('aria-label="유튜브"');
-    expect(email.html).toContain("width:44px;height:44px");
-    expect(email.html).toContain("border:1px solid #1877F2");
-    expect(email.html).toContain("border:1px solid #E4405F");
-    expect(email.html).toContain("border:1px solid #FF0000");
-    expect(email.html).toContain("background:#FFFEFB;color:#1877F2");
-    expect(email.html).not.toContain("background:#1877F2;color:#fff");
-    expect(email.html).toContain('viewBox="0 0 24 24"');
-    expect(email.html).toContain('d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"');
-    expect(email.html).toContain('d="M2.5 17a24.12 24.12 0 0 1 0-10');
-    expect(email.html).toContain('d="m10 15 5-3-5-3z"');
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/facebook-outline_fabcd36e.png");
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/instagram-outline_0004a4f6.png");
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/youtube-outline_ab7c123b.png");
+    expect(email.html).toContain('width="44" height="44"');
+    expect(email.html).not.toContain("<svg");
+    expect(email.html).not.toContain("position:absolute;width:1px");
     expect(email.html).not.toContain(">◎<");
     expect(email.html).not.toContain(">▶<");
     expect(email.html).toContain("다가오는 교회 행사");
@@ -98,6 +94,7 @@ describe("weekly newsletter delivery", () => {
     expect(email.text).not.toContain("홈커밍(Homecoming) 예배로 영어부과 연합으로 드립니다.");
     expect(email.html).not.toContain("<style");
     expect(email.html).not.toContain("javascript:");
+    expect(email.html).not.toContain("graceway-logo-light-updated_e386b8f1.png");
   });
 
   it("converts site-local bulletin storage paths to canonical HTTPS links for email clients", () => {
@@ -110,11 +107,21 @@ describe("weekly newsletter delivery", () => {
       titleEn: "September 13 Bulletin",
       bulletinUrl: "/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf",
       unsubscribeToken: "safe-test-token",
+      highlight: {
+        titleKo: "주일 예배",
+        titleEn: "Sunday Worship",
+        descriptionKo: null,
+        descriptionEn: null,
+        date: "2026-09-13T20:30:00.000Z",
+        imageUrl: null,
+        href: "/events?event=1",
+      },
     });
 
     expect(bulletinUrl).toBe("https://graceway-baptist.org/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf");
     expect(email.html).toContain(`href="${bulletinUrl}"`);
     expect(email.text).toContain(bulletinUrl);
+    expect(email.html).toContain("https://graceway-baptist.org/manus-storage/graceway-logo-light-updated_e386b8f1.png");
     expect(email.html).not.toContain("http:///");
   });
 
