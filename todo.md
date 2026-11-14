@@ -14,4 +14,9 @@
 ## Newsletter Email Rendering — November 8, 2026
 - [x] Replace inline SVG social links with email-safe hosted icon images and accessible text fallback
 - [x] Use a dark-logo/light-background event image treatment and explicit light-mode email colors
-- [ ] Re-send an internal test only after rendering tests and production validation pass
+- [x] Re-send an internal test only after rendering tests and production validation pass
+
+## Genuine Social Icons — November 8, 2026
+- [x] Replace generic outline icons with genuine platform-style Instagram, YouTube, and Facebook PNG icons
+- [x] Add visible English platform labels under the email icons and validate hosted assets
+- [x] Re-send an internal test after the genuine icon update is validated

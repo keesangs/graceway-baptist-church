@@ -32,9 +32,9 @@ const CHURCH_SOCIAL_LINKS = {
 } as const;
 const NEWSLETTER_LIGHT_LOGO_PATH = "/manus-storage/graceway-logo-light-updated_e386b8f1.png";
 const NEWSLETTER_SOCIAL_ICON_PATHS = {
-  facebook: "/manus-storage/facebook-outline_fabcd36e.png",
-  instagram: "/manus-storage/instagram-outline_0004a4f6.png",
-  youtube: "/manus-storage/youtube-outline_ab7c123b.png",
+  facebook: "/manus-storage/facebook-genuine_59277064.png",
+  instagram: "/manus-storage/instagram-genuine_eabc4cfb.png",
+  youtube: "/manus-storage/youtube-genuine_9c29fc8a.png",
 } as const;
 
 function escapeHtml(value: string) {
@@ -71,7 +71,7 @@ function buildNewsletterHttpsUrl(storedUrl: string | null | undefined, fallbackP
 
 function socialIconLink(href: string, label: string, iconPath: string) {
   const iconUrl = new URL(iconPath, NEWSLETTER_PUBLIC_ORIGIN).toString();
-  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;margin-right:8px;text-decoration:none;vertical-align:middle"><img src="${escapeHtml(iconUrl)}" width="44" height="44" alt="${escapeHtml(label)}" style="display:block;width:44px;height:44px;border:0"></a>`;
+  return `<a href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="display:inline-block;width:64px;margin-right:8px;text-align:center;text-decoration:none;vertical-align:top"><img src="${escapeHtml(iconUrl)}" width="44" height="44" alt="${escapeHtml(label)}" style="display:block;width:44px;height:44px;margin:0 auto;border:0"><span style="display:block;padding-top:4px;color:#607A91;font-family:Arial,sans-serif;font-size:11px;line-height:16px;white-space:nowrap">${escapeHtml(label)}</span></a>`;
 }
 
 export function buildWeeklyNewsletterBulletinUrl(storedUrl: string) {
@@ -193,7 +193,7 @@ export function buildWeeklyNewsletterEmail(input: {
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerAddressLabel)}:</strong> ${escapeHtml(CHURCH_ADDRESS)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerServiceLabel)}:</strong> ${escapeHtml(footerSunday)}<br>${escapeHtml(footerWednesday)}</td></tr>`,
       `<tr><td><strong style="color:#17324D">${escapeHtml(footerContactLabel)}:</strong> <a href="mailto:${CHURCH_EMAIL}" style="color:#2F6F9F">${CHURCH_EMAIL}</a></td></tr>`,
-      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, footerFacebook, NEWSLETTER_SOCIAL_ICON_PATHS.facebook)}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, footerInstagram, NEWSLETTER_SOCIAL_ICON_PATHS.instagram)}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, footerYoutube, NEWSLETTER_SOCIAL_ICON_PATHS.youtube)}</td></tr>`,
+      `<tr><td style="padding-top:10px"><strong style="display:block;padding-bottom:6px;color:#17324D">${escapeHtml(footerSocialLabel)}:</strong>${socialIconLink(CHURCH_SOCIAL_LINKS.facebook, "Facebook", NEWSLETTER_SOCIAL_ICON_PATHS.facebook)}${socialIconLink(CHURCH_SOCIAL_LINKS.instagram, "Instagram", NEWSLETTER_SOCIAL_ICON_PATHS.instagram)}${socialIconLink(CHURCH_SOCIAL_LINKS.youtube, "YouTube", NEWSLETTER_SOCIAL_ICON_PATHS.youtube)}</td></tr>`,
       '</table>',
       `<p style="font-size:12px;color:#607A91"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#607A91">${escapeHtml(unsubscribeLabel)}</a></p>`,
       '</div>',
