@@ -225,10 +225,18 @@ export const appRouter = router({
   discordTts: router({
     status: adminProcedure.query(() => getDiscordTtsStatus()),
     botStatus: adminProcedure.query(() => getDiscordBotStatus()),
-    startBot: adminProcedure.mutation(() => startDiscordTtsBot()),
+    // Voice login and UDP IP discovery can outlive the dashboard request. Start
+    // in the server process and let the two-second status poll report progress.
+    startBot: adminProcedure.mutation(() => {
+      void startDiscordTtsBot().catch((error) => console.error("[discord-tts] background start failed", error));
+      return getDiscordBotStatus();
+    }),
     pauseBot: adminProcedure.mutation(() => pauseDiscordTtsBot()),
     stopBot: adminProcedure.mutation(() => stopDiscordTtsBot()),
-    retryLastMessage: adminProcedure.mutation(() => retryLastDiscordTtsMessage()),
+    retryLastMessage: adminProcedure.mutation(() => {
+      void retryLastDiscordTtsMessage().catch((error) => console.error("[discord-tts] background retry failed", error));
+      return { retried: false, reconnected: false, message: "Discord 음성 재연결 및 마지막 메시지 재시도를 시작했습니다. 상태를 잠시 후 다시 확인해 주세요." } as const;
+    }),
     test: adminProcedure
       .input(z.object({ text: z.string().trim().min(1).max(250) }))
       .mutation(async ({ input }) => {

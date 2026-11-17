@@ -42,6 +42,7 @@ describe("Discord live worship TTS runtime", () => {
   it("exposes safe admin bot controls and live status polling", () => {
     expect(routerSource).toContain("botStatus: adminProcedure");
     expect(routerSource).toContain("startBot: adminProcedure");
+    expect(routerSource).toContain("background start failed");
     expect(routerSource).toContain("pauseBot: adminProcedure");
     expect(routerSource).toContain("stopBot: adminProcedure");
     expect(dashboardSource).toContain("Discord voice runtime");
@@ -58,6 +59,7 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("retryLastDiscordTtsMessage");
     expect(runtimeSource).toContain("reconnected: true");
     expect(routerSource).toContain("retryLastMessage: adminProcedure");
+    expect(routerSource).toContain("background retry failed");
     expect(dashboardSource).toContain("음성 송출에 문제가 발생했습니다");
     expect(dashboardSource).toContain("마지막 메시지 재시도");
     expect(dashboardSource).toContain("음성 연결 재시도");
