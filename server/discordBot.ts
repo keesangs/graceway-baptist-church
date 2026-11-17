@@ -316,8 +316,11 @@ export async function startDiscordTtsBot() {
     if (client.isReady()) client.destroy();
     runtimeState = "error";
     const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 300) : String(error).replace(/\s+/g, " ").slice(0, 300);
+    const networkHint = /IP discovery|socket closed|UDP/i.test(detail)
+      ? " 현재 WebDev 웹 런타임의 UDP 제한일 수 있어 Discord 봇을 고정 공인 IP의 persistent worker로 분리해야 할 수 있습니다."
+      : "";
     lastError = stage === "voice connection"
-      ? `Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.${detail ? ` 원인: ${detail}` : ""}`
+      ? `Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.${detail ? ` 원인: ${detail}` : ""}${networkHint}`
       : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
         ? `Discord 서버 또는 채널 설정을 확인해 주세요. 서버·Text 채널·음성 채널 ID가 올바른지 확인해야 합니다.${detail ? ` 원인: ${detail}` : ""}`
       : `Discord ${stage} failed: ${detail}`;
