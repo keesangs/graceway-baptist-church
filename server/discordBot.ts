@@ -101,9 +101,10 @@ function markError(item: HistoryItem, stage: VoiceFailureStage, error: unknown) 
   };
   const failure = failures[stage];
   item.status = "failed";
-  item.error = failure.message;
+  const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 220) : String(error).replace(/\s+/g, " ").slice(0, 220);
+  item.error = detail ? `${failure.message} 원인: ${detail}` : failure.message;
   item.errorCode = failure.code;
-  lastError = failure.message;
+  lastError = item.error;
   lastErrorCode = failure.code;
   addHistory(item);
 }
@@ -261,7 +262,9 @@ export async function startDiscordTtsBot() {
     if (missingPermissions.length) throw new Error(`Missing voice permissions: ${missingPermissions.join(", ")}`);
     stage = "voice connection";
     connection = joinVoiceChannel({ channelId: channel.id, guildId: guild.id, adapterCreator: guild.voiceAdapterCreator, selfDeaf: false });
-    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+    // Discord voice can emit networking errors during IP discovery, before the
+    // connection reaches Ready. Register handlers immediately so a closed UDP
+    // discovery socket never becomes an unhandled EventEmitter error.
     connection.on("stateChange", (_oldState, newState) => {
       if (newState.status === VoiceConnectionStatus.Disconnected) {
         runtimeState = "error";
@@ -269,11 +272,15 @@ export async function startDiscordTtsBot() {
         lastError = "Discord 음성 연결이 끊어졌습니다. 재시도 버튼으로 다시 연결해 주세요.";
       }
     });
-    connection.on("error", () => {
+    connection.on("error", (error) => {
       runtimeState = "error";
       lastErrorCode = "connection_unavailable";
-      lastError = "Discord 음성 연결에서 오류가 발생했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.";
+      const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 220) : String(error).replace(/\s+/g, " ").slice(0, 220);
+      lastError = detail
+        ? `Discord 음성 연결에서 오류가 발생했습니다. 재시도 버튼으로 다시 연결해 주세요. 원인: ${detail}`
+        : "Discord 음성 연결에서 오류가 발생했습니다. 재시도 버튼으로 다시 연결해 주세요.";
     });
+    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
     runtimeState = "connected";
     lastError = null;
     lastErrorCode = null;

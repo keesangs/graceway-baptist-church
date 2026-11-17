@@ -1,6 +1,5 @@
 
-## Discord Audio Conversion and Admin Identity — November 17, 2026
-- [x] Verify the Discord member display name is now Admin while preserving the secure user ID allowlist
-- [x] Make valid DeepInfra WAV conversion tolerant of alternate ffmpeg input probing and disable stdin prompts
-- [x] Update the Discord TTS dashboard copy to identify Admin as the allowed sender
-- [x] Reproduce the exact announcement, run full validation, and save a checkpoint
+## Discord Voice UDP Recovery — November 17, 2026
+- [x] Register Discord voice error handlers before the Ready wait so IP discovery socket failures cannot become unhandled errors
+- [x] Preserve user-friendly failure text while recording safe underlying conversion/playback diagnostics
+- [x] Add regression coverage, run full validation, and save a new checkpoint

@@ -17,7 +17,7 @@ describe("Discord live worship TTS runtime", () => {
     expect(Math.max(...long.map((item) => item.length))).toBeLessThanOrEqual(400);
   });
 
-  it("keeps Discord intake restricted to the configured guild, channel, and Kee", () => {
+  it("keeps Discord intake restricted to the configured guild, channel, and Admin account", () => {
     expect(runtimeSource).toContain("message.guildId !== config.guildId");
     expect(runtimeSource).toContain("message.channelId !== config.textChannelId");
     expect(runtimeSource).toContain("message.author.id !== config.allowedUserId");
@@ -27,6 +27,8 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("guild.channels.fetch(config.textChannelId)");
     expect(runtimeSource).toContain("PermissionFlagsBits.Connect");
     expect(runtimeSource).toContain("PermissionFlagsBits.Speak");
+    expect(runtimeSource).toContain("Register handlers immediately");
+    expect(runtimeSource).toContain("connection.on(\"error\", (error)");
   });
 
   it("exposes safe admin bot controls and live status polling", () => {
@@ -53,5 +55,6 @@ describe("Discord live worship TTS runtime", () => {
     expect(dashboardSource).toContain("음성 연결 재시도");
     expect(dashboardSource).toContain("lastErrorCode !== \"connection_unavailable\"");
     expect(dashboardSource).toContain("retryMessageMutation");
+    expect(runtimeSource).toContain("원인:");
   });
 });
