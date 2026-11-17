@@ -181,12 +181,17 @@ export async function enqueueDiscordTtsSmokeMessages(messages: string[]) {
 
 export async function retryLastDiscordTtsMessage() {
   const failed = history.find(item => item.status === "failed");
-  if (!failed) return { retried: false, message: "재시도할 실패 메시지가 없습니다." } as const;
   if (runtimeState !== "connected") {
-    if (started) await stopDiscordTtsBot();
-    const next = await startDiscordTtsBot();
+    let next = getDiscordBotStatus();
+    for (let attempt = 0; attempt < 3 && next.state !== "connected"; attempt += 1) {
+      if (started) await stopDiscordTtsBot();
+      await new Promise(resolve => setTimeout(resolve, 750 * (attempt + 1)));
+      next = await startDiscordTtsBot();
+    }
     if (next.state !== "connected") throw new Error(next.lastError ?? "Discord 음성 연결을 시작하지 못했습니다.");
+    if (!failed) return { retried: false, reconnected: true, message: "Discord 음성 연결을 다시 시작했습니다. 이제 문장을 입력해 주세요." } as const;
   }
+  if (!failed) return { retried: false, reconnected: false, message: "재시도할 실패 메시지가 없습니다." } as const;
   queue.unshift({
     ...failed,
     id: randomUUID(),
