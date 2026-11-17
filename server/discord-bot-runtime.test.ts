@@ -32,6 +32,8 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("scheduleVoiceRecovery");
     expect(runtimeSource).toContain("connection.rejoin()");
     expect(runtimeSource).toContain('"reconnecting"');
+    expect(runtimeSource).toContain("Discord 음성 채널에 연결하지 못했습니다.");
+    expect(runtimeSource).toContain("${detail ? ` 원인: ${detail}` : \"\"}");
   });
 
   it("exposes safe admin bot controls and live status polling", () => {

@@ -1,5 +1,5 @@
 
-## Discord UDP Rejoin Recovery — November 17, 2026
-- [x] Automatically rejoin the existing voice connection after transient UDP networking errors
-- [x] Expose reconnecting state and bounded retry diagnostics in the admin dashboard
-- [x] Add regression coverage, run full validation, and save a checkpoint
+## Discord Initial Connection Diagnostics — November 17, 2026
+- [x] Preserve the underlying initial voice connection error instead of replacing it with a generic message
+- [x] Add regression coverage for initial connection diagnostics and verify production build
+- [ ] Evaluate moving the Discord UDP voice runtime to a persistent worker with stable outbound UDP
