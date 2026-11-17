@@ -82,6 +82,7 @@ import {
   sendNewsletterStaffNotification,
   sendNewsletterSubscriptionConfirmedEmail,
 } from "./newsletterSubscriptionEmail";
+import { configureDiscordTts, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -218,6 +219,27 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+  }),
+
+  discordTts: router({
+    status: adminProcedure.query(() => getDiscordTtsStatus()),
+    test: adminProcedure
+      .input(z.object({ text: z.string().trim().min(1).max(250) }))
+      .mutation(async ({ input }) => {
+        const result = await synthesizeDiscordText(input.text);
+        return { engine: result.engine, latencyMs: result.latencyMs, bytes: result.audio.length } as const;
+      }),
+    configure: adminProcedure
+      .input(
+        z.object({
+          remoteEnabled: z.boolean(),
+          apiKey: z.string().trim().max(500).optional(),
+          speaker: z.string().trim().min(1).max(80).optional(),
+          instruct: z.string().trim().max(500).optional(),
+          speed: z.number().min(0.75).max(1.5).optional(),
+        }),
+      )
+      .mutation(({ input }) => configureDiscordTts(input)),
   }),
 
   // ── Media Library ─────────────────────────────────────────────────────────
