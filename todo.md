@@ -1,5 +1,5 @@
 
-## Discord Voice UDP Recovery — November 17, 2026
-- [x] Register Discord voice error handlers before the Ready wait so IP discovery socket failures cannot become unhandled errors
-- [x] Preserve user-friendly failure text while recording safe underlying conversion/playback diagnostics
-- [x] Add regression coverage, run full validation, and save a new checkpoint
+## Native Discord Audio Conversion — November 17, 2026
+- [x] Add a Node-native WAV/PCM converter so standard DeepInfra Discord playback does not require ffmpeg
+- [x] Keep ffmpeg as an optional fallback for unsupported audio containers and the local eSpeak fallback
+- [x] Reproduce the exact sentence without ffmpeg, run full validation, and save a checkpoint

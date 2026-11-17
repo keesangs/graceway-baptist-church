@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { configureDiscordTts, getDiscordTtsStatus, resetDiscordTtsForTests, synthesizeDiscordText } from "./discordTts";
+import { configureDiscordTts, convertAudioForDiscord, getDiscordTtsStatus, resetDiscordTtsForTests, synthesizeDiscordText } from "./discordTts";
 
 const pageSource = readFileSync(resolve(process.cwd(), "client/src/pages/DiscordTtsAdmin.tsx"), "utf8");
 const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
@@ -36,6 +36,28 @@ describe("Discord DeepInfra TTS", () => {
     const status = getDiscordTtsStatus();
     expect(status.apiKeyConfigured).toBe(true);
     expect(JSON.stringify(status)).not.toContain("test-key");
+  });
+
+  it("converts standard PCM WAV natively when ffmpeg is unavailable", async () => {
+    process.env.FFMPEG_PATH = "/definitely-missing/ffmpeg";
+    const frames = 240;
+    const wav = Buffer.alloc(44 + frames * 2);
+    wav.write("RIFF", 0, "ascii");
+    wav.writeUInt32LE(wav.length - 8, 4);
+    wav.write("WAVEfmt ", 8, "ascii");
+    wav.writeUInt32LE(16, 16);
+    wav.writeUInt16LE(1, 20);
+    wav.writeUInt16LE(1, 22);
+    wav.writeUInt32LE(24_000, 24);
+    wav.writeUInt32LE(48_000, 28);
+    wav.writeUInt16LE(2, 32);
+    wav.writeUInt16LE(16, 34);
+    wav.write("data", 36, "ascii");
+    wav.writeUInt32LE(frames * 2, 40);
+    for (let index = 0; index < frames; index += 1) wav.writeInt16LE(index % 40, 44 + index * 2);
+
+    const converted = await convertAudioForDiscord(wav, "wav");
+    expect(converted.length).toBe(Math.round(frames * 48_000 / 24_000) * 4);
   });
 
   it("keeps the dashboard route, polling, toggle, and admin procedure contract", () => {

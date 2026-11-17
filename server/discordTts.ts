@@ -178,7 +178,84 @@ async function synthesizeLocalFallback(text: string, currentSettings: DiscordTts
   return pcm;
 }
 
+function readWavPcm(audio: Buffer) {
+  if (audio.length < 12 || audio.toString("ascii", 0, 4) !== "RIFF" || audio.toString("ascii", 8, 12) !== "WAVE") return null;
+  let offset = 12;
+  let format: { code: number; channels: number; rate: number; bits: number } | undefined;
+  let data: Buffer | undefined;
+  while (offset + 8 <= audio.length) {
+    const id = audio.toString("ascii", offset, offset + 4);
+    const size = audio.readUInt32LE(offset + 4);
+    const start = offset + 8;
+    const end = Math.min(start + size, audio.length);
+    if (id === "fmt " && end - start >= 16) {
+      format = {
+        code: audio.readUInt16LE(start),
+        channels: audio.readUInt16LE(start + 2),
+        rate: audio.readUInt32LE(start + 4),
+        bits: audio.readUInt16LE(start + 14),
+      };
+    } else if (id === "data") {
+      data = audio.subarray(start, end);
+    }
+    offset = start + size + (size % 2);
+  }
+  if (!format || !data || !format.channels || !format.rate || ![1, 3].includes(format.code)) return null;
+  if (![8, 16, 24, 32].includes(format.bits)) return null;
+
+  const bytesPerSample = format.bits / 8;
+  const frameBytes = bytesPerSample * format.channels;
+  const frames = Math.floor(data.length / frameBytes);
+  const mono = new Float32Array(frames);
+  for (let frame = 0; frame < frames; frame += 1) {
+    let sum = 0;
+    for (let channel = 0; channel < format.channels; channel += 1) {
+      const position = frame * frameBytes + channel * bytesPerSample;
+      let sample: number;
+      if (format.code === 3 && format.bits === 32) sample = data.readFloatLE(position);
+      else if (format.bits === 8) sample = (data.readUInt8(position) - 128) / 128;
+      else if (format.bits === 16) sample = data.readInt16LE(position) / 32768;
+      else if (format.bits === 24) {
+        const value = data.readIntLE(position, 3);
+        sample = value / 8388608;
+      } else sample = data.readInt32LE(position) / 2147483648;
+      sum += Math.max(-1, Math.min(1, sample));
+    }
+    mono[frame] = sum / format.channels;
+  }
+  return { samples: mono, rate: format.rate };
+}
+
+function rawPcm24k(audio: Buffer) {
+  const samples = new Float32Array(Math.floor(audio.length / 2));
+  for (let index = 0; index < samples.length; index += 1) samples[index] = audio.readInt16LE(index * 2) / 32768;
+  return { samples, rate: SOURCE_RATE };
+}
+
+function resampleToDiscordPcm(input: { samples: Float32Array; rate: number }) {
+  const outputFrames = Math.max(1, Math.round(input.samples.length * 48_000 / input.rate));
+  const output = Buffer.allocUnsafe(outputFrames * 4);
+  for (let frame = 0; frame < outputFrames; frame += 1) {
+    const source = frame * input.rate / 48_000;
+    const leftIndex = Math.min(input.samples.length - 1, Math.floor(source));
+    const rightIndex = Math.min(input.samples.length - 1, leftIndex + 1);
+    const ratio = source - leftIndex;
+    const sample = Math.max(-1, Math.min(1, input.samples[leftIndex] * (1 - ratio) + input.samples[rightIndex] * ratio));
+    const value = Math.round(sample * 32767);
+    output.writeInt16LE(value, frame * 4);
+    output.writeInt16LE(value, frame * 4 + 2);
+  }
+  return output;
+}
+
+function convertAudioNatively(audio: Buffer, format: TtsAudioFormat) {
+  const decoded = format === "wav" ? readWavPcm(audio) : rawPcm24k(audio);
+  return decoded ? resampleToDiscordPcm(decoded) : null;
+}
+
 export async function convertAudioForDiscord(audio: Buffer, format: TtsAudioFormat) {
+  const native = convertAudioNatively(audio, format);
+  if (native?.length) return native;
   const ffmpeg = process.env.FFMPEG_PATH ?? "ffmpeg";
   const inputCandidates = format === "wav"
     ? [["-i", "pipe:0"], ["-f", "wav", "-i", "pipe:0"]]
