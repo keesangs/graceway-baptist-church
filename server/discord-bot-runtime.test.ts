@@ -29,6 +29,9 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("PermissionFlagsBits.Speak");
     expect(runtimeSource).toContain("Register handlers immediately");
     expect(runtimeSource).toContain("connection.on(\"error\", (error)");
+    expect(runtimeSource).toContain("scheduleVoiceRecovery");
+    expect(runtimeSource).toContain("connection.rejoin()");
+    expect(runtimeSource).toContain('"reconnecting"');
   });
 
   it("exposes safe admin bot controls and live status polling", () => {
@@ -56,5 +59,6 @@ describe("Discord live worship TTS runtime", () => {
     expect(dashboardSource).toContain("lastErrorCode !== \"connection_unavailable\"");
     expect(dashboardSource).toContain("retryMessageMutation");
     expect(runtimeSource).toContain("원인:");
+    expect(dashboardSource).toContain("자동 재연결 중");
   });
 });

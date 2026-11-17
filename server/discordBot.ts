@@ -13,7 +13,7 @@ import {
 } from "@discordjs/voice";
 import { convertAudioForDiscord, getDiscordTtsStatus, synthesizeDiscordText, type DiscordTtsSettings, type TtsEngine } from "./discordTts";
 
-export type DiscordBotRuntimeState = "disabled" | "starting" | "connected" | "paused" | "error" | "stopped";
+export type DiscordBotRuntimeState = "disabled" | "starting" | "reconnecting" | "connected" | "paused" | "error" | "stopped";
 
 type HistoryItem = {
   id: string;
@@ -70,6 +70,8 @@ let currentText: string | null = null;
 let lastError: string | null = null;
 let lastErrorCode: VoiceFailureCode | null = null;
 let runtimeState: DiscordBotRuntimeState = "stopped";
+let recoveryTimer: NodeJS.Timeout | undefined;
+let recoveryAttempts = 0;
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
 
@@ -107,6 +109,31 @@ function markError(item: HistoryItem, stage: VoiceFailureStage, error: unknown) 
   lastError = item.error;
   lastErrorCode = failure.code;
   addHistory(item);
+}
+
+function scheduleVoiceRecovery(error: unknown) {
+  if (!connection || !started || recoveryTimer) return;
+  const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 220) : String(error).replace(/\s+/g, " ").slice(0, 220);
+  const attempt = recoveryAttempts + 1;
+  if (attempt > 5) {
+    runtimeState = "error";
+    lastErrorCode = "connection_unavailable";
+    lastError = detail
+      ? `Discord 음성 연결이 복구되지 않았습니다. 재시도 버튼을 눌러 주세요. 원인: ${detail}`
+      : "Discord 음성 연결이 복구되지 않았습니다. 재시도 버튼을 눌러 주세요.";
+    return;
+  }
+  recoveryAttempts = attempt;
+  runtimeState = "reconnecting";
+  lastErrorCode = "connection_unavailable";
+  lastError = detail
+    ? `Discord 음성 연결을 자동으로 재연결하는 중입니다 (${attempt}/5). 원인: ${detail}`
+    : `Discord 음성 연결을 자동으로 재연결하는 중입니다 (${attempt}/5).`;
+  recoveryTimer = setTimeout(() => {
+    recoveryTimer = undefined;
+    if (!connection || !started) return;
+    if (!connection.rejoin()) scheduleVoiceRecovery(new Error("Discord voice rejoin was rejected"));
+  }, Math.min(1_000 * 2 ** (attempt - 1), 16_000));
 }
 
 async function playPcm(pcm: Buffer) {
@@ -267,18 +294,16 @@ export async function startDiscordTtsBot() {
     // discovery socket never becomes an unhandled EventEmitter error.
     connection.on("stateChange", (_oldState, newState) => {
       if (newState.status === VoiceConnectionStatus.Disconnected) {
-        runtimeState = "error";
-        lastErrorCode = "connection_unavailable";
-        lastError = "Discord 음성 연결이 끊어졌습니다. 재시도 버튼으로 다시 연결해 주세요.";
+        scheduleVoiceRecovery(new Error("Discord voice connection disconnected"));
+      } else if (newState.status === VoiceConnectionStatus.Ready) {
+        recoveryAttempts = 0;
+        runtimeState = "connected";
+        lastError = null;
+        lastErrorCode = null;
       }
     });
     connection.on("error", (error) => {
-      runtimeState = "error";
-      lastErrorCode = "connection_unavailable";
-      const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 220) : String(error).replace(/\s+/g, " ").slice(0, 220);
-      lastError = detail
-        ? `Discord 음성 연결에서 오류가 발생했습니다. 재시도 버튼으로 다시 연결해 주세요. 원인: ${detail}`
-        : "Discord 음성 연결에서 오류가 발생했습니다. 재시도 버튼으로 다시 연결해 주세요.";
+      scheduleVoiceRecovery(error);
     });
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
     runtimeState = "connected";
@@ -307,6 +332,9 @@ export async function startDiscordTtsBot() {
 export async function stopDiscordTtsBot() {
   queue.length = 0;
   currentText = null;
+  if (recoveryTimer) clearTimeout(recoveryTimer);
+  recoveryTimer = undefined;
+  recoveryAttempts = 0;
   connection?.destroy();
   connection = undefined;
   if (client.isReady()) client.destroy();

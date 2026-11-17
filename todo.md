@@ -1,5 +1,5 @@
 
-## Native Discord Audio Conversion — November 17, 2026
-- [x] Add a Node-native WAV/PCM converter so standard DeepInfra Discord playback does not require ffmpeg
-- [x] Keep ffmpeg as an optional fallback for unsupported audio containers and the local eSpeak fallback
-- [x] Reproduce the exact sentence without ffmpeg, run full validation, and save a checkpoint
+## Discord UDP Rejoin Recovery — November 17, 2026
+- [x] Automatically rejoin the existing voice connection after transient UDP networking errors
+- [x] Expose reconnecting state and bounded retry diagnostics in the admin dashboard
+- [x] Add regression coverage, run full validation, and save a checkpoint
