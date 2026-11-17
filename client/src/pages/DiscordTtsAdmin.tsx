@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, LogIn, Radio, ShieldAlert, Volume2, Wifi, WifiOff } from "lucide-react";
+import { AlertTriangle, Loader2, LogIn, Radio, RefreshCw, ShieldAlert, Volume2, Wifi, WifiOff } from "lucide-react";
 
 function StatusPill({ remoteEnabled, currentEngine, lastEngine, state }: { remoteEnabled: boolean; currentEngine: string | null; lastEngine: string | null; state: string }) {
   const activeEngine = currentEngine ?? lastEngine;
@@ -75,6 +75,13 @@ export default function DiscordTtsAdmin() {
   const startBotMutation = trpc.discordTts.startBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
   const pauseBotMutation = trpc.discordTts.pauseBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
   const stopBotMutation = trpc.discordTts.stopBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
+  const retryMessageMutation = trpc.discordTts.retryLastMessage.useMutation({
+    onSuccess: async (result) => {
+      setMessage(result.message);
+      await botStatusQuery.refetch();
+    },
+    onError: (error) => setMessage(`재시도하지 못했습니다: ${error.message}`),
+  });
 
   if (authLoading) {
     return <div className="min-h-screen bg-[#F4F6F7]"><Navbar /><div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="animate-spin text-[#17324D]" /></div><Footer /></div>;
@@ -124,7 +131,7 @@ export default function DiscordTtsAdmin() {
               <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Queue</p><p className="mt-1 font-semibold text-[#17324D]">{botStatus?.queueDepth ?? 0} sentence(s)</p><p className="mt-1 truncate text-xs text-[#607A91]">{botStatus?.currentText ?? "Idle"}</p></div>
               <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Allowed sender</p><p className="mt-1 font-semibold text-[#17324D]">Kee only</p><p className="mt-1 text-xs text-[#607A91]">ID ending {botStatus?.allowedUserId?.slice(-4) ?? "…"}</p></div>
             </div>
-            {botStatus?.lastError && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">Discord runtime: {botStatus.lastError}</p>}
+            {botStatus?.lastError && <div className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between" role="alert"><div className="flex min-w-0 items-start gap-2"><AlertTriangle className="mt-0.5 shrink-0 text-red-600" size={18} /><div><p className="font-semibold">음성 송출에 문제가 발생했습니다</p><p className="mt-1">{botStatus.lastError}</p>{botStatus.lastFailed?.text && <p className="mt-1 truncate text-xs text-red-700/80">실패한 문장: “{botStatus.lastFailed.text}”</p>}</div></div><Button variant="outline" onClick={() => retryMessageMutation.mutate()} disabled={retryMessageMutation.isPending || !botStatus.lastFailed} className="shrink-0 border-red-300 bg-white text-red-800 hover:bg-red-100">{retryMessageMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />} 마지막 메시지 재시도</Button></div>}
             <div className="flex flex-wrap gap-3"><Button onClick={() => startBotMutation.mutate()} disabled={startBotMutation.isPending || botStatus?.state === "connected"} className="bg-[#17324D] text-white hover:bg-[#245170]">{startBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wifi size={16} />} {botStatus?.state === "paused" ? "Resume bot" : "Start bot"}</Button><Button variant="outline" onClick={() => pauseBotMutation.mutate()} disabled={pauseBotMutation.isPending || botStatus?.state !== "connected"} className="border-[#DCE4E7] text-[#17324D]">{pauseBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Pause queue</Button><Button variant="outline" onClick={() => stopBotMutation.mutate()} disabled={stopBotMutation.isPending || botStatus?.state === "stopped" || botStatus?.state === "disabled"} className="border-[#DCE4E7] text-[#17324D]">{stopBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <WifiOff size={16} />} Stop bot</Button></div>
             {botStatus?.history?.length ? <div className="overflow-x-auto rounded-lg border border-[#DCE4E7]"><table className="w-full min-w-[38rem] text-left text-sm"><thead className="bg-[#F4F6F7] text-xs uppercase tracking-wider text-[#607A91]"><tr><th className="px-4 py-3">Sentence</th><th className="px-4 py-3">Engine</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Latency</th></tr></thead><tbody>{botStatus.history.slice(0, 8).map((item) => <tr key={item.id} className="border-t border-[#E7EEF1]"><td className="max-w-[20rem] truncate px-4 py-3 text-[#17324D]">{item.text}</td><td className="px-4 py-3 text-[#607A91]">{item.engine === "deepinfra-qwen" ? "DeepInfra Qwen" : item.engine === "local-fallback" ? "Local fallback" : "—"}</td><td className="px-4 py-3 capitalize text-[#607A91]">{item.status}</td><td className="px-4 py-3 text-[#607A91]">{item.latencyMs ? `${item.latencyMs} ms` : "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-[#607A91]">No Discord sentences have been processed yet.</p>}
           </CardContent>

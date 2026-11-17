@@ -37,4 +37,15 @@ describe("Discord live worship TTS runtime", () => {
     expect(dashboardSource).toContain("Pause queue");
     expect(dashboardSource).toContain("Stop bot");
   });
+
+  it("surfaces stage-specific voice failures and a protected manual retry", () => {
+    expect(runtimeSource).toContain("lastErrorCode");
+    expect(runtimeSource).toContain("lastFailed");
+    expect(runtimeSource).toContain("voice_playback_failed");
+    expect(runtimeSource).toContain("retryLastDiscordTtsMessage");
+    expect(routerSource).toContain("retryLastMessage: adminProcedure");
+    expect(dashboardSource).toContain("음성 송출에 문제가 발생했습니다");
+    expect(dashboardSource).toContain("마지막 메시지 재시도");
+    expect(dashboardSource).toContain("retryMessageMutation");
+  });
 });

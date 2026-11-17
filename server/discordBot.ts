@@ -22,8 +22,18 @@ type HistoryItem = {
   status: "queued" | "playing" | "completed" | "failed";
   latencyMs: number | null;
   error: string | null;
+  errorCode: VoiceFailureCode | null;
   createdAt: string;
 };
+
+export type VoiceFailureCode =
+  | "connection_unavailable"
+  | "synthesis_failed"
+  | "audio_conversion_failed"
+  | "voice_playback_failed"
+  | "unknown";
+
+type VoiceFailureStage = "synthesis" | "audio_conversion" | "voice_playback";
 
 type BotStatus = {
   state: DiscordBotRuntimeState;
@@ -35,6 +45,8 @@ type BotStatus = {
   queueDepth: number;
   currentText: string | null;
   lastError: string | null;
+  lastErrorCode: VoiceFailureCode | null;
+  lastFailed: HistoryItem | null;
   history: HistoryItem[];
 };
 
@@ -55,6 +67,7 @@ let listenersInstalled = false;
 let processing = false;
 let currentText: string | null = null;
 let lastError: string | null = null;
+let lastErrorCode: VoiceFailureCode | null = null;
 let runtimeState: DiscordBotRuntimeState = "stopped";
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
@@ -79,11 +92,18 @@ export function splitDiscordTextIntoSentences(text: string, maxLength = 400): st
   return result.filter(Boolean);
 }
 
-function markError(item: HistoryItem, error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
+function markError(item: HistoryItem, stage: VoiceFailureStage, error: unknown) {
+  const failures = {
+    synthesis: { code: "synthesis_failed" as const, message: "음성 합성에 실패했습니다. DeepInfra 연결 또는 API 설정을 확인해 주세요." },
+    audio_conversion: { code: "audio_conversion_failed" as const, message: "생성된 오디오를 Discord 형식으로 변환하지 못했습니다." },
+    voice_playback: { code: "voice_playback_failed" as const, message: "Discord 음성 채널로 송출하지 못했습니다. 봇 연결과 음성 권한을 확인해 주세요." },
+  };
+  const failure = failures[stage];
   item.status = "failed";
-  item.error = message;
-  lastError = message;
+  item.error = failure.message;
+  item.errorCode = failure.code;
+  lastError = failure.message;
+  lastErrorCode = failure.code;
   addHistory(item);
 }
 
@@ -103,16 +123,21 @@ async function processQueue() {
       const item = queue.shift()!;
       currentText = item.text;
       item.status = "playing";
+      let stage: VoiceFailureStage = "synthesis";
       try {
         const result = await synthesizeDiscordText(item.text);
         item.engine = result.engine;
         item.latencyMs = result.latencyMs;
+        stage = "audio_conversion";
         const pcm = await convertAudioForDiscord(result.audio, result.format);
+        stage = "voice_playback";
         await playPcm(pcm);
         item.status = "completed";
+        lastError = null;
+        lastErrorCode = null;
         addHistory(item);
       } catch (error) {
-        markError(item, error);
+        markError(item, stage, error);
       } finally {
         currentText = null;
       }
@@ -131,6 +156,7 @@ function enqueueText(text: string) {
       status: "queued",
       latencyMs: null,
       error: null,
+      errorCode: null,
       createdAt: new Date().toISOString(),
     };
     queue.push(item);
@@ -150,6 +176,28 @@ export async function enqueueDiscordTtsSmokeMessages(messages: string[]) {
     }, 250);
   });
   return history.slice(0, messages.length);
+}
+
+export async function retryLastDiscordTtsMessage() {
+  const failed = history.find(item => item.status === "failed");
+  if (!failed) return { retried: false, message: "재시도할 실패 메시지가 없습니다." } as const;
+  if (runtimeState !== "connected") {
+    if (started) await stopDiscordTtsBot();
+    const next = await startDiscordTtsBot();
+    if (next.state !== "connected") throw new Error(next.lastError ?? "Discord 음성 연결을 시작하지 못했습니다.");
+  }
+  queue.unshift({
+    ...failed,
+    id: randomUUID(),
+    status: "queued",
+    engine: null,
+    latencyMs: null,
+    error: null,
+    errorCode: null,
+    createdAt: new Date().toISOString(),
+  });
+  void processQueue();
+  return { retried: true, message: "마지막 실패 메시지를 다시 송출 대기열에 추가했습니다." } as const;
 }
 
 function installListeners() {
@@ -197,17 +245,30 @@ export async function startDiscordTtsBot() {
     connection = joinVoiceChannel({ channelId: channel.id, guildId: guild.id, adapterCreator: guild.voiceAdapterCreator, selfDeaf: false });
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
     connection.on("stateChange", (_oldState, newState) => {
-      if (newState.status === VoiceConnectionStatus.Disconnected) runtimeState = "error";
+      if (newState.status === VoiceConnectionStatus.Disconnected) {
+        runtimeState = "error";
+        lastErrorCode = "connection_unavailable";
+        lastError = "Discord 음성 연결이 끊어졌습니다. 재시도 버튼으로 다시 연결해 주세요.";
+      }
+    });
+    connection.on("error", () => {
+      runtimeState = "error";
+      lastErrorCode = "connection_unavailable";
+      lastError = "Discord 음성 연결에서 오류가 발생했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.";
     });
     runtimeState = "connected";
     lastError = null;
+    lastErrorCode = null;
   } catch (error) {
     started = false;
     connection?.destroy();
     connection = undefined;
     if (client.isReady()) client.destroy();
     runtimeState = "error";
-    lastError = `Discord ${stage} failed: ${error instanceof Error ? error.message : String(error)}`;
+    lastError = stage === "voice connection"
+      ? "Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요."
+      : `Discord ${stage} failed: ${error instanceof Error ? error.message : String(error)}`;
+    lastErrorCode = stage === "voice connection" ? "connection_unavailable" : "unknown";
   }
   return getDiscordBotStatus();
 }
@@ -239,6 +300,8 @@ export function getDiscordBotStatus(): BotStatus & { tts: ReturnType<typeof getD
     queueDepth: queue.length,
     currentText,
     lastError,
+    lastErrorCode,
+    lastFailed: history.find(item => item.status === "failed") ?? null,
     history: [...history],
     tts: getDiscordTtsStatus(),
     settings: getDiscordTtsStatus().settings,

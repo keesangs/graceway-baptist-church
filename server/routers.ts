@@ -83,7 +83,7 @@ import {
   sendNewsletterSubscriptionConfirmedEmail,
 } from "./newsletterSubscriptionEmail";
 import { configureDiscordTts, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
-import { getDiscordBotStatus, pauseDiscordTtsBot, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
+import { getDiscordBotStatus, pauseDiscordTtsBot, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -228,6 +228,7 @@ export const appRouter = router({
     startBot: adminProcedure.mutation(() => startDiscordTtsBot()),
     pauseBot: adminProcedure.mutation(() => pauseDiscordTtsBot()),
     stopBot: adminProcedure.mutation(() => stopDiscordTtsBot()),
+    retryLastMessage: adminProcedure.mutation(() => retryLastDiscordTtsMessage()),
     test: adminProcedure
       .input(z.object({ text: z.string().trim().min(1).max(250) }))
       .mutation(async ({ input }) => {
