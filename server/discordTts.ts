@@ -180,10 +180,18 @@ async function synthesizeLocalFallback(text: string, currentSettings: DiscordTts
 
 export async function convertAudioForDiscord(audio: Buffer, format: TtsAudioFormat) {
   const ffmpeg = process.env.FFMPEG_PATH ?? "ffmpeg";
-  const inputArgs = format === "wav"
-    ? ["-i", "pipe:0"]
-    : ["-f", "s16le", "-ar", String(SOURCE_RATE), "-ac", "1", "-i", "pipe:0"];
-  return runProcess(ffmpeg, ["-hide_banner", "-loglevel", "error", ...inputArgs, "-f", "s16le", "-ar", "48000", "-ac", "2", "pipe:1"], audio);
+  const inputCandidates = format === "wav"
+    ? [["-i", "pipe:0"], ["-f", "wav", "-i", "pipe:0"]]
+    : [["-f", "s16le", "-ar", String(SOURCE_RATE), "-ac", "1", "-i", "pipe:0"]];
+  let lastError: unknown;
+  for (const inputArgs of inputCandidates) {
+    try {
+      return await runProcess(ffmpeg, ["-hide_banner", "-loglevel", "error", "-nostdin", ...inputArgs, "-f", "s16le", "-ar", "48000", "-ac", "2", "pipe:1"], audio);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw new Error(`Discord audio conversion failed: ${errorText(lastError)}`);
 }
 
 export function getDiscordTtsStatus(): DiscordTtsStatus {

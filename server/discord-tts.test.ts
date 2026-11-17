@@ -44,7 +44,11 @@ describe("Discord DeepInfra TTS", () => {
     expect(pageSource).toContain("Enable remote TTS");
     expect(pageSource).toContain("DeepInfra Qwen active");
     expect(pageSource).toContain("Local fallback active");
+    expect(pageSource).toContain("Admin only");
+    expect(pageSource).toContain("Admin's live worship text announcements");
     expect(pageSource).toContain("deepinfra-api-key");
+    expect(readFileSync(resolve(process.cwd(), "server/discordTts.ts"), "utf8")).toContain('"-nostdin"');
+    expect(readFileSync(resolve(process.cwd(), "server/discordTts.ts"), "utf8")).toContain("inputCandidates");
     expect(routerSource).toContain("discordTts: router({");
     expect(routerSource).toContain("status: adminProcedure");
     expect(routerSource).toContain("configure: adminProcedure");
