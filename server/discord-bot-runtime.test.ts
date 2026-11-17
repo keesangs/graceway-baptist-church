@@ -6,6 +6,7 @@ import { splitDiscordTextIntoSentences } from "./discordBot";
 const runtimeSource = readFileSync(resolve(process.cwd(), "server/discordBot.ts"), "utf8");
 const routerSource = readFileSync(resolve(process.cwd(), "server/routers.ts"), "utf8");
 const dashboardSource = readFileSync(resolve(process.cwd(), "client/src/pages/DiscordTtsAdmin.tsx"), "utf8");
+const packageSource = readFileSync(resolve(process.cwd(), "package.json"), "utf8");
 
 describe("Discord live worship TTS runtime", () => {
   it("splits sentence-sized messages and bounds long chunks", () => {
@@ -27,6 +28,7 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("guild.channels.fetch(config.textChannelId)");
     expect(runtimeSource).toContain("PermissionFlagsBits.Connect");
     expect(runtimeSource).toContain("PermissionFlagsBits.Speak");
+    expect(packageSource).toContain('"opusscript"');
     expect(runtimeSource).toContain("Register handlers immediately");
     expect(runtimeSource).toContain("connection.on(\"error\", (error)");
     expect(runtimeSource).toContain("scheduleVoiceRecovery");

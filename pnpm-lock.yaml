@@ -19,7 +19,7 @@ importers:
         version: 0.11.0
       '@discordjs/voice':
         specifier: ^0.19.2
-        version: 0.19.2(@discordjs/opus@0.11.0)(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
+        version: 0.19.2(@discordjs/opus@0.11.0)(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(opusscript@0.0.8)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.64.0(react@19.2.1))
@@ -167,6 +167,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      opusscript:
+        specifier: ^0.0.8
+        version: 0.0.8
       react:
         specifier: ^19.2.1
         version: 19.2.1
@@ -3983,6 +3986,9 @@ packages:
   oniguruma-to-es@4.3.3:
     resolution: {integrity: sha512-rPiZhzC3wXwE59YQMRDodUwwT9FZ9nNBwQQfsd1wfdtlKEyCdRV0avrTcSZ5xlIvGRVPd/cx6ZN45ECmS39xvg==}
 
+  opusscript@0.0.8:
+    resolution: {integrity: sha512-VSTi1aWFuCkRCVq+tx/BQ5q9fMnQ9pVZ3JU4UHKqTkf0ED3fKEPdr+gKAAl3IA2hj9rrP6iyq3hlcJq3HELtNQ==}
+
   package-manager-detector@1.5.0:
     resolution: {integrity: sha512-uBj69dVlYe/+wxj8JOpr97XfsxH/eumMt6HqjNTmJDf/6NO9s+0uxeOneIz3AsPt2m6y9PqzDzd3ATcU17MNfw==}
 
@@ -5281,12 +5287,12 @@ snapshots:
     dependencies:
       discord-api-types: 0.38.59
 
-  '@discordjs/voice@0.19.2(@discordjs/opus@0.11.0)(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
+  '@discordjs/voice@0.19.2(@discordjs/opus@0.11.0)(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(opusscript@0.0.8)':
     dependencies:
       '@snazzah/davey': 0.1.12(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       '@types/ws': 8.18.2
       discord-api-types: 0.38.59
-      prism-media: 1.3.5(@discordjs/opus@0.11.0)
+      prism-media: 1.3.5(@discordjs/opus@0.11.0)(opusscript@0.0.8)
       tslib: 2.8.1
       ws: 8.23.0
     transitivePeerDependencies:
@@ -8739,6 +8745,8 @@ snapshots:
       regex: 6.0.1
       regex-recursion: 6.0.2
 
+  opusscript@0.0.8: {}
+
   package-manager-detector@1.5.0: {}
 
   parse-entities@4.0.2:
@@ -8821,9 +8829,10 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 17.0.2
 
-  prism-media@1.3.5(@discordjs/opus@0.11.0):
+  prism-media@1.3.5(@discordjs/opus@0.11.0)(opusscript@0.0.8):
     optionalDependencies:
       '@discordjs/opus': 0.11.0
+      opusscript: 0.0.8
 
   prop-types@15.8.1:
     dependencies:
