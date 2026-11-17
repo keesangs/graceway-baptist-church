@@ -43,10 +43,16 @@ export default function DiscordTtsAdmin() {
     refetchInterval: 2_000,
     refetchIntervalInBackground: false,
   });
+  const botStatusQuery = trpc.discordTts.botStatus.useQuery(undefined, {
+    enabled: isAdmin,
+    refetchInterval: 2_000,
+    refetchIntervalInBackground: false,
+  });
   const [remoteEnabled, setRemoteEnabled] = useState(true);
   const [apiKey, setApiKey] = useState("");
   const [speaker, setSpeaker] = useState("Aiden");
   const [instruct, setInstruct] = useState("Speak clearly and warmly, suitable for a church announcement.");
+  const [speed, setSpeed] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
   const status = statusQuery.data;
@@ -66,6 +72,9 @@ export default function DiscordTtsAdmin() {
     },
     onError: (error) => setTestResult(error.message),
   });
+  const startBotMutation = trpc.discordTts.startBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
+  const pauseBotMutation = trpc.discordTts.pauseBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
+  const stopBotMutation = trpc.discordTts.stopBot.useMutation({ onSuccess: () => void botStatusQuery.refetch() });
 
   if (authLoading) {
     return <div className="min-h-screen bg-[#F4F6F7]"><Navbar /><div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="animate-spin text-[#17324D]" /></div><Footer /></div>;
@@ -82,6 +91,7 @@ export default function DiscordTtsAdmin() {
   const effectiveRemoteEnabled = status?.remoteEnabled ?? remoteEnabled;
   const canUseDeepInfra = Boolean(status?.apiKeyConfigured);
   const activeEngine = status?.currentEngine ?? status?.lastEngine;
+  const botStatus = botStatusQuery.data;
 
   return (
     <div className="min-h-screen bg-[#F4F6F7]">
@@ -107,6 +117,20 @@ export default function DiscordTtsAdmin() {
         </Card>
 
         <Card className="border-[#DCE4E7] bg-white shadow-sm">
+          <CardHeader><CardTitle className="flex items-center gap-2 text-[#17324D]"><Wifi size={20} className="text-[#C9973E]" /> Discord voice runtime</CardTitle><CardDescription>Only messages from Kee in the configured text channel are accepted. Sentences are queued and played sequentially.</CardDescription></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Bot state</p><p className="mt-1 font-semibold capitalize text-[#17324D]">{botStatus?.state ?? "Loading…"}</p><p className="mt-1 text-xs text-[#607A91]">{botStatus?.botUser ?? "Not connected"}</p></div>
+              <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Queue</p><p className="mt-1 font-semibold text-[#17324D]">{botStatus?.queueDepth ?? 0} sentence(s)</p><p className="mt-1 truncate text-xs text-[#607A91]">{botStatus?.currentText ?? "Idle"}</p></div>
+              <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Allowed sender</p><p className="mt-1 font-semibold text-[#17324D]">Kee only</p><p className="mt-1 text-xs text-[#607A91]">ID ending {botStatus?.allowedUserId?.slice(-4) ?? "…"}</p></div>
+            </div>
+            {botStatus?.lastError && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">Discord runtime: {botStatus.lastError}</p>}
+            <div className="flex flex-wrap gap-3"><Button onClick={() => startBotMutation.mutate()} disabled={startBotMutation.isPending || botStatus?.state === "connected"} className="bg-[#17324D] text-white hover:bg-[#245170]">{startBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wifi size={16} />} {botStatus?.state === "paused" ? "Resume bot" : "Start bot"}</Button><Button variant="outline" onClick={() => pauseBotMutation.mutate()} disabled={pauseBotMutation.isPending || botStatus?.state !== "connected"} className="border-[#DCE4E7] text-[#17324D]">{pauseBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Pause queue</Button><Button variant="outline" onClick={() => stopBotMutation.mutate()} disabled={stopBotMutation.isPending || botStatus?.state === "stopped" || botStatus?.state === "disabled"} className="border-[#DCE4E7] text-[#17324D]">{stopBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <WifiOff size={16} />} Stop bot</Button></div>
+            {botStatus?.history?.length ? <div className="overflow-x-auto rounded-lg border border-[#DCE4E7]"><table className="w-full min-w-[38rem] text-left text-sm"><thead className="bg-[#F4F6F7] text-xs uppercase tracking-wider text-[#607A91]"><tr><th className="px-4 py-3">Sentence</th><th className="px-4 py-3">Engine</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Latency</th></tr></thead><tbody>{botStatus.history.slice(0, 8).map((item) => <tr key={item.id} className="border-t border-[#E7EEF1]"><td className="max-w-[20rem] truncate px-4 py-3 text-[#17324D]">{item.text}</td><td className="px-4 py-3 text-[#607A91]">{item.engine === "deepinfra-qwen" ? "DeepInfra Qwen" : item.engine === "local-fallback" ? "Local fallback" : "—"}</td><td className="px-4 py-3 capitalize text-[#607A91]">{item.status}</td><td className="px-4 py-3 text-[#607A91]">{item.latencyMs ? `${item.latencyMs} ms` : "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-[#607A91]">No Discord sentences have been processed yet.</p>}
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#DCE4E7] bg-white shadow-sm">
           <CardHeader><CardTitle className="text-[#17324D]">DeepInfra Qwen remote TTS</CardTitle><CardDescription>Use DeepInfra first, then fall back to the local engine if the remote request fails. The key input is write-only and held in server memory until restart; for persistence, use the project secret.</CardDescription></CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between gap-4 rounded-lg border border-[#DCE4E7] bg-[#FFFEFB] p-4">
@@ -115,12 +139,12 @@ export default function DiscordTtsAdmin() {
             </div>
             <div className="grid gap-5 md:grid-cols-2">
               <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-api-key">DeepInfra API key <span className="font-normal text-[#607A91]">(optional rotation)</span><Input id="deepinfra-api-key" type="password" autoComplete="new-password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={canUseDeepInfra ? "Server secret is configured" : "Paste a key for this session"} className="mt-2" /><span className="mt-1 block text-xs font-normal text-[#607A91]">Never shown in the dashboard or returned by the API.</span></label>
-              <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-speaker">Speaker<Input id="deepinfra-speaker" value={speaker} onChange={(event) => setSpeaker(event.target.value)} className="mt-2" /></label>
+              <div className="space-y-5"><label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-speaker">Speaker<Input id="deepinfra-speaker" value={speaker} onChange={(event) => setSpeaker(event.target.value)} className="mt-2" /></label><label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-speed">Speed: {speed.toFixed(2)}x<input id="deepinfra-speed" type="range" min="0.75" max="1.5" step="0.05" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="mt-3 w-full accent-[#C9973E]" /><span className="mt-1 flex justify-between text-xs font-normal text-[#607A91]"><span>0.75x</span><span>1.5x</span></span></label></div>
             </div>
             <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-instruct">Voice style instruction<textarea id="deepinfra-instruct" value={instruct} onChange={(event) => setInstruct(event.target.value)} rows={3} className="mt-2 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" /></label>
             {message && <p className="rounded-md bg-[#F6F0E5] px-4 py-3 text-sm text-[#8A6420]" role="status">{message}</p>}
             {status?.lastError && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">Last synthesis fallback reason: {status.lastError}</p>}
-            <div className="flex flex-wrap items-center gap-3"><Button onClick={() => configureMutation.mutate({ remoteEnabled, apiKey: apiKey || undefined, speaker, instruct })} disabled={configureMutation.isPending} className="bg-[#17324D] text-white hover:bg-[#245170]">{configureMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Volume2 size={16} />} Save TTS settings</Button><Button variant="outline" onClick={() => testMutation.mutate({ text: "Welcome to Graceway Baptist Church." })} disabled={testMutation.isPending} className="border-[#B9955E]/50 text-[#17324D]">{testMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Test short sentence</Button><Badge variant="outline" className="border-[#DCE4E7] text-[#607A91]">Current: {activeEngine === "deepinfra-qwen" ? "DeepInfra Qwen" : activeEngine === "local-fallback" ? "Local fallback" : "Waiting"}</Badge></div>
+            <div className="flex flex-wrap items-center gap-3"><Button onClick={() => configureMutation.mutate({ remoteEnabled, apiKey: apiKey || undefined, speaker, instruct, speed })} disabled={configureMutation.isPending} className="bg-[#17324D] text-white hover:bg-[#245170]">{configureMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Volume2 size={16} />} Save TTS settings</Button><Button variant="outline" onClick={() => testMutation.mutate({ text: "Welcome to Graceway Baptist Church." })} disabled={testMutation.isPending} className="border-[#B9955E]/50 text-[#17324D]">{testMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Test short sentence</Button><Badge variant="outline" className="border-[#DCE4E7] text-[#607A91]">Current: {activeEngine === "deepinfra-qwen" ? "DeepInfra Qwen" : activeEngine === "local-fallback" ? "Local fallback" : "Waiting"}</Badge></div>
             {testResult && <p className="rounded-md bg-[#EDF5EE] px-4 py-3 text-sm text-[#315C3A]" role="status">{testResult}</p>}
           </CardContent>
         </Card>

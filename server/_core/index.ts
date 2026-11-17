@@ -12,6 +12,7 @@ import { registerWeeklyNewsletterScheduledHandler } from "../weeklyNewsletterSch
 import { registerWeeklyNewsletterDeliveryWebhook } from "../weeklyNewsletterDeliveryWebhook";
 import { registerGooglePhotosRoutes } from "../googlePhotosRoutes";
 import { registerCanonicalPublicDomainRedirect } from "../canonicalDomain";
+import { startDiscordTtsBot } from "../discordBot";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -52,6 +53,12 @@ async function startServer() {
       createContext,
     })
   );
+  const autoStartDiscordBot = process.env.DISCORD_TTS_BOT_AUTOSTART === "true" || (process.env.NODE_ENV !== "development" && process.env.DISCORD_TTS_BOT_AUTOSTART !== "false");
+  if (autoStartDiscordBot) {
+    void startDiscordTtsBot().then(status => {
+      console.log(`[discord-tts] runtime state: ${status.state}`);
+    });
+  }
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

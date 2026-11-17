@@ -22,12 +22,12 @@
 - [x] Re-send an internal test after the genuine icon update is validated
 
 ## Discord Qwen Live Worship TTS — November 17, 2026
-- [ ] Confirm a Qwen-capable persistent worker host; current WebDev runtime is capped at 1 vCPU/512 MB and is not suitable for Qwen3-TTS 1.7B
-- [ ] Add the standalone authenticated Qwen worker service and health/synthesis smoke tests
-- [ ] Add WebDev remote Qwen HTTP/WebSocket adapter with timeout, queue, engine labeling, and strict/fallback policy
-- [ ] Add authenticated Discord bot integration for Kee's configured text channel and voice playback
-- [ ] Add admin dashboard status, worker health, queue/history, speaker/style/speed, and start/pause/stop controls
-- [ ] Run end-to-end worker and five-message Discord playback validation, then save checkpoint
+- [x] Use DeepInfra hosted Qwen inference as the persistent worker host; the WebDev runtime is not used to load a local 1.7B model
+- [x] Replace the standalone local worker requirement with an authenticated DeepInfra provider, credential validation, WAV parsing, and audio smoke tests
+- [x] Add the WebDev remote Qwen adapter with timeout, queue-safe sentence sizing, engine labeling, and explicit local-fallback status
+- [x] Add the authenticated Discord bot integration for Kee's configured text channel and voice playback
+- [x] Add admin dashboard status, bot health, queue/history, speaker/style/speed, and start/pause/resume/stop controls
+- [x] Run end-to-end five-message Discord playback validation: all five sentences completed through DeepInfra Qwen with `deepinfra-qwen` engine labels
 
 ## DeepInfra Remote TTS Foundation — November 17, 2026
 - [x] Register `DEEPINFRA_API_KEY` as a server-only WebDev secret and validate it against DeepInfra's models endpoint

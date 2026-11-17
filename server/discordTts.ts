@@ -5,7 +5,8 @@ const DEFAULT_REMOTE_URL = "https://api.deepinfra.com/v1/inference/Qwen/Qwen3-TT
 const DEFAULT_TIMEOUT_MS = 30_000;
 const SOURCE_RATE = 24_000;
 
-type TtsEngine = "deepinfra-qwen" | "local-fallback";
+export type TtsEngine = "deepinfra-qwen" | "local-fallback";
+export type TtsAudioFormat = "wav" | "pcm_s16le_24khz_mono";
 type TtsRuntimeState = "ready" | "synthesizing" | "fallback" | "error";
 
 export type DiscordTtsSettings = {
@@ -177,6 +178,14 @@ async function synthesizeLocalFallback(text: string, currentSettings: DiscordTts
   return pcm;
 }
 
+export async function convertAudioForDiscord(audio: Buffer, format: TtsAudioFormat) {
+  const ffmpeg = process.env.FFMPEG_PATH ?? "ffmpeg";
+  const inputArgs = format === "wav"
+    ? ["-i", "pipe:0"]
+    : ["-f", "s16le", "-ar", String(SOURCE_RATE), "-ac", "1", "-i", "pipe:0"];
+  return runProcess(ffmpeg, ["-hide_banner", "-loglevel", "error", ...inputArgs, "-f", "s16le", "-ar", "48000", "-ac", "2", "pipe:1"], audio);
+}
+
 export function getDiscordTtsStatus(): DiscordTtsStatus {
   return {
     remoteEnabled,
@@ -214,7 +223,7 @@ export function configureDiscordTts(input: {
 
 export async function synthesizeDiscordText(text: string, requestedSettings = settings) {
   const spoken = text.replace(/https?:\/\/\S+/g, " link ").replace(/<@!?\d+>/g, " mention ").trim();
-  if (!spoken) return { audio: Buffer.alloc(0), engine: null as TtsEngine | null, latencyMs: 0 };
+  if (!spoken) return { audio: Buffer.alloc(0), engine: null as TtsEngine | null, format: "pcm_s16le_24khz_mono" as const, latencyMs: 0 };
 
   requestCount += 1;
   lastRequestAt = new Date().toISOString();
@@ -232,7 +241,7 @@ export async function synthesizeDiscordText(text: string, requestedSettings = se
       state = "ready";
       lastError = null;
       completedCount += 1;
-      return { audio, engine: "deepinfra-qwen" as const, latencyMs: lastLatencyMs };
+      return { audio, engine: "deepinfra-qwen" as const, format: "wav" as const, latencyMs: lastLatencyMs };
     } catch (error) {
       remoteError = errorText(error);
     }
@@ -247,7 +256,7 @@ export async function synthesizeDiscordText(text: string, requestedSettings = se
     state = "fallback";
     lastError = remoteError === "remote disabled" ? null : `DeepInfra: ${remoteError}`;
     completedCount += 1;
-    return { audio, engine: "local-fallback" as const, latencyMs: lastLatencyMs };
+    return { audio, engine: "local-fallback" as const, format: "pcm_s16le_24khz_mono" as const, latencyMs: lastLatencyMs };
   } catch (error) {
     currentEngine = null;
     state = "error";
