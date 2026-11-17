@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import { randomUUID } from "node:crypto";
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, PermissionFlagsBits } from "discord.js";
 import {
   AudioPlayerStatus,
   StreamType,
@@ -27,6 +27,7 @@ type HistoryItem = {
 };
 
 export type VoiceFailureCode =
+  | "configuration_invalid"
   | "connection_unavailable"
   | "synthesis_failed"
   | "audio_conversion_failed"
@@ -238,9 +239,21 @@ export async function startDiscordTtsBot() {
     await client.login(token);
     stage = "guild lookup";
     const guild = await client.guilds.fetch(config.guildId);
+    stage = "text channel lookup";
+    const textChannel = await guild.channels.fetch(config.textChannelId);
+    if (!textChannel?.isTextBased()) throw new Error(`Configured text channel ${config.textChannelId} was not found or is not text-based`);
     stage = "voice channel lookup";
     const channel = await guild.channels.fetch(config.voiceChannelId);
     if (!channel?.isVoiceBased()) throw new Error(`Configured voice channel ${config.voiceChannelId} was not found or is not voice-based`);
+    const botMember = await guild.members.fetch(client.user!.id);
+    const permissions = channel.permissionsFor(botMember);
+    const requiredPermissions: Array<[bigint, string]> = [
+      [PermissionFlagsBits.ViewChannel, "View Channel"],
+      [PermissionFlagsBits.Connect, "Connect"],
+      [PermissionFlagsBits.Speak, "Speak"],
+    ];
+    const missingPermissions = requiredPermissions.filter(([permission]) => !permissions?.has(permission as never)).map(([, label]) => label);
+    if (missingPermissions.length) throw new Error(`Missing voice permissions: ${missingPermissions.join(", ")}`);
     stage = "voice connection";
     connection = joinVoiceChannel({ channelId: channel.id, guildId: guild.id, adapterCreator: guild.voiceAdapterCreator, selfDeaf: false });
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
@@ -267,8 +280,14 @@ export async function startDiscordTtsBot() {
     runtimeState = "error";
     lastError = stage === "voice connection"
       ? "Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요."
+      : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
+        ? "Discord 서버 또는 채널 설정을 확인해 주세요. 서버·Text 채널·음성 채널 ID가 올바른지 확인해야 합니다."
       : `Discord ${stage} failed: ${error instanceof Error ? error.message : String(error)}`;
-    lastErrorCode = stage === "voice connection" ? "connection_unavailable" : "unknown";
+    lastErrorCode = stage === "voice connection"
+      ? "connection_unavailable"
+      : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
+        ? "configuration_invalid"
+        : "unknown";
   }
   return getDiscordBotStatus();
 }

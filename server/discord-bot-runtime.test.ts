@@ -24,6 +24,9 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("GatewayIntentBits.MessageContent");
     expect(runtimeSource).toContain("GatewayIntentBits.GuildVoiceStates");
     expect(runtimeSource).toContain("convertAudioForDiscord(result.audio, result.format)");
+    expect(runtimeSource).toContain("guild.channels.fetch(config.textChannelId)");
+    expect(runtimeSource).toContain("PermissionFlagsBits.Connect");
+    expect(runtimeSource).toContain("PermissionFlagsBits.Speak");
   });
 
   it("exposes safe admin bot controls and live status polling", () => {
