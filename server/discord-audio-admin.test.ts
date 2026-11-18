@@ -4,6 +4,8 @@ import type { TrpcContext } from "./_core/context";
 import { discordPcmToWav, smoothDiscordSentencePcm } from "./discordAudio";
 import { resetDiscordTtsForTests } from "./discordTts";
 
+vi.mock("./discordTtsPreferences", () => ({ readVoicePreferences: vi.fn().mockResolvedValue(null), saveVoicePreferences: vi.fn().mockResolvedValue(undefined) }));
+
 function context(role: "admin" | "user" | null): TrpcContext {
   return {
     user: role ? { id: 1, openId: "audio-test", name: "Test", email: null, loginMethod: "test", role,

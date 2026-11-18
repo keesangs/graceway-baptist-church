@@ -18,7 +18,8 @@ vi.mock("@/components/BrandPageHero", () => ({ BrandPageHero: () => null }));
 vi.mock("@/lib/trpc", () => {
   const generic = { useMutation: () => ({ mutate: vi.fn(), isPending: false }) };
   return { trpc: { discordTts: {
-    status: { useQuery: () => ({ data: { remoteEnabled: true, apiKeyConfigured: true, state: "ready", lastEngine: "deepinfra-inworld" }, refetch: mocks.refetch }) },
+    status: { useQuery: () => ({ data: { remoteEnabled: true, apiKeyConfigured: true, state: "ready", lastEngine: "deepinfra-inworld", settings: { speaker: "Dennis", speed: 1.1, temperature: 1.1 } }, refetch: mocks.refetch }) },
+    voices: { useQuery: () => ({ data: { voices: [{ id: "Dennis", name: "Dennis", kind: "preset" }], presetCount: 127, customCount: 0, source: "live", warning: null }, refetch: mocks.refetch, isFetching: false }) },
     botStatus: { useQuery: () => ({ data: { state: mocks.state ?? (mocks.connected ? "connected" : "stopped"), instanceId: "instance-1", voicePing: { ws: 35, udp: null },
       lastError: mocks.state === "starting" ? "Voice timeout" : null, lastErrorCode: "connection_unavailable",
       connectionDiagnostics: { stage: "voice connection", voiceState: "connecting", networkPhase: "udp-ip-discovery", startupRetryAttempts: 2, transitions: [] },

@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
+import DiscordVoiceControls from "@/components/DiscordVoiceControls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,9 +51,6 @@ export default function DiscordTtsAdmin() {
   });
   const [remoteEnabled, setRemoteEnabled] = useState(true);
   const [apiKey, setApiKey] = useState("");
-  const [speaker, setSpeaker] = useState("Dennis");
-  const [instruct, setInstruct] = useState("Speak clearly and warmly, suitable for a church announcement.");
-  const [speed, setSpeed] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [previewAudio, setPreviewAudio] = useState<{ original: string; converted: string; smoothed: string } | null>(null);
@@ -122,11 +120,11 @@ export default function DiscordTtsAdmin() {
               <StatusPill remoteEnabled={effectiveRemoteEnabled} currentEngine={status?.currentEngine ?? null} lastEngine={status?.lastEngine ?? null} state={status?.state ?? "ready"} />
             </div>
           </CardHeader>
-          <CardContent className="grid gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+          <CardContent className="grid min-w-0 grid-cols-1 gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Remote API</p><p className="mt-1 font-semibold text-[#17324D]">{effectiveRemoteEnabled ? "Enabled" : "Disabled"}</p><p className="mt-1 text-xs text-[#607A91]">{canUseDeepInfra ? "Server key configured" : "Server key missing"}</p></div>
             <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Last engine</p><p className="mt-1 font-semibold text-[#17324D]">{status?.lastEngine === "deepinfra-inworld" ? "DeepInfra Inworld" : status?.lastEngine === "local-fallback" ? "Local fallback" : "Not used yet"}</p><p className="mt-1 text-xs text-[#607A91]">{status?.lastLatencyMs ? `${status.lastLatencyMs} ms` : "No synthesis yet"}</p></div>
             <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Requests</p><p className="mt-1 font-semibold text-[#17324D]">{status?.completedCount ?? 0} completed</p><p className="mt-1 text-xs text-[#607A91]">{status?.failedCount ?? 0} failed</p></div>
-            <div className="rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Connection</p><p className="mt-1 flex items-center gap-1.5 font-semibold text-[#17324D]">{statusQuery.isFetching ? <Wifi size={15} className="text-sky-600" /> : <WifiOff size={15} className="text-[#607A91]" />}{statusQuery.isFetching ? "Live" : "Idle"}</p><p className="mt-1 truncate text-xs text-[#607A91]" title={status?.endpoint}>{status?.endpoint ?? "Loading…"}</p></div>
+            <div className="min-w-0 rounded-lg bg-[#F4F6F7] p-4"><p className="text-xs font-semibold uppercase tracking-wider text-[#607A91]">Connection</p><p className="mt-1 flex items-center gap-1.5 font-semibold text-[#17324D]">{statusQuery.isFetching ? <Wifi size={15} className="text-sky-600" /> : <WifiOff size={15} className="text-[#607A91]" />}{statusQuery.isFetching ? "Live" : "Idle"}</p><p className="mt-1 truncate text-xs text-[#607A91]" title={status?.endpoint}>{status?.endpoint ?? "Loading…"}</p></div>
           </CardContent>
         </Card>
 
@@ -187,14 +185,12 @@ export default function DiscordTtsAdmin() {
               <div><p className="font-semibold text-[#17324D]">Enable remote TTS</p><p className="mt-1 text-sm text-[#607A91]">{effectiveRemoteEnabled ? "DeepInfra Inworld will be attempted before local fallback." : "Only the local fallback engine will be used."}</p></div>
               <Switch checked={effectiveRemoteEnabled} onCheckedChange={(checked) => { setRemoteEnabled(checked); configureMutation.mutate({ remoteEnabled: checked }); }} disabled={configureMutation.isPending} aria-label="Enable DeepInfra remote TTS" />
             </div>
-            <div className="grid gap-5 md:grid-cols-2">
-              <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-api-key">DeepInfra API key <span className="font-normal text-[#607A91]">(optional rotation)</span><Input id="deepinfra-api-key" type="password" autoComplete="new-password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={canUseDeepInfra ? "Server secret is configured" : "Paste a key for this session"} className="mt-2" /><span className="mt-1 block text-xs font-normal text-[#607A91]">Never shown in the dashboard or returned by the API.</span></label>
-              <div className="space-y-5"><label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-speaker">Speaker<Input id="deepinfra-speaker" value={speaker} onChange={(event) => setSpeaker(event.target.value)} className="mt-2" /></label><label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-speed">Speed: {speed.toFixed(2)}x<input id="deepinfra-speed" type="range" min="0.75" max="1.5" step="0.05" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="mt-3 w-full accent-[#C9973E]" /><span className="mt-1 flex justify-between text-xs font-normal text-[#607A91]"><span>0.75x</span><span>1.5x</span></span></label></div>
-            </div>
-            <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-instruct">Voice style instruction<textarea id="deepinfra-instruct" value={instruct} onChange={(event) => setInstruct(event.target.value)} rows={3} className="mt-2 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" /></label>
+            <DiscordVoiceControls settings={status?.settings} onSaved={() => { void statusQuery.refetch(); }} />
+            <label className="block text-sm font-semibold text-[#17324D]" htmlFor="deepinfra-api-key">DeepInfra API key <span className="font-normal text-[#607A91]">(optional rotation)</span><Input id="deepinfra-api-key" type="password" autoComplete="new-password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={canUseDeepInfra ? "Server secret is configured" : "Paste a key for this session"} className="mt-2" /><span className="mt-1 block text-xs font-normal text-[#607A91]">Never shown in the dashboard or returned by the API.</span></label>
             {message && <p className="rounded-md bg-[#F6F0E5] px-4 py-3 text-sm text-[#8A6420]" role="status">{message}</p>}
+            {status?.preferencesError && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">{status.preferencesError}</p>}
             {status?.lastError && <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">Last synthesis fallback reason: {status.lastError}</p>}
-            <div className="flex flex-wrap items-center gap-3"><Button onClick={() => configureMutation.mutate({ remoteEnabled, apiKey: apiKey || undefined, speaker, instruct, speed })} disabled={configureMutation.isPending} className="bg-[#17324D] text-white hover:bg-[#245170]">{configureMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Volume2 size={16} />} Save TTS settings</Button><Button variant="outline" onClick={() => testMutation.mutate({ text: "Welcome to Graceway Baptist Church." })} disabled={testMutation.isPending} className="border-[#B9955E]/50 text-[#17324D]">{testMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Test short sentence</Button><Badge variant="outline" className="border-[#DCE4E7] text-[#607A91]">Current: {activeEngine === "deepinfra-inworld" ? "DeepInfra Inworld" : activeEngine === "local-fallback" ? "Local fallback" : "Waiting"}</Badge></div>
+            <div className="flex flex-wrap items-center gap-3"><Button onClick={() => configureMutation.mutate({ remoteEnabled: effectiveRemoteEnabled, apiKey: apiKey || undefined })} disabled={configureMutation.isPending || !apiKey.trim()} className="bg-[#17324D] text-white hover:bg-[#245170]">{configureMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Volume2 size={16} />} Save API key</Button><Button variant="outline" onClick={() => testMutation.mutate({ text: "Welcome to Graceway Baptist Church." })} disabled={testMutation.isPending} className="border-[#B9955E]/50 text-[#17324D]">{testMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Test short sentence</Button><Badge variant="outline" className="border-[#DCE4E7] text-[#607A91]">Current: {activeEngine === "deepinfra-inworld" ? "DeepInfra Inworld" : activeEngine === "local-fallback" ? "Local fallback" : "Waiting"}</Badge></div>
             <div className="space-y-4 rounded-lg border border-[#DCE4E7] p-4">
               <p className="text-sm text-[#17324D]">① Test short sentence → 원본과 변환 음성을 브라우저에서 듣기 ② Discord 송출 테스트 → Discord에서 비교 듣기</p>
               <p className="text-xs text-[#607A91]">Preview bypasses Discord. 원본은 정상인데 Discord에서만 끊기면 송출 타이밍·네트워크 경로를 확인합니다. 테스트 음성은 저장하지 않습니다.</p>

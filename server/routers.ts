@@ -82,7 +82,7 @@ import {
   sendNewsletterStaffNotification,
   sendNewsletterSubscriptionConfirmedEmail,
 } from "./newsletterSubscriptionEmail";
-import { configureDiscordTts, convertAudioForDiscord, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
+import { configureDiscordTtsAndSave, convertAudioForDiscord, getDiscordTtsStatus, initializeDiscordTtsPreferences, listDiscordTtsVoices, synthesizeDiscordText } from "./discordTts";
 import { getDiscordBotStatus, pauseDiscordTtsBot, queueDiscordTtsTest, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
 import { discordPcmToWav, smoothDiscordSentencePcm } from "./discordAudio";
 
@@ -224,7 +224,8 @@ export const appRouter = router({
   }),
 
   discordTts: router({
-    status: adminProcedure.query(() => getDiscordTtsStatus()),
+    status: adminProcedure.query(async () => { await initializeDiscordTtsPreferences(); return getDiscordTtsStatus(); }),
+    voices: adminProcedure.input(z.object({ refresh: z.boolean().optional() }).optional()).query(({ input }) => listDiscordTtsVoices(input?.refresh)),
     botStatus: adminProcedure.query(() => getDiscordBotStatus()),
     // Voice login and UDP IP discovery can outlive the dashboard request. Start
     // in the server process and let the two-second status poll report progress.
@@ -262,14 +263,15 @@ export const appRouter = router({
     configure: adminProcedure
       .input(
         z.object({
-          remoteEnabled: z.boolean(),
+          remoteEnabled: z.boolean().optional(),
           apiKey: z.string().trim().max(500).optional(),
           speaker: z.string().trim().min(1).max(80).optional(),
           instruct: z.string().trim().max(500).optional(),
-          speed: z.number().min(0.75).max(1.5).optional(),
+          speed: z.number().min(0.5).max(1.5).optional(),
+          temperature: z.number().min(0).max(2).optional(),
         }),
       )
-      .mutation(({ input }) => configureDiscordTts(input)),
+      .mutation(({ input }) => configureDiscordTtsAndSave(input)),
   }),
 
   // ── Media Library ─────────────────────────────────────────────────────────

@@ -1,5 +1,8 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { DEFAULT_VOICE_CONTROLS, INWORLD_PRESET_VOICES } from "../shared/discordVoiceControls";
+import { readVoicePreferences, saveVoicePreferences } from "./discordTtsPreferences";
+import { loadInworldVoiceCatalog } from "./discordVoiceCatalog";
 
 const DEFAULT_REMOTE_URL = "https://api.deepinfra.com/v1/inference/inworld-ai/realtime-tts-1.5-mini";
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -13,6 +16,7 @@ export type DiscordTtsSettings = {
   speaker: string;
   instruct: string;
   speed: number;
+  temperature: number;
 };
 
 export type DiscordTtsStatus = {
@@ -29,12 +33,14 @@ export type DiscordTtsStatus = {
   completedCount: number;
   failedCount: number;
   settings: DiscordTtsSettings;
+  preferencesError: string | null;
 };
 
 const defaultSettings: DiscordTtsSettings = {
-  speaker: process.env.INWORLD_TTS_SPEAKER?.trim() || "Dennis",
+  speaker: process.env.INWORLD_TTS_SPEAKER?.trim() || DEFAULT_VOICE_CONTROLS.speaker,
   instruct: process.env.QWEN_TTS_INSTRUCT ?? "Speak clearly and warmly, suitable for a church announcement.",
-  speed: 1,
+  speed: DEFAULT_VOICE_CONTROLS.speed,
+  temperature: DEFAULT_VOICE_CONTROLS.temperature,
 };
 
 let runtimeApiKey: string | undefined;
@@ -49,6 +55,67 @@ let requestCount = 0;
 let completedCount = 0;
 let failedCount = 0;
 let settings: DiscordTtsSettings = { ...defaultSettings };
+let preferencesError: string | null = null;
+let preferencesLoaded = false;
+let preferencesLoading: Promise<void> | undefined;
+let preferenceWrites: Promise<unknown> = Promise.resolve();
+
+function validateControls(input: { speed?: number; temperature?: number }) {
+  if (input.speed !== undefined && (!Number.isFinite(input.speed) || input.speed < 0.5 || input.speed > 1.5)) throw new Error("Speaking rate must be between 0.5 and 1.5.");
+  if (input.temperature !== undefined && (!Number.isFinite(input.temperature) || input.temperature < 0 || input.temperature > 2)) throw new Error("Expression variability must be between 0 and 2.");
+}
+
+export async function initializeDiscordTtsPreferences() {
+  if (preferencesLoaded) return;
+  if (!preferencesLoading) preferencesLoading = (async () => {
+    try {
+      const saved = await readVoicePreferences();
+      if (saved) {
+        validateControls(saved);
+        if (typeof saved.speed !== "number" || typeof saved.temperature !== "number") throw new Error("Invalid saved controls.");
+        if (typeof saved.speaker !== "string" || !saved.speaker.trim() || saved.speaker.length > 80) throw new Error("Invalid saved voice.");
+        settings = { ...settings, speaker: saved.speaker, speed: saved.speed, temperature: saved.temperature };
+      }
+      preferencesError = null;
+    } catch {
+      preferencesError = "저장된 음성 설정을 읽지 못했습니다. 기본값으로 송출하며, 설정 저장 시 다시 확인합니다.";
+    } finally {
+      preferencesLoaded = true;
+    }
+  })();
+  await preferencesLoading;
+}
+
+export function listDiscordTtsVoices(refresh = false) {
+  return loadInworldVoiceCatalog(getApiKey(), refresh);
+}
+
+// Save partial patches in order, merging with the most recently applied state.
+// API keys and remote-mode settings are never stored in the preferences table.
+export function configureDiscordTtsAndSave(input: Parameters<typeof configureDiscordTts>[0]) {
+  const task = preferenceWrites.catch(() => undefined).then(async () => {
+    if (preferencesError) { preferencesLoaded = false; preferencesLoading = undefined; }
+    await initializeDiscordTtsPreferences();
+    validateControls(input);
+    if (preferencesError && (input.speaker !== undefined || input.speed !== undefined || input.temperature !== undefined)) throw new Error("저장된 음성 설정을 확인하지 못해 변경을 적용하지 않았습니다. 잠시 후 다시 시도해 주세요.");
+    if (input.speaker && !INWORLD_PRESET_VOICES.includes(input.speaker as typeof INWORLD_PRESET_VOICES[number]) && input.speaker !== settings.speaker) {
+      const catalog = await loadInworldVoiceCatalog(input.apiKey?.trim() || getApiKey());
+      if (!catalog.voices.some(voice => voice.id === input.speaker)) throw new Error("Select a voice from the available voice list.");
+    }
+    if (input.speaker !== undefined || input.speed !== undefined || input.temperature !== undefined) {
+      const controls = {
+        speaker: input.speaker ?? settings.speaker,
+        speed: input.speed ?? settings.speed,
+        temperature: input.temperature ?? settings.temperature,
+      };
+      await saveVoicePreferences(controls);
+      preferencesError = null;
+    }
+    return configureDiscordTts(input);
+  });
+  preferenceWrites = task;
+  return task;
+}
 
 function getApiKey() {
   return runtimeApiKey?.trim() || process.env.DEEPINFRA_API_KEY?.trim() || "";
@@ -122,6 +189,8 @@ async function synthesizeDeepInfra(text: string, currentSettings: DiscordTtsSett
         voice: currentSettings.speaker,
         language: "en",
         output_format: "wav",
+        speaking_rate: currentSettings.speed,
+        temperature: currentSettings.temperature,
       }),
       signal: controller.signal,
     });
@@ -285,6 +354,7 @@ export function getDiscordTtsStatus(): DiscordTtsStatus {
     completedCount,
     failedCount,
     settings: { ...settings },
+    preferencesError,
   };
 }
 
@@ -294,18 +364,24 @@ export function configureDiscordTts(input: {
   speaker?: string;
   instruct?: string;
   speed?: number;
+  temperature?: number;
 }) {
+  validateControls(input);
   if (typeof input.remoteEnabled === "boolean") remoteEnabled = input.remoteEnabled;
   if (input.apiKey?.trim()) runtimeApiKey = input.apiKey.trim();
   if (input.speaker?.trim()) settings.speaker = input.speaker.trim().slice(0, 80);
   if (input.instruct !== undefined) settings.instruct = input.instruct.trim().slice(0, 500);
   if (input.speed !== undefined) settings.speed = input.speed;
+  if (input.temperature !== undefined) settings.temperature = input.temperature;
+  preferencesLoaded = true;
   lastError = null;
   state = "ready";
   return getDiscordTtsStatus();
 }
 
-export async function synthesizeDiscordText(text: string, requestedSettings = settings) {
+export async function synthesizeDiscordText(text: string, requestedSettings?: DiscordTtsSettings) {
+  await initializeDiscordTtsPreferences();
+  const sentenceSettings = { ...(requestedSettings ?? settings) };
   const spoken = text.replace(/https?:\/\/\S+/g, " link ").replace(/<@!?\d+>/g, " mention ").trim();
   if (!spoken) return { audio: Buffer.alloc(0), engine: null as TtsEngine | null, format: "pcm_s16le_24khz_mono" as const, latencyMs: 0 };
 
@@ -318,7 +394,7 @@ export async function synthesizeDiscordText(text: string, requestedSettings = se
 
   if (remoteEnabled) {
     try {
-      const audio = await synthesizeDeepInfra(spoken, requestedSettings);
+      const audio = await synthesizeDeepInfra(spoken, sentenceSettings);
       lastLatencyMs = Math.round(performance.now() - started);
       lastEngine = "deepinfra-inworld";
       currentEngine = null;
@@ -333,7 +409,7 @@ export async function synthesizeDiscordText(text: string, requestedSettings = se
 
   try {
     currentEngine = "local-fallback";
-    const audio = await synthesizeLocalFallback(spoken, requestedSettings);
+    const audio = await synthesizeLocalFallback(spoken, sentenceSettings);
     lastLatencyMs = Math.round(performance.now() - started);
     lastEngine = "local-fallback";
     currentEngine = null;
@@ -363,6 +439,10 @@ export function resetDiscordTtsForTests() {
   completedCount = 0;
   failedCount = 0;
   settings = { ...defaultSettings };
+  preferencesError = null;
+  preferencesLoaded = true; // Unit tests do not read or write production preferences.
+  preferencesLoading = undefined;
+  preferenceWrites = Promise.resolve();
 }
 
 export const discordTtsRequestId = () => randomUUID();

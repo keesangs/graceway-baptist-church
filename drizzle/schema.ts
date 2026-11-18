@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
+import { bigint, index, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -242,6 +242,14 @@ export const weeklyNewsletterDeliverySettings = mysqlTable("weekly_newsletter_de
 });
 
 export type WeeklyNewsletterDeliverySettings = typeof weeklyNewsletterDeliverySettings.$inferSelect;
+
+// Non-secret administrator voice preferences survive restarts and deployments.
+// No audio, Discord message text, user IDs or API keys are stored here.
+export const discordTtsPreferences = mysqlTable("discord_tts_preferences", {
+  id: int("id").primaryKey(),
+  controls: json("controls").$type<{ speaker: string; speed: number; temperature: number }>().notNull(),
+  updatedAtMs: bigint("updatedAtMs", { mode: "number" }).notNull(),
+});
 
 // Contact form submissions from the Connect page.
 export const contactMessages = mysqlTable("contact_messages", {

@@ -1,0 +1,11 @@
+# Inworld 1.5 Mini voice controls
+
+Verified on November 18, 2026 against DeepInfra model metadata at https://api.deepinfra.com/models/inworld-ai/realtime-tts-1.5-mini (version DuCYVWIF) and its official API page https://deepinfra.com/inworld-ai/realtime-tts-1.5-mini/api.
+
+The exact preset enum has 127 names, not the marketing description's 130+. `GET https://api.deepinfra.com/v1/voices` returns account custom voices authenticated with the existing server key; the dropdown merges their IDs/names with preset names, excluding user IDs and other account data. Catalog refresh errors preserve the verified preset snapshot and show a warning. No voices are cloned or created by this feature.
+
+The inference request uses `voice`, `speaking_rate` (0.5–1.5), `temperature` (0–2), and explicit WAV output. Application defaults are Dennis, speaking rate 1.1 and temperature 1.1. DeepInfra's model README describes temperature default 1.1, but its JSON schema gives no default; we send the application's value explicitly. Native Inworld docs describe different defaults and zero semantics, so do not assume their defaults apply to this hosted API.
+
+Temperature adjusts speech variability, not a deterministic emotion, accent, pitch or semantic style. High values may produce less stable speech. There is no supported free-text instruction/pitch/emotion input in this hosted model schema; the previous generic instruction field is not presented as an effective Inworld control. `language` is ignored by 1.5. Speaking-rate changes are now actually included in remote inference rather than merely stored in UI state. See https://docs.deepinfra.com/api-reference/text-to-speech/get-voices and https://docs.inworld.ai/tts/capabilities/generating-audio for the account-list contract and native variability guidance.
+
+Only speaker, rate, temperature and UTC updated-at milliseconds are saved in the singleton `discord_tts_preferences` table. API keys, audio and Discord messages are not persisted there. Changes apply to the next sentence; each synthesis snapshots its settings. Queued saves serialize partial patches so a speed update does not undo a recent voice change. UI saves selected voices immediately and sliders after a short debounce, with explicit in-flight/error feedback. A failed database write is reported and does not falsely claim a saved preference.

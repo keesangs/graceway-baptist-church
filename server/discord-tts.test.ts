@@ -38,6 +38,8 @@ describe("Discord DeepInfra TTS", () => {
       voice: "Dennis",
       language: "en",
       output_format: "wav",
+      speaking_rate: 1.1,
+      temperature: 1.1,
     });
     expect(getDiscordTtsStatus()).toMatchObject({ lastEngine: "deepinfra-inworld", completedCount: 1, failedCount: 0 });
   });
@@ -50,7 +52,8 @@ describe("Discord DeepInfra TTS", () => {
     runtime.configureDiscordTts({ speaker: "Ashley" });
     runtime.resetDiscordTtsForTests();
     expect(runtime.getDiscordTtsStatus().settings.speaker).toBe("Dennis");
-    expect(pageSource).toContain('useState("Dennis")');
+    expect(pageSource).toContain("<DiscordVoiceControls");
+    expect(runtime.getDiscordTtsStatus().settings).toMatchObject({ speed: 1.1, temperature: 1.1 });
   });
 
   it("preserves an explicit configured voice override", async () => {
