@@ -105,6 +105,7 @@ export default function DiscordTtsAdmin() {
   const canUseDeepInfra = Boolean(status?.apiKeyConfigured);
   const activeEngine = status?.currentEngine ?? status?.lastEngine;
   const botStatus = botStatusQuery.data;
+  const botConnecting = botStatus?.state === "starting" || botStatus?.state === "reconnecting";
 
   return (
     <div className="min-h-screen bg-[#F4F6F7]">
@@ -140,6 +141,13 @@ export default function DiscordTtsAdmin() {
             <section className="rounded-lg bg-[#F4F6F7] p-4 text-sm text-[#17324D]" aria-label="Discord playback diagnostics">
               <h3 className="font-semibold">송출 진단 / Playback diagnostics</h3>
               <p className="mt-1 text-xs text-[#607A91]">Runtime {botStatus?.instanceId ?? "…"} · Voice WS ping {botStatus?.voicePing.ws ?? "—"} ms · UDP ping {botStatus?.voicePing.udp ?? "—"} ms</p>
+              {botStatus?.connectionDiagnostics && <div className="mt-3 space-y-1 rounded-md bg-white p-3 text-xs" aria-label="Voice connection phase">
+                <p><strong>연결 단계:</strong> {botStatus.connectionDiagnostics.stage}</p>
+                <p><strong>Voice 상태:</strong> {botStatus.connectionDiagnostics.voiceState}</p>
+                <p className="break-words"><strong>네트워크 단계:</strong> {botStatus.connectionDiagnostics.networkPhase}</p>
+                <p><strong>초기 자동 재시도:</strong> {botStatus.connectionDiagnostics.startupRetryAttempts}/3</p>
+                <details className="pt-1"><summary className="cursor-pointer">최근 연결 단계 기록</summary><ul className="mt-2 space-y-1">{botStatus.connectionDiagnostics.transitions.slice(-6).map((entry, index) => <li key={`${entry.at}-${index}`} className="break-words">{new Date(entry.at).toLocaleTimeString()} · {entry.voiceState} / {entry.networkPhase}</li>)}</ul></details>
+              </div>}
               {botStatus?.playback ? <>
                 <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <div><dt className="text-xs text-[#607A91]">Codec / buffer</dt><dd>{botStatus.playback.codec} · {botStatus.playback.packetCount} packets</dd></div>
@@ -153,8 +161,20 @@ export default function DiscordTtsAdmin() {
               </> : <p className="mt-3 text-[#607A91]">Discord 송출 테스트 후 진단 수치가 표시됩니다.</p>}
               <p className="mt-3 text-xs text-[#607A91]">이 수치는 서버 측 상태이며 수신자의 패킷 손실·청취 품질을 보장하지 않습니다. 새로고침마다 Runtime ID가 바뀌면 여러 웹 인스턴스 실행 여부도 확인해야 합니다.</p>
             </section>
-            {botStatus?.lastError && <div className={`flex flex-col gap-3 rounded-lg border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${botStatus.state === "reconnecting" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-800"}`} role="alert"><div className="flex min-w-0 items-start gap-2"><AlertTriangle className={`mt-0.5 shrink-0 ${botStatus.state === "reconnecting" ? "text-amber-600" : "text-red-600"}`} size={18} /><div><p className="font-semibold">{botStatus.state === "reconnecting" ? "Discord 음성 연결을 자동 복구하는 중입니다" : "음성 송출에 문제가 발생했습니다"}</p><p className="mt-1">{botStatus.lastError}</p>{botStatus.lastFailed?.text && <p className="mt-1 truncate text-xs text-red-700/80">실패한 문장: “{botStatus.lastFailed.text}”</p>}</div></div><Button variant="outline" onClick={() => retryMessageMutation.mutate()} disabled={retryMessageMutation.isPending || botStatus.state === "reconnecting" || (!botStatus.lastFailed && botStatus.lastErrorCode !== "connection_unavailable")} className="shrink-0 border-red-300 bg-white text-red-800 hover:bg-red-100">{retryMessageMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />} {botStatus.state === "reconnecting" ? "자동 재연결 중" : botStatus.lastFailed ? "마지막 메시지 재시도" : "음성 연결 재시도"}</Button></div>}
-            <div className="flex flex-wrap gap-3"><Button onClick={() => startBotMutation.mutate()} disabled={startBotMutation.isPending || botStatus?.state === "connected"} className="bg-[#17324D] text-white hover:bg-[#245170]">{startBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wifi size={16} />} {botStatus?.state === "paused" ? "Resume bot" : "Start bot"}</Button><Button variant="outline" onClick={() => pauseBotMutation.mutate()} disabled={pauseBotMutation.isPending || botStatus?.state !== "connected"} className="border-[#DCE4E7] text-[#17324D]">{pauseBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Pause queue</Button><Button variant="outline" onClick={() => stopBotMutation.mutate()} disabled={stopBotMutation.isPending || botStatus?.state === "stopped" || botStatus?.state === "disabled"} className="border-[#DCE4E7] text-[#17324D]">{stopBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <WifiOff size={16} />} Stop bot</Button></div>
+            {botStatus?.lastError && <div className={`flex flex-col gap-3 rounded-lg border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${botConnecting ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-800"}`} role="alert">
+              <div className="flex min-w-0 items-start gap-2"><AlertTriangle className={`mt-0.5 shrink-0 ${botConnecting ? "text-amber-600" : "text-red-600"}`} size={18} /><div>
+                <p className="font-semibold">{botConnecting ? "Discord 음성 연결을 자동 복구하는 중입니다" : "음성 송출에 문제가 발생했습니다"}</p><p className="mt-1">{botStatus.lastError}</p>
+                {botStatus.lastFailed?.text && <p className="mt-1 truncate text-xs text-red-700/80">실패한 문장: “{botStatus.lastFailed.text}”</p>}
+              </div></div>
+              <Button variant="outline" onClick={() => retryMessageMutation.mutate()} disabled={retryMessageMutation.isPending || botConnecting || (!botStatus.lastFailed && botStatus.lastErrorCode !== "connection_unavailable")} className="shrink-0 border-red-300 bg-white text-red-800 hover:bg-red-100">
+                {retryMessageMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />} {botConnecting ? "자동 재연결 중" : botStatus.lastFailed ? "마지막 메시지 재시도" : "음성 연결 재시도"}
+              </Button>
+            </div>}
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => startBotMutation.mutate()} disabled={startBotMutation.isPending || botConnecting || botStatus?.state === "connected"} className="bg-[#17324D] text-white hover:bg-[#245170]">{startBotMutation.isPending || botConnecting ? <Loader2 className="animate-spin" size={16} /> : <Wifi size={16} />} {botConnecting ? "연결 중…" : botStatus?.state === "paused" ? "Resume bot" : "Start bot"}</Button>
+              <Button variant="outline" onClick={() => pauseBotMutation.mutate()} disabled={pauseBotMutation.isPending || botStatus?.state !== "connected"} className="border-[#DCE4E7] text-[#17324D]">{pauseBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Pause queue</Button>
+              <Button variant="outline" onClick={() => stopBotMutation.mutate()} disabled={stopBotMutation.isPending || botStatus?.state === "stopped" || botStatus?.state === "disabled"} className="border-[#DCE4E7] text-[#17324D]">{stopBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <WifiOff size={16} />} Stop bot</Button>
+            </div>
             {botStatus?.history?.length ? <div className="overflow-x-auto rounded-lg border border-[#DCE4E7]"><table className="w-full min-w-[38rem] text-left text-sm"><thead className="bg-[#F4F6F7] text-xs uppercase tracking-wider text-[#607A91]"><tr><th className="px-4 py-3">Sentence</th><th className="px-4 py-3">Engine</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Latency</th></tr></thead><tbody>{botStatus.history.slice(0, 8).map((item) => <tr key={item.id} className="border-t border-[#E7EEF1]"><td className="max-w-[20rem] truncate px-4 py-3 text-[#17324D]">{item.text}</td><td className="px-4 py-3 text-[#607A91]">{item.engine === "deepinfra-inworld" ? "DeepInfra Inworld" : item.engine === "local-fallback" ? "Local fallback" : "—"}</td><td className="px-4 py-3 capitalize text-[#607A91]">{item.status}</td><td className="px-4 py-3 text-[#607A91]">{item.latencyMs ? `${item.latencyMs} ms` : "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-[#607A91]">No Discord sentences have been processed yet.</p>}
           </CardContent>
         </Card>

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createBufferedOpusResource, encodeDiscordOpus, type PlaybackDiagnostics } from "./discordAudio";
+import { summarizeVoiceConnection, voiceTimeoutMessage } from "./discordVoiceDiagnostics";
 import { Client, GatewayIntentBits, PermissionFlagsBits } from "discord.js";
 import {
   AudioPlayerStatus,
@@ -50,6 +51,13 @@ type BotStatus = {
   instanceId: string;
   playback: PlaybackDiagnostics | null;
   voicePing: { ws: number | null; udp: number | null };
+  connectionDiagnostics: {
+    stage: string;
+    voiceState: string;
+    networkPhase: string;
+    startupRetryAttempts: number;
+    transitions: Array<{ at: number; voiceState: string; networkPhase: string }>;
+  };
 };
 
 const config = {
@@ -79,8 +87,20 @@ let startupPromise: Promise<ReturnType<typeof getDiscordBotStatus>> | undefined;
 const instanceId = randomUUID().slice(0, 8);
 let playback: PlaybackDiagnostics | null = null;
 let queueGeneration = 0;
+let connectionStage = "not-started";
+let voiceSnapshot = summarizeVoiceConnection(undefined);
+const voiceTransitions: Array<{ at: number; voiceState: string; networkPhase: string }> = [];
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
+
+function recordVoiceSnapshot(state: unknown) {
+  const next = summarizeVoiceConnection(state);
+  if (next.voiceState !== voiceSnapshot.voiceState || next.networkPhase !== voiceSnapshot.networkPhase) {
+    voiceTransitions.push({ at: Date.now(), ...next });
+    if (voiceTransitions.length > 20) voiceTransitions.shift();
+  }
+  voiceSnapshot = next;
+}
 
 function addHistory(item: HistoryItem) {
   history.unshift(item);
@@ -323,15 +343,19 @@ async function startDiscordTtsBotInternal() {
   installListeners();
   const generation = queueGeneration;
   let stage = "login";
+  connectionStage = stage;
   try {
     await client.login(token);
     if (generation !== queueGeneration) return getDiscordBotStatus();
     stage = "guild lookup";
+    connectionStage = stage;
     const guild = await client.guilds.fetch(config.guildId);
     stage = "text channel lookup";
+    connectionStage = stage;
     const textChannel = await guild.channels.fetch(config.textChannelId);
     if (!textChannel?.isTextBased()) throw new Error(`Configured text channel ${config.textChannelId} was not found or is not text-based`);
     stage = "voice channel lookup";
+    connectionStage = stage;
     const channel = await guild.channels.fetch(config.voiceChannelId);
     if (!channel?.isVoiceBased()) throw new Error(`Configured voice channel ${config.voiceChannelId} was not found or is not voice-based`);
     const botMember = await guild.members.fetch(client.user!.id);
@@ -345,11 +369,14 @@ async function startDiscordTtsBotInternal() {
     if (missingPermissions.length) throw new Error(`Missing voice permissions: ${missingPermissions.join(", ")}`);
     if (generation !== queueGeneration) return getDiscordBotStatus();
     stage = "voice connection";
+    connectionStage = stage;
     connection = joinVoiceChannel({ channelId: channel.id, guildId: guild.id, adapterCreator: guild.voiceAdapterCreator, selfDeaf: false });
+    recordVoiceSnapshot(connection.state);
     // Discord voice can emit networking errors during IP discovery, before the
     // connection reaches Ready. Register handlers immediately so a closed UDP
     // discovery socket never becomes an unhandled EventEmitter error.
     connection.on("stateChange", (_oldState, newState) => {
+      recordVoiceSnapshot(newState);
       if (newState.status === VoiceConnectionStatus.Disconnected) {
         scheduleVoiceRecovery(new Error("Discord voice connection disconnected"));
       } else if (newState.status === VoiceConnectionStatus.Ready) {
@@ -374,18 +401,26 @@ async function startDiscordTtsBotInternal() {
     lastError = null;
     lastErrorCode = null;
     startupRetryAttempts = 0;
+    connectionStage = "ready";
   } catch (error) {
     if (generation !== queueGeneration) return getDiscordBotStatus();
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const wasAborted = /aborted/i.test(errorMessage);
+    const timeoutDetail = stage === "voice connection" && wasAborted ? voiceTimeoutMessage(connection?.state) : null;
+    if (connection) recordVoiceSnapshot(connection.state);
+    const failureSnapshot = voiceSnapshot;
     started = false;
     connection?.destroy();
     connection = undefined;
+    // Keep the pre-destroy phase rather than replacing it with "destroyed".
+    voiceSnapshot = failureSnapshot;
     if (client.isReady()) client.destroy();
     runtimeState = "error";
-    const detail = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 300) : String(error).replace(/\s+/g, " ").slice(0, 300);
+    const detail = (timeoutDetail ?? errorMessage).replace(/\s+/g, " ").slice(0, 300);
     const networkHint = /IP discovery|socket closed|UDP/i.test(detail)
       ? " 현재 WebDev 웹 런타임의 UDP 제한일 수 있어 Discord 봇을 고정 공인 IP의 persistent worker로 분리해야 할 수 있습니다."
       : "";
-    const abortHint = /aborted/i.test(detail)
+    const abortHint = wasAborted
       ? " 연결 준비 대기가 시간 초과되었거나 연결이 중단되었습니다. 이 메시지만으로 HTTP 요청 취소나 UDP 제한을 확정할 수는 없습니다."
       : "";
     const baseError = stage === "voice connection"
@@ -399,7 +434,7 @@ async function startDiscordTtsBotInternal() {
       : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
         ? "configuration_invalid"
         : "unknown";
-    if (/aborted/i.test(detail) && startupRetryAttempts < 3) {
+    if (wasAborted && startupRetryAttempts < 3) {
       startupRetryAttempts += 1;
       runtimeState = "starting";
       lastError = `${baseError} 자동 연결 재시도 중입니다 (${startupRetryAttempts}/3).`;
@@ -439,6 +474,7 @@ export async function stopDiscordTtsBot() {
   await client.destroy();
   started = false;
   runtimeState = "stopped";
+  connectionStage = "stopped";
   return getDiscordBotStatus();
 }
 
@@ -448,6 +484,7 @@ export function pauseDiscordTtsBot() {
 }
 
 export function getDiscordBotStatus(): BotStatus & { tts: ReturnType<typeof getDiscordTtsStatus>; settings: DiscordTtsSettings } {
+  if (connection) recordVoiceSnapshot(connection.state);
   return {
     state: runtimeState,
     botUser: client.user?.tag ?? null,
@@ -464,6 +501,7 @@ export function getDiscordBotStatus(): BotStatus & { tts: ReturnType<typeof getD
     instanceId,
     playback: playback ? { ...playback } : null,
     voicePing: { ws: connection?.ping.ws ?? null, udp: connection?.ping.udp ?? null },
+    connectionDiagnostics: { stage: connectionStage, ...voiceSnapshot, startupRetryAttempts, transitions: voiceTransitions.map(item => ({ ...item })) },
     tts: getDiscordTtsStatus(),
     settings: getDiscordTtsStatus().settings,
   };

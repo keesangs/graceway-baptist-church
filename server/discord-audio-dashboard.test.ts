@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   connected: true,
+  state: null as string | null,
   preview: vi.fn(),
   voice: vi.fn(),
   refetch: vi.fn().mockResolvedValue(undefined),
@@ -18,7 +19,9 @@ vi.mock("@/lib/trpc", () => {
   const generic = { useMutation: () => ({ mutate: vi.fn(), isPending: false }) };
   return { trpc: { discordTts: {
     status: { useQuery: () => ({ data: { remoteEnabled: true, apiKeyConfigured: true, state: "ready", lastEngine: "deepinfra-inworld" }, refetch: mocks.refetch }) },
-    botStatus: { useQuery: () => ({ data: { state: mocks.connected ? "connected" : "stopped", instanceId: "instance-1", voicePing: { ws: 35, udp: null },
+    botStatus: { useQuery: () => ({ data: { state: mocks.state ?? (mocks.connected ? "connected" : "stopped"), instanceId: "instance-1", voicePing: { ws: 35, udp: null },
+      lastError: mocks.state === "starting" ? "Voice timeout" : null, lastErrorCode: "connection_unavailable",
+      connectionDiagnostics: { stage: "voice connection", voiceState: "connecting", networkPhase: "udp-ip-discovery", startupRetryAttempts: 2, transitions: [] },
       history: [], allowedUserId: "1234", playback: { codec: "opusscript-worker", packetCount: 20, audioDurationMs: 200, wallPlaybackMs: 400,
         encodingMs: 7, underflowReads: 0, maxReadGapMs: 20, connectionInterruptions: 0 } }, refetch: mocks.refetch }) },
     configure: generic, startBot: generic, pauseBot: generic, stopBot: generic, retryLastMessage: generic,
@@ -31,7 +34,7 @@ vi.mock("@/lib/trpc", () => {
 import DiscordTtsAdmin from "../client/src/pages/DiscordTtsAdmin";
 
 beforeEach(() => vi.stubGlobal("React", React));
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); mocks.preview.mockClear(); mocks.voice.mockClear(); mocks.connected = true; });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); mocks.preview.mockClear(); mocks.voice.mockClear(); mocks.connected = true; mocks.state = null; });
 
 describe("audio diagnosis dashboard", () => {
   it("renders separate original and converted audio controls without sending the preview to Discord", async () => {
@@ -55,5 +58,14 @@ describe("audio diagnosis dashboard", () => {
     mocks.connected = false;
     render(createElement(DiscordTtsAdmin));
     expect((screen.getByRole("button", { name: "Discord 송출 테스트" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("shows the stalled phase and blocks duplicate start/retry while preserving Stop", () => {
+    mocks.state = "starting";
+    render(createElement(DiscordTtsAdmin));
+    expect(screen.getByLabelText("Voice connection phase").textContent).toContain("udp-ip-discovery");
+    expect((screen.getByRole("button", { name: "연결 중…" }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "자동 재연결 중" }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "Stop bot" }) as HTMLButtonElement).disabled).toBe(false);
   });
 });
