@@ -39,6 +39,9 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("connection.on(\"error\", (error)");
     expect(runtimeSource).toContain("scheduleVoiceRecovery");
     expect(runtimeSource).toContain("connection.rejoin()");
+    expect(runtimeSource).toContain("startupRetryAttempts < 3");
+    expect(runtimeSource).toContain("automatic startup retry failed");
+    expect(runtimeSource).toContain("if (startupPromise) return startupPromise");
     expect(runtimeSource).toContain("Readable.from([pcm])");
     expect(runtimeSource).toContain("AudioPlayerStatus.Playing, 10_000");
     expect(runtimeSource).toContain("AudioPlayerStatus.Idle, 120_000");

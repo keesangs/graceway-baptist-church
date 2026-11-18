@@ -72,6 +72,9 @@ let lastErrorCode: VoiceFailureCode | null = null;
 let runtimeState: DiscordBotRuntimeState = "stopped";
 let recoveryTimer: NodeJS.Timeout | undefined;
 let recoveryAttempts = 0;
+let startupRetryTimer: NodeJS.Timeout | undefined;
+let startupRetryAttempts = 0;
+let startupPromise: Promise<ReturnType<typeof getDiscordBotStatus>> | undefined;
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
 
@@ -261,7 +264,7 @@ function installListeners() {
   });
 }
 
-export async function startDiscordTtsBot() {
+async function startDiscordTtsBotInternal() {
   if (started) {
     if (runtimeState === "paused") {
       runtimeState = "connected";
@@ -320,6 +323,7 @@ export async function startDiscordTtsBot() {
     runtimeState = "connected";
     lastError = null;
     lastErrorCode = null;
+    startupRetryAttempts = 0;
   } catch (error) {
     started = false;
     connection?.destroy();
@@ -333,26 +337,50 @@ export async function startDiscordTtsBot() {
     const abortHint = /aborted/i.test(detail)
       ? " 연결 작업은 대시보드 요청과 분리되어야 하므로, 잠시 기다린 뒤 상태를 다시 확인해 주세요."
       : "";
-    lastError = stage === "voice connection"
+    const baseError = stage === "voice connection"
       ? `Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.${detail ? ` 원인: ${detail}` : ""}${networkHint}${abortHint}`
       : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
         ? `Discord 서버 또는 채널 설정을 확인해 주세요. 서버·Text 채널·음성 채널 ID가 올바른지 확인해야 합니다.${detail ? ` 원인: ${detail}` : ""}`
-      : `Discord ${stage} failed: ${detail}`;
+        : `Discord ${stage} failed: ${detail}`;
+    lastError = baseError;
     lastErrorCode = stage === "voice connection"
       ? "connection_unavailable"
       : stage === "text channel lookup" || stage === "voice channel lookup" || stage === "guild lookup"
         ? "configuration_invalid"
         : "unknown";
+    if (/aborted/i.test(detail) && startupRetryAttempts < 3) {
+      startupRetryAttempts += 1;
+      runtimeState = "starting";
+      lastError = `${baseError} 자동 연결 재시도 중입니다 (${startupRetryAttempts}/3).`;
+      if (startupRetryTimer) clearTimeout(startupRetryTimer);
+      startupRetryTimer = setTimeout(() => {
+        startupRetryTimer = undefined;
+        void startDiscordTtsBot().catch((retryError) => console.error("[discord-tts] automatic startup retry failed", retryError));
+      }, 1_500 * startupRetryAttempts);
+    }
   }
   return getDiscordBotStatus();
+}
+
+export function startDiscordTtsBot() {
+  if (startupPromise) return startupPromise;
+  startupPromise = startDiscordTtsBotInternal();
+  void startupPromise.then(
+    () => { startupPromise = undefined; },
+    () => { startupPromise = undefined; },
+  );
+  return startupPromise;
 }
 
 export async function stopDiscordTtsBot() {
   queue.length = 0;
   currentText = null;
   if (recoveryTimer) clearTimeout(recoveryTimer);
+  if (startupRetryTimer) clearTimeout(startupRetryTimer);
   recoveryTimer = undefined;
+  startupRetryTimer = undefined;
   recoveryAttempts = 0;
+  startupRetryAttempts = 0;
   connection?.destroy();
   connection = undefined;
   if (client.isReady()) client.destroy();
