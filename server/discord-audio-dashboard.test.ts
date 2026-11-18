@@ -15,6 +15,7 @@ vi.mock("@/_core/hooks/useAuth", () => ({ useAuth: () => ({ user: { role: "admin
 vi.mock("@/components/Navbar", () => ({ default: () => null }));
 vi.mock("@/components/Footer", () => ({ default: () => null }));
 vi.mock("@/components/BrandPageHero", () => ({ BrandPageHero: () => null }));
+vi.mock("@/components/DiscordTranscriptControls", () => ({ default: () => null }));
 vi.mock("@/lib/trpc", () => {
   const generic = { useMutation: () => ({ mutate: vi.fn(), isPending: false }) };
   return { trpc: { discordTts: {

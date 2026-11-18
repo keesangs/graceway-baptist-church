@@ -490,3 +490,30 @@ export const googlePhotosOAuthStates = mysqlTable("google_photos_oauth_states", 
 }));
 
 export type GooglePhotosOAuthState = typeof googlePhotosOAuthStates.$inferSelect;
+
+// Private, parsed sermon text only. Original document bytes are never stored.
+export const discordTranscripts = mysqlTable("discord_transcripts", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  filename: varchar("filename", { length: 255 }),
+  paragraphs: json("paragraphs").$type<string[]>().notNull(),
+  nextParagraph: int("nextParagraph").default(0).notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+  updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+});
+
+// A request UUID is an idempotency key. Incomplete old-runtime runs never replay automatically.
+export const discordTranscriptRuns = mysqlTable("discord_transcript_runs", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  transcriptId: int("transcriptId").notNull(),
+  paragraphIndex: int("paragraphIndex").notNull(),
+  status: mysqlEnum("status", ["queued", "playing", "completed", "failed", "cancelled", "interrupted"]).notNull(),
+  sentenceCount: int("sentenceCount").notNull(),
+  completedCount: int("completedCount").default(0).notNull(),
+  error: text("error"),
+  runtimeId: varchar("runtimeId", { length: 32 }).notNull(),
+  requestedBy: int("requestedBy").notNull(),
+  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+  updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+}, table => ({ transcriptRunIndex: index("discord_transcript_run_idx").on(table.transcriptId, table.createdAt) }));

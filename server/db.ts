@@ -4,6 +4,8 @@ import {
   calendarEvents,
   CalendarEvent,
   contactMessages,
+  discordTranscripts,
+  discordTranscriptRuns,
   dailyMeditations,
   InsertCalendarEvent,
   InsertContactMessage,
@@ -1248,4 +1250,59 @@ export async function getUserMeditationLike(meditationId: number, userId: number
     .from(meditationLikes)
     .where(and(eq(meditationLikes.meditationId, meditationId), eq(meditationLikes.userId, userId)));
   return row || null;
+}
+
+// Private Discord sermon transcripts; callers must be administrator procedures.
+async function requireDiscordTranscriptDb() {
+  const db = await getDb();
+  if (!db) throw new Error("원고 저장 DB에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+  return db;
+}
+export async function listDiscordTranscripts() {
+  const db = await requireDiscordTranscriptDb();
+  const rows = await db.select({ id: discordTranscripts.id, title: discordTranscripts.title, filename: discordTranscripts.filename, paragraphs: discordTranscripts.paragraphs, nextParagraph: discordTranscripts.nextParagraph, createdAt: discordTranscripts.createdAt, updatedAt: discordTranscripts.updatedAt }).from(discordTranscripts).orderBy(desc(discordTranscripts.updatedAt)).limit(100);
+  return rows.map(({ paragraphs, ...row }) => ({ ...row, paragraphCount: paragraphs.length }));
+}
+export async function getDiscordTranscript(id: number) {
+  const db = await requireDiscordTranscriptDb();
+  const rows = await db.select().from(discordTranscripts).where(eq(discordTranscripts.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+export async function insertDiscordTranscript(input: { title: string; filename: string | null; paragraphs: string[]; createdBy: number }) {
+  const db = await requireDiscordTranscriptDb();
+  const now = Date.now();
+  const ids = await db.insert(discordTranscripts).values({ ...input, nextParagraph: 0, createdAt: now, updatedAt: now }).$returningId();
+  return getDiscordTranscript(ids[0].id);
+}
+export async function deleteDiscordTranscript(id: number) {
+  const db = await requireDiscordTranscriptDb();
+  // No original file exists in storage. Remove associated private run metadata too.
+  await db.transaction(async tx => {
+    await tx.delete(discordTranscriptRuns).where(eq(discordTranscriptRuns.transcriptId, id));
+    await tx.delete(discordTranscripts).where(eq(discordTranscripts.id, id));
+  });
+}
+export async function getDiscordTranscriptRun(id: string) {
+  const db = await requireDiscordTranscriptDb();
+  const rows = await db.select().from(discordTranscriptRuns).where(eq(discordTranscriptRuns.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+export async function getLatestDiscordTranscriptRun(id: number, paragraphIndex?: number) {
+  const db = await requireDiscordTranscriptDb();
+  const predicate = paragraphIndex === undefined ? eq(discordTranscriptRuns.transcriptId, id) : and(eq(discordTranscriptRuns.transcriptId, id), eq(discordTranscriptRuns.paragraphIndex, paragraphIndex));
+  const rows = await db.select().from(discordTranscriptRuns).where(predicate).orderBy(desc(discordTranscriptRuns.createdAt)).limit(1);
+  return rows[0] ?? null;
+}
+export async function insertDiscordTranscriptRun(input: typeof discordTranscriptRuns.$inferInsert) {
+  const db = await requireDiscordTranscriptDb();
+  await db.insert(discordTranscriptRuns).values(input);
+}
+export async function updateDiscordTranscriptRun(id: string, update: { status: "queued" | "playing" | "completed" | "failed" | "cancelled" | "interrupted"; completedCount: number; error: string | null }, completedParagraph?: { id: number; next: number }) {
+  const db = await requireDiscordTranscriptDb();
+  await db.transaction(async tx => {
+    await tx.update(discordTranscriptRuns).set({ ...update, updatedAt: Date.now() }).where(eq(discordTranscriptRuns.id, id));
+    if (update.status === "completed" && completedParagraph) {
+      await tx.update(discordTranscripts).set({ nextParagraph: sql`GREATEST(${discordTranscripts.nextParagraph}, ${completedParagraph.next})`, updatedAt: Date.now() }).where(eq(discordTranscripts.id, completedParagraph.id));
+    }
+  });
 }

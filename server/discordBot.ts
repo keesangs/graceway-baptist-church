@@ -24,6 +24,7 @@ type HistoryItem = {
   error: string | null;
   errorCode: VoiceFailureCode | null;
   createdAt: string;
+  paragraphBatchId?: string;
 };
 
 export type VoiceFailureCode =
@@ -97,6 +98,52 @@ let voiceSnapshot = summarizeVoiceConnection(undefined);
 const voiceTransitions: Array<{ at: number; voiceState: string; networkPhase: string }> = [];
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
+
+export type ParagraphBatch = { id: string; transcriptId: number; paragraphIndex: number; status: "queued" | "playing" | "completed" | "failed" | "cancelled"; sentenceCount: number; completedCount: number; error: string | null };
+const paragraphBatches = new Map<string, { value: ParagraphBatch; onUpdate: (batch: ParagraphBatch) => void }>();
+export function getDiscordParagraphBatch(id: string): ParagraphBatch | null {
+  const batch = paragraphBatches.get(id);
+  return batch ? { ...batch.value } : null;
+}
+function emitParagraphBatch(batch: { value: ParagraphBatch; onUpdate: (value: ParagraphBatch) => void }) {
+  try { batch.onUpdate({ ...batch.value }); }
+  catch { console.warn("[discord-tts] paragraph progress callback unavailable"); }
+}
+function updateParagraphBatch(item: HistoryItem, status: "playing" | "completed" | "failed") {
+  if (!item.paragraphBatchId) return;
+  const batch = paragraphBatches.get(item.paragraphBatchId);
+  if (!batch || ["completed", "failed", "cancelled"].includes(batch.value.status)) return;
+  if (status === "completed") {
+    batch.value.completedCount += 1;
+    batch.value.status = batch.value.completedCount === batch.value.sentenceCount ? "completed" : "playing";
+  } else {
+    batch.value.status = status;
+    batch.value.error = item.error;
+    if (status === "failed") {
+      // Do not speak the rest of a paragraph after a lost sentence.
+      for (let i = queue.length - 1; i >= 0; i -= 1) if (queue[i].paragraphBatchId === item.paragraphBatchId) queue.splice(i, 1);
+    }
+  }
+  emitParagraphBatch(batch);
+}
+export function queueDiscordTranscriptParagraph(input: { id: string; transcriptId: number; paragraphIndex: number; text: string }, onUpdate: (batch: ParagraphBatch) => void): ParagraphBatch {
+  const existing = getDiscordParagraphBatch(input.id);
+  if (existing) return existing;
+  if (runtimeState !== "connected" || connection?.state.status !== VoiceConnectionStatus.Ready) throw new Error("Discord 봇이 Connected 상태일 때 문단을 송출할 수 있습니다.");
+  if (processing || currentText || queue.length) throw new Error("현재 송출이 끝난 뒤 다음 문단을 선택해 주세요.");
+  if (!input.text.trim() || input.text.length > 12000) throw new Error("문단이 비어 있거나 너무 깁니다. 12,000자 이내 문단으로 나눠 주세요.");
+  const sentences = splitDiscordTextIntoSentences(input.text);
+  const value: ParagraphBatch = { id: input.id, transcriptId: input.transcriptId, paragraphIndex: input.paragraphIndex, status: "queued", sentenceCount: sentences.length, completedCount: 0, error: null };
+  for (const [id, batch] of Array.from(paragraphBatches.entries())) {
+    if (paragraphBatches.size <= 40) break;
+    if (["completed", "failed", "cancelled"].includes(batch.value.status)) paragraphBatches.delete(id);
+  }
+  paragraphBatches.set(input.id, { value, onUpdate });
+  for (const text of sentences) queue.push({ id: randomUUID(), text, engine: null, status: "queued", latencyMs: null, error: null, errorCode: null, createdAt: new Date().toISOString(), paragraphBatchId: input.id });
+  emitParagraphBatch(paragraphBatches.get(input.id)!);
+  void processQueue();
+  return { ...value };
+}
 
 function recordVoiceSnapshot(state: unknown) {
   const next = summarizeVoiceConnection(state);
@@ -219,6 +266,7 @@ async function processQueue() {
       const item = queue.shift()!;
       currentText = item.text;
       item.status = "playing";
+      updateParagraphBatch(item, "playing");
       let stage: VoiceFailureStage = "synthesis";
       try {
         const result = await synthesizeDiscordText(item.text);
@@ -233,8 +281,12 @@ async function processQueue() {
         lastError = null;
         lastErrorCode = null;
         addHistory(item);
+        updateParagraphBatch(item, "completed");
       } catch (error) {
-        if (generation === queueGeneration) markError(item, stage, error);
+        if (generation === queueGeneration) {
+          markError(item, stage, error);
+          updateParagraphBatch(item, "failed");
+        }
       } finally {
         currentText = null;
       }
@@ -284,6 +336,7 @@ export async function enqueueDiscordTtsSmokeMessages(messages: string[]) {
 
 export async function retryLastDiscordTtsMessage() {
   const failed = history.find(item => item.status === "failed");
+  if (failed?.paragraphBatchId) throw new Error("원고의 실패 문단은 문단 제어 패널에서 전체 문단 재송출을 확인해 주세요.");
   if (runtimeState !== "connected") {
     let next = getDiscordBotStatus();
     for (let attempt = 0; attempt < 3 && next.state !== "connected"; attempt += 1) {
@@ -491,6 +544,13 @@ export function startDiscordTtsBot() {
 export async function stopDiscordTtsBot() {
   queueGeneration += 1;
   player.stop(true);
+  for (const batch of Array.from(paragraphBatches.values())) {
+    if (batch.value.status === "queued" || batch.value.status === "playing") {
+      batch.value.status = "cancelled";
+      batch.value.error = "운영자가 송출을 중지했습니다. 다시 듣기에는 전체 문단 재송출 확인이 필요합니다.";
+      emitParagraphBatch(batch);
+    }
+  }
   queue.length = 0;
   currentText = null;
   if (recoveryTimer) clearTimeout(recoveryTimer);
@@ -540,6 +600,7 @@ export function getDiscordBotStatus(): BotStatus & { tts: ReturnType<typeof getD
 export function resetDiscordBotForTests() {
   queue.length = 0;
   history.length = 0;
+  paragraphBatches.clear();
   currentText = null;
   lastError = null;
   runtimeState = "stopped";

@@ -85,6 +85,7 @@ import {
 import { configureDiscordTtsAndSave, convertAudioForDiscord, getDiscordTtsStatus, initializeDiscordTtsPreferences, listDiscordTtsVoices, synthesizeDiscordText } from "./discordTts";
 import { getDiscordBotStatus, pauseDiscordTtsBot, queueDiscordTtsTest, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
 import { discordPcmToWav, smoothDiscordSentencePcm } from "./discordAudio";
+import { discordTranscriptRouter } from "./discordTranscript";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -223,6 +224,7 @@ export const appRouter = router({
     }),
   }),
 
+  discordTranscript: discordTranscriptRouter,
   discordTts: router({
     status: adminProcedure.query(async () => { await initializeDiscordTtsPreferences(); return getDiscordTtsStatus(); }),
     voices: adminProcedure.input(z.object({ refresh: z.boolean().optional() }).optional()).query(({ input }) => listDiscordTtsVoices(input?.refresh)),
@@ -236,6 +238,7 @@ export const appRouter = router({
     pauseBot: adminProcedure.mutation(() => pauseDiscordTtsBot()),
     stopBot: adminProcedure.mutation(() => stopDiscordTtsBot()),
     retryLastMessage: adminProcedure.mutation(() => {
+      if (getDiscordBotStatus().lastFailed?.paragraphBatchId) throw new TRPCError({ code: "CONFLICT", message: "원고 문단 제어 패널에서 전체 문단 재송출을 확인해 주세요." });
       void retryLastDiscordTtsMessage().catch((error) => console.error("[discord-tts] background retry failed", error));
       return { retried: false, reconnected: false, message: "Discord 음성 재연결 및 마지막 메시지 재시도를 시작했습니다. 상태를 잠시 후 다시 확인해 주세요." } as const;
     }),

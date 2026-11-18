@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandPageHero } from "@/components/BrandPageHero";
 import DiscordVoiceControls from "@/components/DiscordVoiceControls";
+import DiscordTranscriptControls from "@/components/DiscordTranscriptControls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,7 +166,7 @@ export default function DiscordTtsAdmin() {
                 <p className="font-semibold">{botConnecting ? "Discord 음성 연결을 자동 복구하는 중입니다" : "음성 송출에 문제가 발생했습니다"}</p><p className="mt-1">{botStatus.lastError}</p>
                 {botStatus.lastFailed?.text && <p className="mt-1 truncate text-xs text-red-700/80">실패한 문장: “{botStatus.lastFailed.text}”</p>}
               </div></div>
-              <Button variant="outline" onClick={() => retryMessageMutation.mutate()} disabled={retryMessageMutation.isPending || botConnecting || (!botStatus.lastFailed && botStatus.lastErrorCode !== "connection_unavailable")} className="shrink-0 border-red-300 bg-white text-red-800 hover:bg-red-100">
+              <Button variant="outline" onClick={() => retryMessageMutation.mutate()} disabled={retryMessageMutation.isPending || botConnecting || !!botStatus.lastFailed?.paragraphBatchId || (!botStatus.lastFailed && botStatus.lastErrorCode !== "connection_unavailable")} className="shrink-0 border-red-300 bg-white text-red-800 hover:bg-red-100">
                 {retryMessageMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />} {botConnecting ? "자동 재연결 중" : botStatus.lastFailed ? "마지막 메시지 재시도" : "음성 연결 재시도"}
               </Button>
             </div>}
@@ -174,6 +175,8 @@ export default function DiscordTtsAdmin() {
               <Button variant="outline" onClick={() => pauseBotMutation.mutate()} disabled={pauseBotMutation.isPending || botStatus?.state !== "connected"} className="border-[#DCE4E7] text-[#17324D]">{pauseBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Radio size={16} />} Pause queue</Button>
               <Button variant="outline" onClick={() => stopBotMutation.mutate()} disabled={stopBotMutation.isPending || botStatus?.state === "stopped" || botStatus?.state === "disabled"} className="border-[#DCE4E7] text-[#17324D]">{stopBotMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <WifiOff size={16} />} Stop bot</Button>
             </div>
+            {botStatus?.lastFailed?.paragraphBatchId && <p className="text-sm text-red-800">원고 송출 실패는 아래 문단 제어 패널에서 확인한 뒤 문단 전체를 재송출해 주세요.</p>}
+            <DiscordTranscriptControls runtime={botStatus} onQueued={() => { void botStatusQuery.refetch(); }} />
             {botStatus?.history?.length ? <div className="overflow-x-auto rounded-lg border border-[#DCE4E7]"><table className="w-full min-w-[38rem] text-left text-sm"><thead className="bg-[#F4F6F7] text-xs uppercase tracking-wider text-[#607A91]"><tr><th className="px-4 py-3">Sentence</th><th className="px-4 py-3">Engine</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Latency</th></tr></thead><tbody>{botStatus.history.slice(0, 8).map((item) => <tr key={item.id} className="border-t border-[#E7EEF1]"><td className="max-w-[20rem] truncate px-4 py-3 text-[#17324D]">{item.text}</td><td className="px-4 py-3 text-[#607A91]">{item.engine === "deepinfra-inworld" ? "DeepInfra Inworld" : item.engine === "local-fallback" ? "Local fallback" : "—"}</td><td className="px-4 py-3 capitalize text-[#607A91]">{item.status}</td><td className="px-4 py-3 text-[#607A91]">{item.latencyMs ? `${item.latencyMs} ms` : "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-[#607A91]">No Discord sentences have been processed yet.</p>}
           </CardContent>
         </Card>
