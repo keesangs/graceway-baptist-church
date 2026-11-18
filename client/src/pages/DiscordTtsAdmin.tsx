@@ -50,7 +50,7 @@ export default function DiscordTtsAdmin() {
   });
   const [remoteEnabled, setRemoteEnabled] = useState(true);
   const [apiKey, setApiKey] = useState("");
-  const [speaker, setSpeaker] = useState("Ashley");
+  const [speaker, setSpeaker] = useState("Dennis");
   const [instruct, setInstruct] = useState("Speak clearly and warmly, suitable for a church announcement.");
   const [speed, setSpeed] = useState(1);
   const [message, setMessage] = useState<string | null>(null);

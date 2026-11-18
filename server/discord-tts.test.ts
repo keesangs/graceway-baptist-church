@@ -10,6 +10,7 @@ const routerSource = readFileSync(resolve(process.cwd(), "server/routers.ts"), "
 describe("Discord DeepInfra TTS", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
     delete process.env.DEEPINFRA_API_KEY;
     resetDiscordTtsForTests();
   });
@@ -34,11 +35,31 @@ describe("Discord DeepInfra TTS", () => {
       }),
     );
     expect(JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body)).toMatchObject({
-      voice: "Ashley",
+      voice: "Dennis",
       language: "en",
       output_format: "wav",
     });
     expect(getDiscordTtsStatus()).toMatchObject({ lastEngine: "deepinfra-inworld", completedCount: 1, failedCount: 0 });
+  });
+
+  it("defaults to Dennis on startup/reset when no explicit voice override exists", async () => {
+    vi.stubEnv("INWORLD_TTS_SPEAKER", "   ");
+    vi.resetModules();
+    const runtime = await import("./discordTts");
+    expect(runtime.getDiscordTtsStatus().settings.speaker).toBe("Dennis");
+    runtime.configureDiscordTts({ speaker: "Ashley" });
+    runtime.resetDiscordTtsForTests();
+    expect(runtime.getDiscordTtsStatus().settings.speaker).toBe("Dennis");
+    expect(pageSource).toContain('useState("Dennis")');
+  });
+
+  it("preserves an explicit configured voice override", async () => {
+    vi.stubEnv("INWORLD_TTS_SPEAKER", "  Ashley  ");
+    vi.resetModules();
+    const runtime = await import("./discordTts");
+    expect(runtime.getDiscordTtsStatus().settings.speaker).toBe("Ashley");
+    runtime.configureDiscordTts({ speaker: "Dennis" });
+    expect(runtime.getDiscordTtsStatus().settings.speaker).toBe("Dennis");
   });
 
   it("exposes configuration state without exposing credentials", () => {

@@ -32,7 +32,7 @@ export type DiscordTtsStatus = {
 };
 
 const defaultSettings: DiscordTtsSettings = {
-  speaker: process.env.INWORLD_TTS_SPEAKER ?? "Ashley",
+  speaker: process.env.INWORLD_TTS_SPEAKER?.trim() || "Dennis",
   instruct: process.env.QWEN_TTS_INSTRUCT ?? "Speak clearly and warmly, suitable for a church announcement.",
   speed: 1,
 };
