@@ -39,6 +39,9 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("connection.on(\"error\", (error)");
     expect(runtimeSource).toContain("scheduleVoiceRecovery");
     expect(runtimeSource).toContain("connection.rejoin()");
+    expect(runtimeSource).toContain("Readable.from([pcm])");
+    expect(runtimeSource).toContain("AudioPlayerStatus.Playing, 10_000");
+    expect(runtimeSource).toContain("AudioPlayerStatus.Idle, 120_000");
     expect(runtimeSource).toContain('"reconnecting"');
     expect(runtimeSource).toContain("Discord 음성 채널에 연결하지 못했습니다.");
     expect(runtimeSource).toContain("${detail ? ` 원인: ${detail}` : \"\"}");

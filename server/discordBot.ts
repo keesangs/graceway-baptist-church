@@ -141,9 +141,14 @@ function scheduleVoiceRecovery(error: unknown) {
 
 async function playPcm(pcm: Buffer) {
   if (!connection) throw new Error("Discord voice connection is not ready");
-  const resource = createAudioResource(Readable.from(pcm), { inputType: StreamType.Raw });
+  // Keep the PCM as one explicit stream chunk. More importantly, wait for the
+  // player to actually enter Playing before waiting for Idle; checking Idle
+  // immediately after play() can resolve against the previous idle state and
+  // let the next sentence replace the resource before Discord has played it.
+  const resource = createAudioResource(Readable.from([pcm]), { inputType: StreamType.Raw, silencePaddingFrames: 5 });
   connection.subscribe(player);
   player.play(resource);
+  await entersState(player, AudioPlayerStatus.Playing, 10_000);
   await entersState(player, AudioPlayerStatus.Idle, 120_000);
 }
 

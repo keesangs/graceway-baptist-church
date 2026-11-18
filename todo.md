@@ -1,6 +1,5 @@
 
-## DeepInfra Inworld TTS Default — November 17, 2026
-- [x] Change the default DeepInfra endpoint to `inworld-ai/realtime-tts-1.5-mini`
-- [x] Adapt the request body to Inworld fields and use its documented preset voice/output format
-- [x] Update engine labels and regression tests while preserving local fallback and endpoint override support
-- [x] Run a real short-text synthesis/conversion smoke test, full validation, and save a checkpoint
+## Discord Audio Stutter — November 17, 2026
+- [x] Wait for AudioPlayer Playing before waiting for Idle to prevent resources being overwritten early
+- [x] Feed converted PCM as one explicit stream chunk and add regression coverage
+- [x] Run real conversion, full validation, and save a checkpoint
