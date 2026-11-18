@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
-import { discordPcmToWav } from "./discordAudio";
+import { discordPcmToWav, smoothDiscordSentencePcm } from "./discordAudio";
 import { resetDiscordTtsForTests } from "./discordTts";
 
 function context(role: "admin" | "user" | null): TrpcContext {
@@ -26,11 +26,20 @@ describe("administrator-only audio comparison", () => {
 
   it("returns original and converted WAV previews only to an administrator, without secrets", async () => {
     vi.stubEnv("DEEPINFRA_API_KEY", "never-return-this-key");
-    const original = discordPcmToWav(Buffer.alloc(48_000 * 4 / 10));
+    const pcm = Buffer.alloc(48_000 * 4 / 10);
+    for (let offset = 0; offset < pcm.length; offset += 2) pcm.writeInt16LE(12_000, offset);
+    const original = discordPcmToWav(pcm);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ audio: `data:audio/wav;base64,${original.toString("base64")}` }), { headers: { "content-type": "application/json" } })));
     const result = await appRouter.createCaller(context("admin")).discordTts.test({ text: "Welcome." });
     expect(Buffer.from(result.originalWavBase64, "base64")).toEqual(original);
     expect(Buffer.from(result.convertedWavBase64, "base64").toString("ascii", 0, 4)).toBe("RIFF");
+    const converted = Buffer.from(result.convertedWavBase64, "base64").subarray(44);
+    expect(converted).toEqual(pcm);
+    const smoothed = Buffer.from(result.smoothedWavBase64, "base64");
+    expect(smoothed).toEqual(discordPcmToWav(smoothDiscordSentencePcm(converted)));
+    expect(smoothed.length).toBe(original.length);
+    expect(smoothed.readInt16LE(44)).toBe(0);
+    expect(smoothed.readInt16LE(smoothed.length - 2)).toBe(0);
     expect(result.durationMs).toBe(100);
     expect(JSON.stringify(result)).not.toContain("never-return-this-key");
   });

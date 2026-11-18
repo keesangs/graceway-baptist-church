@@ -19,7 +19,8 @@ describe("buffered Discord audio behavior", () => {
     const pcm = tone(960 * 8 + 37);
     const result = await encodeDiscordOpus(pcm);
     expect(result.codec).toBe("opusscript-worker");
-    expect(result.packets).toHaveLength(5 + 9);
+    expect(result.packets).toHaveLength(5 + 9 + 3);
+    expect(result.boundarySmoothing).toEqual({ fadeInMs: 6, fadeOutMs: 12, encoderTailMs: 60 });
     const decoder = new OpusScript(48_000, 2, OpusScript.Application.VOIP);
     try {
       for (const packet of result.packets) expect(decoder.decode(packet)).toHaveLength(960 * 4);

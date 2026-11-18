@@ -7,11 +7,42 @@ import { createAudioResource, StreamType } from "@discordjs/voice";
 export const DISCORD_FRAME_BYTES = 960 * 2 * 2;
 export const DISCORD_FRAME_MS = 20;
 
+export const SENTENCE_BOUNDARY = Object.freeze({ fadeInMs: 6, fadeOutMs: 12, encoderTailMs: 60 });
+
+/** Taper only the edges, without trimming speech, changing the middle, or
+ * mutating the provider/conversion buffer. Identical stereo gains preserve
+ * balance. Raised-cosine ramps meet digital silence with zero slope. */
+export function smoothDiscordSentencePcm(pcm: Buffer): Buffer {
+  if (!pcm.length || pcm.length % 4 !== 0) throw new Error("Discord PCM must contain complete 48 kHz stereo samples");
+  const result = Buffer.from(pcm);
+  const frames = pcm.length / 4;
+  if (frames === 1) { result.fill(0); return result; }
+  // Short buffers get non-overlapping ramps instead of being read out of bounds.
+  const fadeInFrames = Math.min(Math.round(48 * SENTENCE_BOUNDARY.fadeInMs), Math.floor(frames / 2));
+  const fadeOutFrames = Math.min(Math.round(48 * SENTENCE_BOUNDARY.fadeOutMs), Math.floor(frames / 2));
+  for (let index = 0; index < fadeInFrames; index++) {
+    const gain = fadeInFrames === 1 ? 0 : (1 - Math.cos(Math.PI * index / (fadeInFrames - 1))) / 2;
+    for (let channel = 0; channel < 2; channel++) {
+      const offset = index * 4 + channel * 2;
+      result.writeInt16LE(Math.round(pcm.readInt16LE(offset) * gain), offset);
+    }
+  }
+  for (let index = 0; index < fadeOutFrames; index++) {
+    const gain = fadeOutFrames === 1 ? 0 : (1 + Math.cos(Math.PI * index / (fadeOutFrames - 1))) / 2;
+    for (let channel = 0; channel < 2; channel++) {
+      const offset = (frames - fadeOutFrames + index) * 4 + channel * 2;
+      result.writeInt16LE(Math.round(pcm.readInt16LE(offset) * gain), offset);
+    }
+  }
+  return result;
+}
+
 export type BufferedOpusAudio = {
   packets: Buffer[];
   codec: string;
   encodingMs: number;
   audioDurationMs: number;
+  boundarySmoothing?: typeof SENTENCE_BOUNDARY;
 };
 
 // Inline source is intentional: esbuild's single-file production bundle does
@@ -36,6 +67,10 @@ try {
     pcm.copy(frame, 0, offset, Math.min(offset + 3840, pcm.length));
     packets.push(Buffer.from(encoder.encode(frame, 960)));
   }
+  // Flush this encoder's lookahead/predictor through real encoded silence
+  // before Discord's canonical silence packets and the next sentence's encoder.
+  // This keeps the final sound from being cut off at a partial packet boundary.
+  for (let i = 0; i < workerData.tailFrames; i++) packets.push(Buffer.from(encoder.encode(Buffer.alloc(3840), 960)));
   parentPort.postMessage({ packets, encodingMs: performance.now() - started });
 } catch (error) {
   parentPort.postMessage({ error: error instanceof Error ? error.message : String(error) });
@@ -47,11 +82,14 @@ try {
 export function encodeDiscordOpus(pcm: Buffer): Promise<BufferedOpusAudio> {
   if (!pcm.length || pcm.length % 4 !== 0) return Promise.reject(new Error("Discord PCM must contain complete 48 kHz stereo samples"));
   if (pcm.length > 48_000 * 4 * 120) return Promise.reject(new Error("Discord sentence audio exceeds 120 seconds"));
+  const smoothed = smoothDiscordSentencePcm(pcm);
   const codecPath = createRequire(import.meta.url).resolve("opusscript");
   return new Promise((resolve, reject) => {
     // This self-contained CommonJS worker must not inherit TS loaders or
     // --input-type=module from the parent process.
-    const worker = new Worker(encoderWorker, { eval: true, execArgv: [], workerData: { pcm, codecPath } });
+    const worker = new Worker(encoderWorker, { eval: true, execArgv: [], workerData: {
+      pcm: smoothed, codecPath, tailFrames: SENTENCE_BOUNDARY.encoderTailMs / DISCORD_FRAME_MS,
+    } });
     const timeout = setTimeout(() => finish(new Error("Opus preparation timed out")), 30_000);
     let settled = false;
     function finish(error?: Error, result?: BufferedOpusAudio) {
@@ -66,7 +104,8 @@ export function encodeDiscordOpus(pcm: Buffer): Promise<BufferedOpusAudio> {
       if (message.error) return finish(new Error(message.error));
       const packets = message.packets.map(packet => Buffer.from(packet));
       if (!packets.length || packets.some(packet => !packet.length)) return finish(new Error("Opus encoder returned empty packets"));
-      finish(undefined, { packets, encodingMs: Math.round(message.encodingMs), codec: "opusscript-worker", audioDurationMs: pcm.length / 192 });
+      finish(undefined, { packets, encodingMs: Math.round(message.encodingMs), codec: "opusscript-worker", audioDurationMs: pcm.length / 192,
+        boundarySmoothing: SENTENCE_BOUNDARY });
     });
     worker.once("error", error => finish(error));
     worker.once("exit", code => { if (!settled) finish(new Error(`Opus worker exited before returning audio (${code})`)); });
@@ -84,6 +123,7 @@ export type PlaybackDiagnostics = {
   maxReadGapMs: number;
   wallPlaybackMs: number;
   connectionInterruptions: number;
+  boundarySmoothing?: typeof SENTENCE_BOUNDARY;
 };
 
 export function createBufferedOpusResource(audio: BufferedOpusAudio) {
@@ -95,6 +135,7 @@ export function createBufferedOpusResource(audio: BufferedOpusAudio) {
     codec: audio.codec, mode: "buffered-opus", packetCount: audio.packets.length,
     audioDurationMs: Math.round(audio.audioDurationMs), encodingMs: audio.encodingMs,
     packetReads: 0, underflowReads: 0, maxReadGapMs: 0, wallPlaybackMs: 0, connectionInterruptions: 0,
+    boundarySmoothing: audio.boundarySmoothing,
   };
   let previousReadAt: number | undefined;
   const originalRead = resource.read.bind(resource);

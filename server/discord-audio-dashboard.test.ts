@@ -23,10 +23,11 @@ vi.mock("@/lib/trpc", () => {
       lastError: mocks.state === "starting" ? "Voice timeout" : null, lastErrorCode: "connection_unavailable",
       connectionDiagnostics: { stage: "voice connection", voiceState: "connecting", networkPhase: "udp-ip-discovery", startupRetryAttempts: 2, transitions: [] },
       history: [], allowedUserId: "1234", playback: { codec: "opusscript-worker", packetCount: 20, audioDurationMs: 200, wallPlaybackMs: 400,
-        encodingMs: 7, underflowReads: 0, maxReadGapMs: 20, connectionInterruptions: 0 } }, refetch: mocks.refetch }) },
+        encodingMs: 7, underflowReads: 0, maxReadGapMs: 20, connectionInterruptions: 0,
+        boundarySmoothing: { fadeInMs: 6, fadeOutMs: 12, encoderTailMs: 60 } } }, refetch: mocks.refetch }) },
     configure: generic, startBot: generic, pauseBot: generic, stopBot: generic, retryLastMessage: generic,
     test: { useMutation: (options: { onSuccess: (data: unknown) => Promise<void> }) => ({ isPending: false, mutate: () => {
-      mocks.preview(); void options.onSuccess({ engine: "deepinfra-inworld", bytes: 100, latencyMs: 200, originalWavBase64: "UklGRg==", convertedWavBase64: "UklGRg==" });
+      mocks.preview(); void options.onSuccess({ engine: "deepinfra-inworld", bytes: 100, latencyMs: 200, originalWavBase64: "UklGRg==", convertedWavBase64: "UklGRg==", smoothedWavBase64: "UklGRg==" });
     } }) },
     testDiscord: { useMutation: () => ({ isPending: false, mutate: mocks.voice }) },
   } } };
@@ -42,6 +43,7 @@ describe("audio diagnosis dashboard", () => {
     await userEvent.click(screen.getByRole("button", { name: "Test short sentence" }));
     await waitFor(() => expect(screen.getByLabelText("Original TTS audio preview")).toBeTruthy());
     expect(screen.getByLabelText("Converted audio preview").getAttribute("src")).toMatch(/^data:audio\/wav;base64,/);
+    expect(screen.getByLabelText("Boundary-smoothed audio preview").getAttribute("src")).toMatch(/^data:audio\/wav;base64,/);
     expect(mocks.preview).toHaveBeenCalledTimes(1);
     expect(mocks.voice).not.toHaveBeenCalled();
   });
@@ -52,6 +54,7 @@ describe("audio diagnosis dashboard", () => {
     expect(mocks.voice).toHaveBeenCalledWith({ text: "Welcome to Graceway Baptist Church." });
     expect(screen.getByLabelText("Discord playback diagnostics").textContent).toContain("Runtime instance-1");
     expect(screen.getByLabelText("Discord playback diagnostics").textContent).toContain("20 ms (목표 20 ms)");
+    expect(screen.getByLabelText("Sentence boundary smoothing").textContent).toContain("인코더 마무리 무음 60 ms");
   });
 
   it("disables Discord playback when the bot is not connected", () => {

@@ -84,7 +84,7 @@ import {
 } from "./newsletterSubscriptionEmail";
 import { configureDiscordTts, convertAudioForDiscord, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
 import { getDiscordBotStatus, pauseDiscordTtsBot, queueDiscordTtsTest, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
-import { discordPcmToWav } from "./discordAudio";
+import { discordPcmToWav, smoothDiscordSentencePcm } from "./discordAudio";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -245,6 +245,7 @@ export const appRouter = router({
         const pcm = await convertAudioForDiscord(result.audio, result.format);
         const convertedWav = discordPcmToWav(pcm);
         if (convertedWav.length > 8_000_000) throw new TRPCError({ code: "BAD_REQUEST", message: "Use a shorter sentence for the audio preview." });
+        const smoothedWav = discordPcmToWav(smoothDiscordSentencePcm(pcm));
         // Short, administrator-requested previews are returned transiently;
         // neither voice-channel audio nor generated previews are persisted.
         return {
@@ -252,6 +253,7 @@ export const appRouter = router({
           durationMs: Math.round(pcm.length / 192),
           originalWavBase64: (result.format === "wav" ? result.audio : convertedWav).toString("base64"),
           convertedWavBase64: convertedWav.toString("base64"),
+          smoothedWavBase64: smoothedWav.toString("base64"),
         } as const;
       }),
     testDiscord: adminProcedure

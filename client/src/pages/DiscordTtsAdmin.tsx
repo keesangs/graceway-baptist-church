@@ -55,7 +55,7 @@ export default function DiscordTtsAdmin() {
   const [speed, setSpeed] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
-  const [previewAudio, setPreviewAudio] = useState<{ original: string; converted: string } | null>(null);
+  const [previewAudio, setPreviewAudio] = useState<{ original: string; converted: string; smoothed: string } | null>(null);
   const status = statusQuery.data;
   const configureMutation = trpc.discordTts.configure.useMutation({
     onSuccess: async (next) => {
@@ -69,7 +69,7 @@ export default function DiscordTtsAdmin() {
   const testMutation = trpc.discordTts.test.useMutation({
     onSuccess: async (result) => {
       setTestResult(`${result.engine === "deepinfra-inworld" ? "DeepInfra Inworld" : "Local fallback"} generated ${result.bytes.toLocaleString()} bytes in ${result.latencyMs} ms.`);
-      setPreviewAudio({ original: `data:audio/wav;base64,${result.originalWavBase64}`, converted: `data:audio/wav;base64,${result.convertedWavBase64}` });
+      setPreviewAudio({ original: `data:audio/wav;base64,${result.originalWavBase64}`, converted: `data:audio/wav;base64,${result.convertedWavBase64}`, smoothed: `data:audio/wav;base64,${result.smoothedWavBase64}` });
       await statusQuery.refetch();
     },
     onError: (error) => { setPreviewAudio(null); setTestResult(error.message); },
@@ -158,6 +158,7 @@ export default function DiscordTtsAdmin() {
                   <div><dt className="text-xs text-[#607A91]">연결 중단</dt><dd>{botStatus.playback.connectionInterruptions}</dd></div>
                 </dl>
                 {(botStatus.playback.maxReadGapMs > 60 || botStatus.playback.connectionInterruptions > 0 || botStatus.playback.underflowReads > 0) && <p className="mt-3 text-amber-800">송출 타이밍이나 연결 불안정이 감지되었습니다. 원본 음성과 비교해 주세요.</p>}
+                {botStatus.playback.boundarySmoothing && <p className="mt-3 text-xs text-[#607A91]" aria-label="Sentence boundary smoothing">문장 경계 보정 / Boundary smoothing: 시작 {botStatus.playback.boundarySmoothing.fadeInMs} ms · 끝 {botStatus.playback.boundarySmoothing.fadeOutMs} ms 페이드 · 인코더 마무리 무음 {botStatus.playback.boundarySmoothing.encoderTailMs} ms</p>}
               </> : <p className="mt-3 text-[#607A91]">Discord 송출 테스트 후 진단 수치가 표시됩니다.</p>}
               <p className="mt-3 text-xs text-[#607A91]">이 수치는 서버 측 상태이며 수신자의 패킷 손실·청취 품질을 보장하지 않습니다. 새로고침마다 Runtime ID가 바뀌면 여러 웹 인스턴스 실행 여부도 확인해야 합니다.</p>
             </section>
@@ -197,9 +198,10 @@ export default function DiscordTtsAdmin() {
             <div className="space-y-4 rounded-lg border border-[#DCE4E7] p-4">
               <p className="text-sm text-[#17324D]">① Test short sentence → 원본과 변환 음성을 브라우저에서 듣기 ② Discord 송출 테스트 → Discord에서 비교 듣기</p>
               <p className="text-xs text-[#607A91]">Preview bypasses Discord. 원본은 정상인데 Discord에서만 끊기면 송출 타이밍·네트워크 경로를 확인합니다. 테스트 음성은 저장하지 않습니다.</p>
-              {previewAudio && <div className="grid gap-4 sm:grid-cols-2">
+              {previewAudio && <div className="grid gap-4 md:grid-cols-3">
                 <div><p className="mb-2 text-sm font-semibold text-[#17324D]">원본 음성 / Original TTS</p><audio key={previewAudio.original} src={previewAudio.original} controls preload="metadata" className="w-full" aria-label="Original TTS audio preview" /></div>
                 <div><p className="mb-2 text-sm font-semibold text-[#17324D]">변환 음성 / 48 kHz stereo</p><audio key={previewAudio.converted} src={previewAudio.converted} controls preload="metadata" className="w-full" aria-label="Converted audio preview" /></div>
+                <div><p className="mb-2 text-sm font-semibold text-[#17324D]">경계 보정 음성 / Smoothed edges</p><audio key={previewAudio.smoothed} src={previewAudio.smoothed} controls preload="metadata" className="w-full" aria-label="Boundary-smoothed audio preview" /><p className="mt-2 text-xs text-[#607A91]">말소리를 자르지 않고 시작·끝만 부드럽게 처리합니다. Discord 인코더의 추가 무음은 이 WAV 비교에 포함되지 않습니다.</p></div>
               </div>}
               <Button variant="outline" onClick={() => testDiscordMutation.mutate({ text: "Welcome to Graceway Baptist Church." })} disabled={testDiscordMutation.isPending || botStatus?.state !== "connected"} className="text-[#17324D]">
                 {testDiscordMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Discord 송출 테스트
