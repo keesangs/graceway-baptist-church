@@ -81,9 +81,12 @@ function addHistory(item: HistoryItem) {
 }
 
 export function splitDiscordTextIntoSentences(text: string, maxLength = 400): string[] {
-  const normalized = text.replace(/\s+/g, " ").trim();
+  const normalized = text.replace(/[ \t]+/g, " ").trim();
   if (!normalized) return [];
-  const chunks = normalized.split(/(?<=[.!?。！？])\s+/).filter(Boolean);
+  // Split both conventional "A. B" boundaries and adjacent boundaries such
+  // as "A.B" while leaving decimal numbers like 3.14 intact. Newlines are
+  // treated as whitespace boundaries by the first branch.
+  const chunks = normalized.split(/(?<=[.!?。！？])\s+|(?<=[.!?。！？])(?=[A-Za-z가-힣])/).filter(Boolean);
   const result: string[] = [];
   for (const chunk of chunks.length ? chunks : [normalized]) {
     if (chunk.length <= maxLength) {
@@ -148,6 +151,9 @@ async function processQueue() {
   if (processing) return;
   processing = true;
   try {
+    // Each queue item is one sentence: synthesize, convert, and play it before
+    // advancing. This preserves spoken order and prevents a long Discord
+    // message from being sent to the TTS provider as one oversized request.
     while (queue.length && runtimeState !== "paused") {
       const item = queue.shift()!;
       currentText = item.text;

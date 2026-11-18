@@ -1,5 +1,5 @@
 
-## Discord Request-Abort Recovery — November 17, 2026
-- [x] Start Discord voice login and UDP discovery in the server background instead of awaiting it in the dashboard HTTP mutation
-- [x] Make manual reconnect/retry request-independent and report progress through status polling
-- [x] Add abort diagnostics, run full validation, and save a checkpoint
+## Sentence-by-Sentence Discord TTS Pipeline — November 17, 2026
+- [x] Split punctuation- and newline-separated messages into individual sentence items, including adjacent sentence boundaries
+- [x] Synthesize, convert, and play each sentence sequentially in queue order
+- [x] Add regression coverage and pass all validation (67 files, 240 tests, TypeScript, production build)

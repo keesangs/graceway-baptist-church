@@ -13,6 +13,12 @@ describe("Discord live worship TTS runtime", () => {
     const sentences = splitDiscordTextIntoSentences("Welcome. Please stand and sing! This is the next line?", 400);
     expect(sentences).toEqual(["Welcome.", "Please stand and sing!", "This is the next line?"]);
 
+    expect(splitDiscordTextIntoSentences("Welcome.Please stand and sing!\nThank you.")).toEqual([
+      "Welcome.",
+      "Please stand and sing!",
+      "Thank you.",
+    ]);
+
     const long = splitDiscordTextIntoSentences("a".repeat(805), 400);
     expect(long).toHaveLength(3);
     expect(Math.max(...long.map((item) => item.length))).toBeLessThanOrEqual(400);
