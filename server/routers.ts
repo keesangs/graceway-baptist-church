@@ -82,8 +82,9 @@ import {
   sendNewsletterStaffNotification,
   sendNewsletterSubscriptionConfirmedEmail,
 } from "./newsletterSubscriptionEmail";
-import { configureDiscordTts, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
-import { getDiscordBotStatus, pauseDiscordTtsBot, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
+import { configureDiscordTts, convertAudioForDiscord, getDiscordTtsStatus, synthesizeDiscordText } from "./discordTts";
+import { getDiscordBotStatus, pauseDiscordTtsBot, queueDiscordTtsTest, retryLastDiscordTtsMessage, startDiscordTtsBot, stopDiscordTtsBot } from "./discordBot";
+import { discordPcmToWav } from "./discordAudio";
 
 
 /** Human-readable labels for the Connect-form topic values, used in staff alerts. */
@@ -241,8 +242,21 @@ export const appRouter = router({
       .input(z.object({ text: z.string().trim().min(1).max(250) }))
       .mutation(async ({ input }) => {
         const result = await synthesizeDiscordText(input.text);
-        return { engine: result.engine, latencyMs: result.latencyMs, bytes: result.audio.length } as const;
+        const pcm = await convertAudioForDiscord(result.audio, result.format);
+        const convertedWav = discordPcmToWav(pcm);
+        if (convertedWav.length > 8_000_000) throw new TRPCError({ code: "BAD_REQUEST", message: "Use a shorter sentence for the audio preview." });
+        // Short, administrator-requested previews are returned transiently;
+        // neither voice-channel audio nor generated previews are persisted.
+        return {
+          engine: result.engine, latencyMs: result.latencyMs, bytes: result.audio.length,
+          durationMs: Math.round(pcm.length / 192),
+          originalWavBase64: (result.format === "wav" ? result.audio : convertedWav).toString("base64"),
+          convertedWavBase64: convertedWav.toString("base64"),
+        } as const;
       }),
+    testDiscord: adminProcedure
+      .input(z.object({ text: z.string().trim().min(1).max(250) }))
+      .mutation(({ input }) => queueDiscordTtsTest(input.text)),
     configure: adminProcedure
       .input(
         z.object({

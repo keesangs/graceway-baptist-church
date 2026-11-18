@@ -1,12 +1,10 @@
-import { Readable } from "node:stream";
 import { randomUUID } from "node:crypto";
+import { createBufferedOpusResource, encodeDiscordOpus, type PlaybackDiagnostics } from "./discordAudio";
 import { Client, GatewayIntentBits, PermissionFlagsBits } from "discord.js";
 import {
   AudioPlayerStatus,
-  StreamType,
   VoiceConnectionStatus,
   createAudioPlayer,
-  createAudioResource,
   entersState,
   joinVoiceChannel,
   type VoiceConnection,
@@ -49,6 +47,9 @@ type BotStatus = {
   lastErrorCode: VoiceFailureCode | null;
   lastFailed: HistoryItem | null;
   history: HistoryItem[];
+  instanceId: string;
+  playback: PlaybackDiagnostics | null;
+  voicePing: { ws: number | null; udp: number | null };
 };
 
 const config = {
@@ -75,6 +76,9 @@ let recoveryAttempts = 0;
 let startupRetryTimer: NodeJS.Timeout | undefined;
 let startupRetryAttempts = 0;
 let startupPromise: Promise<ReturnType<typeof getDiscordBotStatus>> | undefined;
+const instanceId = randomUUID().slice(0, 8);
+let playback: PlaybackDiagnostics | null = null;
+let queueGeneration = 0;
 const queue: HistoryItem[] = [];
 const history: HistoryItem[] = [];
 
@@ -135,34 +139,58 @@ function scheduleVoiceRecovery(error: unknown) {
   lastError = detail
     ? `Discord 음성 연결을 자동으로 재연결하는 중입니다 (${attempt}/5). 원인: ${detail}`
     : `Discord 음성 연결을 자동으로 재연결하는 중입니다 (${attempt}/5).`;
-  recoveryTimer = setTimeout(() => {
+  const recoveringConnection = connection;
+  const generation = queueGeneration;
+  recoveryTimer = setTimeout(async () => {
     recoveryTimer = undefined;
-    if (!connection || !started) return;
-    if (!connection.rejoin()) scheduleVoiceRecovery(new Error("Discord voice rejoin was rejected"));
+    if (connection !== recoveringConnection || !started || generation !== queueGeneration) return;
+    if (recoveringConnection.state.status === VoiceConnectionStatus.Ready) return;
+    try {
+      if (!connection.rejoin()) throw new Error("Discord voice rejoin was rejected");
+      await entersState(recoveringConnection, VoiceConnectionStatus.Ready, 10_000);
+    } catch (recoveryError) {
+      if (connection === recoveringConnection && generation === queueGeneration) scheduleVoiceRecovery(recoveryError);
+    }
   }, Math.min(1_000 * 2 ** (attempt - 1), 16_000));
 }
 
 async function playPcm(pcm: Buffer) {
   if (!connection) throw new Error("Discord voice connection is not ready");
-  // Keep the PCM as one explicit stream chunk. More importantly, wait for the
-  // player to actually enter Playing before waiting for Idle; checking Idle
-  // immediately after play() can resolve against the previous idle state and
-  // let the next sentence replace the resource before Discord has played it.
-  const resource = createAudioResource(Readable.from([pcm]), { inputType: StreamType.Raw, silencePaddingFrames: 5 });
-  connection.subscribe(player);
-  player.play(resource);
-  await entersState(player, AudioPlayerStatus.Playing, 10_000);
-  await entersState(player, AudioPlayerStatus.Idle, 120_000);
+  const generation = queueGeneration;
+  const readyConnection = connection;
+  const audio = await encodeDiscordOpus(pcm);
+  if (generation !== queueGeneration) throw new Error("Discord playback was stopped");
+  await entersState(readyConnection, VoiceConnectionStatus.Ready, 10_000);
+  if (generation !== queueGeneration || readyConnection !== connection) throw new Error("Discord connection changed before playback");
+  const { resource, diagnostics } = createBufferedOpusResource(audio);
+  playback = diagnostics;
+  const onConnectionState = (_old: unknown, next: { status: string }) => {
+    if (next.status !== VoiceConnectionStatus.Ready) diagnostics.connectionInterruptions += 1;
+  };
+  readyConnection.on("stateChange", onConnectionState);
+  const begin = performance.now();
+  try {
+    player.play(resource);
+    await entersState(player, AudioPlayerStatus.Playing, 10_000);
+    await entersState(player, AudioPlayerStatus.Idle, 120_000);
+    if (generation !== queueGeneration) throw new Error("Discord playback was stopped");
+  } finally {
+    diagnostics.wallPlaybackMs = Math.round(performance.now() - begin);
+    readyConnection.off("stateChange", onConnectionState);
+    if (player.state.status !== AudioPlayerStatus.Idle) player.stop(true);
+    console.info("[discord-tts] playback metrics", JSON.stringify({ instanceId, ...diagnostics }));
+  }
 }
 
 async function processQueue() {
   if (processing) return;
   processing = true;
+  const generation = queueGeneration;
   try {
     // Each queue item is one sentence: synthesize, convert, and play it before
     // advancing. This preserves spoken order and prevents a long Discord
     // message from being sent to the TTS provider as one oversized request.
-    while (queue.length && runtimeState !== "paused") {
+    while (queue.length && runtimeState === "connected" && generation === queueGeneration) {
       const item = queue.shift()!;
       currentText = item.text;
       item.status = "playing";
@@ -173,6 +201,7 @@ async function processQueue() {
         item.latencyMs = result.latencyMs;
         stage = "audio_conversion";
         const pcm = await convertAudioForDiscord(result.audio, result.format);
+        if (generation !== queueGeneration) break;
         stage = "voice_playback";
         await playPcm(pcm);
         item.status = "completed";
@@ -180,13 +209,14 @@ async function processQueue() {
         lastErrorCode = null;
         addHistory(item);
       } catch (error) {
-        markError(item, stage, error);
+        if (generation === queueGeneration) markError(item, stage, error);
       } finally {
         currentText = null;
       }
     }
   } finally {
     processing = false;
+    if (queue.length && runtimeState === "connected") void processQueue();
   }
 }
 
@@ -205,6 +235,12 @@ function enqueueText(text: string) {
     queue.push(item);
   }
   void processQueue();
+}
+
+export function queueDiscordTtsTest(text: string) {
+  if (runtimeState !== "connected" || !connection) throw new Error("Discord 봇이 연결된 후 송출 테스트를 실행해 주세요.");
+  enqueueText(text);
+  return { message: "Discord 송출 테스트를 대기열에 추가했습니다. 재생 후 아래 진단 수치를 확인해 주세요." };
 }
 
 export async function enqueueDiscordTtsSmokeMessages(messages: string[]) {
@@ -251,6 +287,10 @@ export async function retryLastDiscordTtsMessage() {
 function installListeners() {
   if (listenersInstalled) return;
   listenersInstalled = true;
+  player.on("error", error => {
+    lastErrorCode = "voice_playback_failed";
+    lastError = `Discord 오디오 player 오류: ${error.message.slice(0, 220)}`;
+  });
   client.on("messageCreate", (message) => {
     if (runtimeState !== "connected") return;
     if (!message.guildId || message.guildId !== config.guildId) return;
@@ -281,9 +321,11 @@ async function startDiscordTtsBotInternal() {
   started = true;
   runtimeState = "starting";
   installListeners();
+  const generation = queueGeneration;
   let stage = "login";
   try {
     await client.login(token);
+    if (generation !== queueGeneration) return getDiscordBotStatus();
     stage = "guild lookup";
     const guild = await client.guilds.fetch(config.guildId);
     stage = "text channel lookup";
@@ -301,6 +343,7 @@ async function startDiscordTtsBotInternal() {
     ];
     const missingPermissions = requiredPermissions.filter(([permission]) => !permissions?.has(permission as never)).map(([, label]) => label);
     if (missingPermissions.length) throw new Error(`Missing voice permissions: ${missingPermissions.join(", ")}`);
+    if (generation !== queueGeneration) return getDiscordBotStatus();
     stage = "voice connection";
     connection = joinVoiceChannel({ channelId: channel.id, guildId: guild.id, adapterCreator: guild.voiceAdapterCreator, selfDeaf: false });
     // Discord voice can emit networking errors during IP discovery, before the
@@ -310,21 +353,29 @@ async function startDiscordTtsBotInternal() {
       if (newState.status === VoiceConnectionStatus.Disconnected) {
         scheduleVoiceRecovery(new Error("Discord voice connection disconnected"));
       } else if (newState.status === VoiceConnectionStatus.Ready) {
+        if (recoveryTimer) clearTimeout(recoveryTimer);
+        recoveryTimer = undefined;
         recoveryAttempts = 0;
-        runtimeState = "connected";
+        if (runtimeState !== "paused") runtimeState = "connected";
         lastError = null;
         lastErrorCode = null;
+        if (runtimeState === "connected") void processQueue();
+      } else if (runtimeState === "connected") {
+        runtimeState = "reconnecting";
       }
     });
     connection.on("error", (error) => {
       scheduleVoiceRecovery(error);
     });
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+    if (generation !== queueGeneration) return getDiscordBotStatus();
+    connection.subscribe(player);
     runtimeState = "connected";
     lastError = null;
     lastErrorCode = null;
     startupRetryAttempts = 0;
   } catch (error) {
+    if (generation !== queueGeneration) return getDiscordBotStatus();
     started = false;
     connection?.destroy();
     connection = undefined;
@@ -335,7 +386,7 @@ async function startDiscordTtsBotInternal() {
       ? " 현재 WebDev 웹 런타임의 UDP 제한일 수 있어 Discord 봇을 고정 공인 IP의 persistent worker로 분리해야 할 수 있습니다."
       : "";
     const abortHint = /aborted/i.test(detail)
-      ? " 연결 작업은 대시보드 요청과 분리되어야 하므로, 잠시 기다린 뒤 상태를 다시 확인해 주세요."
+      ? " 연결 준비 대기가 시간 초과되었거나 연결이 중단되었습니다. 이 메시지만으로 HTTP 요청 취소나 UDP 제한을 확정할 수는 없습니다."
       : "";
     const baseError = stage === "voice connection"
       ? `Discord 음성 채널에 연결하지 못했습니다. 봇 연결과 음성 권한을 확인한 뒤 재시도해 주세요.${detail ? ` 원인: ${detail}` : ""}${networkHint}${abortHint}`
@@ -373,6 +424,8 @@ export function startDiscordTtsBot() {
 }
 
 export async function stopDiscordTtsBot() {
+  queueGeneration += 1;
+  player.stop(true);
   queue.length = 0;
   currentText = null;
   if (recoveryTimer) clearTimeout(recoveryTimer);
@@ -383,7 +436,7 @@ export async function stopDiscordTtsBot() {
   startupRetryAttempts = 0;
   connection?.destroy();
   connection = undefined;
-  if (client.isReady()) client.destroy();
+  await client.destroy();
   started = false;
   runtimeState = "stopped";
   return getDiscordBotStatus();
@@ -408,6 +461,9 @@ export function getDiscordBotStatus(): BotStatus & { tts: ReturnType<typeof getD
     lastErrorCode,
     lastFailed: history.find(item => item.status === "failed") ?? null,
     history: [...history],
+    instanceId,
+    playback: playback ? { ...playback } : null,
+    voicePing: { ws: connection?.ping.ws ?? null, udp: connection?.ping.udp ?? null },
     tts: getDiscordTtsStatus(),
     settings: getDiscordTtsStatus().settings,
   };

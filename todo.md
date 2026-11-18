@@ -3,3 +3,10 @@
 - [x] Add a bounded automatic retry for aborted initial login/voice startup
 - [x] Prevent overlapping startup attempts and expose retry progress in status
 - [x] Add regression coverage, run full validation, and save a checkpoint
+
+## Measured Discord stutter diagnosis — November 17, 2026
+- [x] Validate saved original WAV and conversion structure/duration; add behavioral Opus decoding, playback, stop, and sample-preservation tests. Correct the earlier unsupported previous-Idle diagnosis.
+- [x] Pre-encode complete, padded 20 ms Opus packets in a worker and buffer before playback; guard stopped/stale queue work, await actual voice readiness, subscribe once, and clear stale recovery timers.
+- [x] Separate transient original/converted WAV previews from an explicit Discord playback test; expose server-side underflow, read-gap, interruption, ping, and instance diagnostics to admins only.
+- [x] Validate 70 Vitest files / 253 tests, TypeScript, production build, bundled worker smoke test, and desktop/mobile admin screenshots. Same saved 3021 ms WAV: buffered resource had zero underflow and 20 ms maximum read gap in isolated local playback.
+- [ ] Publish the latest checkpoint and compare original/converted browser audio with live Discord listening; no receiver-side audio has been recorded or verified, and production stutter is not yet proven resolved.

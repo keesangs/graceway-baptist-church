@@ -42,7 +42,8 @@ describe("Discord live worship TTS runtime", () => {
     expect(runtimeSource).toContain("startupRetryAttempts < 3");
     expect(runtimeSource).toContain("automatic startup retry failed");
     expect(runtimeSource).toContain("if (startupPromise) return startupPromise");
-    expect(runtimeSource).toContain("Readable.from([pcm])");
+    expect(runtimeSource).toContain("encodeDiscordOpus(pcm)");
+    expect(runtimeSource).toContain("createBufferedOpusResource(audio)");
     expect(runtimeSource).toContain("AudioPlayerStatus.Playing, 10_000");
     expect(runtimeSource).toContain("AudioPlayerStatus.Idle, 120_000");
     expect(runtimeSource).toContain('"reconnecting"');
@@ -62,6 +63,10 @@ describe("Discord live worship TTS runtime", () => {
     expect(dashboardSource).toContain("Start bot");
     expect(dashboardSource).toContain("Pause queue");
     expect(dashboardSource).toContain("Stop bot");
+    expect(routerSource).toContain("testDiscord: adminProcedure");
+    expect(dashboardSource).toContain("Original TTS audio preview");
+    expect(dashboardSource).toContain("Discord 송출 테스트");
+    expect(dashboardSource).toContain("maxReadGapMs");
   });
 
   it("surfaces stage-specific voice failures and a protected manual retry", () => {
