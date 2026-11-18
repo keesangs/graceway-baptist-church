@@ -25,9 +25,20 @@ describe("Discord DeepInfra TTS", () => {
     configureDiscordTts({ remoteEnabled: true });
     const result = await synthesizeDiscordText("A short worship announcement.");
 
-    expect(result.engine).toBe("deepinfra-qwen");
+    expect(result.engine).toBe("deepinfra-inworld");
     expect(result.audio).toEqual(audio);
-    expect(getDiscordTtsStatus()).toMatchObject({ lastEngine: "deepinfra-qwen", completedCount: 1, failedCount: 0 });
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.deepinfra.com/v1/inference/inworld-ai/realtime-tts-1.5-mini",
+      expect.objectContaining({
+        body: expect.stringContaining('"text":"A short worship announcement."'),
+      }),
+    );
+    expect(JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body)).toMatchObject({
+      voice: "Ashley",
+      language: "en",
+      output_format: "wav",
+    });
+    expect(getDiscordTtsStatus()).toMatchObject({ lastEngine: "deepinfra-inworld", completedCount: 1, failedCount: 0 });
   });
 
   it("exposes configuration state without exposing credentials", () => {
@@ -64,7 +75,7 @@ describe("Discord DeepInfra TTS", () => {
     expect(appSource).toContain("/admin/discord-tts");
     expect(pageSource).toContain("refetchInterval: 2_000");
     expect(pageSource).toContain("Enable remote TTS");
-    expect(pageSource).toContain("DeepInfra Qwen active");
+    expect(pageSource).toContain("DeepInfra Inworld active");
     expect(pageSource).toContain("Local fallback active");
     expect(pageSource).toContain("Admin only");
     expect(pageSource).toContain("Admin's live worship text announcements");

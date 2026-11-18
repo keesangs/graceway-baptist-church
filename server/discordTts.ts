@@ -1,11 +1,11 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
-const DEFAULT_REMOTE_URL = "https://api.deepinfra.com/v1/inference/Qwen/Qwen3-TTS";
+const DEFAULT_REMOTE_URL = "https://api.deepinfra.com/v1/inference/inworld-ai/realtime-tts-1.5-mini";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const SOURCE_RATE = 24_000;
 
-export type TtsEngine = "deepinfra-qwen" | "local-fallback";
+export type TtsEngine = "deepinfra-inworld" | "local-fallback";
 export type TtsAudioFormat = "wav" | "pcm_s16le_24khz_mono";
 type TtsRuntimeState = "ready" | "synthesizing" | "fallback" | "error";
 
@@ -32,7 +32,7 @@ export type DiscordTtsStatus = {
 };
 
 const defaultSettings: DiscordTtsSettings = {
-  speaker: process.env.QWEN_TTS_SPEAKER ?? "Aiden",
+  speaker: process.env.INWORLD_TTS_SPEAKER ?? "Ashley",
   instruct: process.env.QWEN_TTS_INSTRUCT ?? "Speak clearly and warmly, suitable for a church announcement.",
   speed: 1,
 };
@@ -55,7 +55,7 @@ function getApiKey() {
 }
 
 function getRemoteUrl() {
-  return process.env.QWEN_TTS_REMOTE_URL?.trim() || DEFAULT_REMOTE_URL;
+  return process.env.DEEPINFRA_TTS_REMOTE_URL?.trim() || process.env.QWEN_TTS_REMOTE_URL?.trim() || DEFAULT_REMOTE_URL;
 }
 
 function getTimeoutMs() {
@@ -118,11 +118,10 @@ async function synthesizeDeepInfra(text: string, currentSettings: DiscordTtsSett
         Accept: "audio/wav, audio/pcm, application/octet-stream, application/json",
       },
       body: JSON.stringify({
-        input: text,
+        text,
         voice: currentSettings.speaker,
-        language: "English",
-        instruct: currentSettings.instruct,
-        response_format: process.env.QWEN_TTS_REMOTE_FORMAT ?? "wav",
+        language: "en",
+        output_format: "wav",
       }),
       signal: controller.signal,
     });
@@ -321,12 +320,12 @@ export async function synthesizeDiscordText(text: string, requestedSettings = se
     try {
       const audio = await synthesizeDeepInfra(spoken, requestedSettings);
       lastLatencyMs = Math.round(performance.now() - started);
-      lastEngine = "deepinfra-qwen";
+      lastEngine = "deepinfra-inworld";
       currentEngine = null;
       state = "ready";
       lastError = null;
       completedCount += 1;
-      return { audio, engine: "deepinfra-qwen" as const, format: "wav" as const, latencyMs: lastLatencyMs };
+      return { audio, engine: "deepinfra-inworld" as const, format: "wav" as const, latencyMs: lastLatencyMs };
     } catch (error) {
       remoteError = errorText(error);
     }
