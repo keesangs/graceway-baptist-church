@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { once } from "node:events";
 import { createBufferedOpusResource, encodeDiscordOpus, type PlaybackDiagnostics } from "./discordAudio";
 import { summarizeVoiceConnection, voiceTimeoutMessage } from "./discordVoiceDiagnostics";
-import { Client, GatewayIntentBits, PermissionFlagsBits } from "discord.js";
+import { Client, Events, GatewayIntentBits, PermissionFlagsBits } from "discord.js";
 import {
   AudioPlayerStatus,
   VoiceConnectionStatus,
@@ -67,13 +68,17 @@ const config = {
   allowedUserId: process.env.DISCORD_TRANSLATION_ALLOWED_USER_ID ?? "438023171459776525",
 };
 
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates],
-});
+function createDiscordClient() {
+  return new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates],
+  });
+}
+let client = createDiscordClient();
 const player = createAudioPlayer();
 let connection: VoiceConnection | undefined;
 let started = false;
 let listenersInstalled = false;
+let playerListenerInstalled = false;
 let processing = false;
 let currentText: string | null = null;
 let lastError: string | null = null;
@@ -304,13 +309,31 @@ export async function retryLastDiscordTtsMessage() {
   return { retried: true, message: "마지막 실패 메시지를 다시 송출 대기열에 추가했습니다." } as const;
 }
 
+async function retireDiscordClient() {
+  const retiredClient = client;
+  try {
+    // destroy() is terminal: a later attempt gets fresh guild/shard adapters,
+    // even if the previous client never reached Ready or has already failed.
+    await retiredClient.destroy();
+  } finally {
+    retiredClient.removeAllListeners();
+    if (client === retiredClient) {
+      client = createDiscordClient();
+      listenersInstalled = false;
+    }
+  }
+}
+
 function installListeners() {
+  if (!playerListenerInstalled) {
+    playerListenerInstalled = true;
+    player.on("error", error => {
+      lastErrorCode = "voice_playback_failed";
+      lastError = `Discord 오디오 player 오류: ${error.message.slice(0, 220)}`;
+    });
+  }
   if (listenersInstalled) return;
   listenersInstalled = true;
-  player.on("error", error => {
-    lastErrorCode = "voice_playback_failed";
-    lastError = `Discord 오디오 player 오류: ${error.message.slice(0, 220)}`;
-  });
   client.on("messageCreate", (message) => {
     if (runtimeState !== "connected") return;
     if (!message.guildId || message.guildId !== config.guildId) return;
@@ -346,6 +369,12 @@ async function startDiscordTtsBotInternal() {
   connectionStage = stage;
   try {
     await client.login(token);
+    if (generation !== queueGeneration) return getDiscordBotStatus();
+    stage = "gateway readiness";
+    connectionStage = stage;
+    // login() establishes the WebSocket, but voiceAdapterCreator only sends
+    // packets once the guild's shard is Ready. Do not race this event.
+    if (!client.isReady()) await once(client, Events.ClientReady, { signal: AbortSignal.timeout(20_000) });
     if (generation !== queueGeneration) return getDiscordBotStatus();
     stage = "guild lookup";
     connectionStage = stage;
@@ -414,7 +443,8 @@ async function startDiscordTtsBotInternal() {
     connection = undefined;
     // Keep the pre-destroy phase rather than replacing it with "destroyed".
     voiceSnapshot = failureSnapshot;
-    if (client.isReady()) client.destroy();
+    await retireDiscordClient();
+    if (generation !== queueGeneration) return getDiscordBotStatus();
     runtimeState = "error";
     const detail = (timeoutDetail ?? errorMessage).replace(/\s+/g, " ").slice(0, 300);
     const networkHint = /IP discovery|socket closed|UDP/i.test(detail)
@@ -471,7 +501,7 @@ export async function stopDiscordTtsBot() {
   startupRetryAttempts = 0;
   connection?.destroy();
   connection = undefined;
-  await client.destroy();
+  await retireDiscordClient();
   started = false;
   runtimeState = "stopped";
   connectionStage = "stopped";
