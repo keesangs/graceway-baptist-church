@@ -14,7 +14,7 @@ vi.mock("./discordBot", () => ({
   getDiscordBotStatus: () => ({state:memory.state,currentText:memory.current,queueDepth:memory.depth,instanceId:"unit-runtime"}),
   getDiscordParagraphBatch: (id:string) => memory.live.get(id) ?? null,
   splitDiscordTextIntoSentences: (text:string) => text.split(/(?<=[.!?])\s+/),
-  queueDiscordTranscriptParagraph: (input:any,cb:any) => {const value={id:input.id,transcriptId:input.transcriptId,paragraphIndex:input.paragraphIndex,status:"queued",sentenceCount:input.text.split(/(?<=[.!?])\s+/).length,completedCount:0,error:null};memory.queued.push(input);memory.live.set(input.id,value);memory.callbacks.set(input.id,cb);cb(value);return value;},
+  queueDiscordTranscriptParagraph: (input:any,cb:any) => {const value={id:input.id,transcriptId:input.transcriptId,paragraphIndex:input.paragraphIndex,status:"queued",sentenceCount:1,completedCount:0,error:null};memory.queued.push(input);memory.live.set(input.id,value);memory.callbacks.set(input.id,cb);cb(value);return value;},
 }));
 let api: typeof import("./discordTranscript").discordTranscriptRouter;
 const uuid="ed4c54cb-8a99-420f-94a1-f2bf6e1e88ac";
@@ -40,16 +40,16 @@ describe("private transcript administrator API",()=>{
   });
   it("admits one selected paragraph, deduplicates request IDs, advances only after completion",async()=>{
     const doc=await create();const payload={id:doc.id,index:0,requestId:uuid,replay:false};
-    const first=await caller().sendParagraph(payload);expect(first.sentenceCount).toBe(2);expect(memory.queued).toHaveLength(1);expect(memory.queued[0].text).toBe("First paragraph. Welcome.");expect(memory.docs.get(doc.id).nextParagraph).toBe(0);
+    const first=await caller().sendParagraph(payload);expect(first.sentenceCount).toBe(1);expect(memory.queued).toHaveLength(1);expect(memory.queued[0].text).toBe("First paragraph. Welcome.");expect(memory.docs.get(doc.id).nextParagraph).toBe(0);
     await caller().sendParagraph(payload);expect(memory.queued).toHaveLength(1);
-    const final={...memory.live.get(uuid),status:"completed",completedCount:2};memory.live.set(uuid,final);memory.callbacks.get(uuid)!(final);
+    const final={...memory.live.get(uuid),status:"completed",completedCount:1};memory.live.set(uuid,final);memory.callbacks.get(uuid)!(final);
     await vi.waitFor(()=>expect(memory.docs.get(doc.id).nextParagraph).toBe(1));expect(memory.queued).toHaveLength(1);
   });
   it("requires explicit full paragraph replay after prior attempt",async()=>{
     const doc=await create();await caller().sendParagraph({id:doc.id,index:0,requestId:uuid,replay:false});
     const second="032a357d-4f57-4b66-a33b-e839111d2171";
     await expect(caller().sendParagraph({id:doc.id,index:0,requestId:second,replay:false})).rejects.toMatchObject({code:"CONFLICT"});
-    memory.live.set(uuid,{...memory.live.get(uuid),status:"completed",completedCount:2});
+    memory.live.set(uuid,{...memory.live.get(uuid),status:"completed",completedCount:1});
     await caller().sendParagraph({id:doc.id,index:0,requestId:second,replay:true});expect(memory.queued).toHaveLength(2);
   });
   it("rejects disconnected and busy admission",async()=>{
@@ -67,5 +67,10 @@ describe("private transcript administrator API",()=>{
     await expect(caller().delete({id:doc.id})).rejects.toMatchObject({code:"CONFLICT"});
     const cancelled={...memory.live.get(uuid),status:"cancelled",error:"Stopped"};memory.live.set(uuid,cancelled);memory.callbacks.get(uuid)!(cancelled);
     expect(await caller().delete({id:doc.id})).toEqual({deleted:true});expect(memory.docs.size).toBe(0);expect(memory.runs.size).toBe(0);
+  });
+  it("rejects oversized whole-paragraph requests before creating any run",async()=>{
+    const doc=await caller().importText({title:"Long",text:"a".repeat(2001)});
+    await expect(caller().sendParagraph({id:doc.id,index:0,requestId:uuid,replay:false})).rejects.toMatchObject({code:"BAD_REQUEST"});
+    expect(memory.runs.size).toBe(0);expect(memory.queued).toHaveLength(0);
   });
 });

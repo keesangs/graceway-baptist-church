@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { MAX_TRANSCRIPT_FEED_CHARS, normalizeTranscriptFeed } from "../../../shared/discordTranscriptFeed";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,7 +77,9 @@ export default function DiscordTranscriptControls({ runtime, onQueued }: Discord
   const runBusy = activeRun(run) || !!localAdmission;
   const mutationBusy = sending || send.isPending || deleting || remove.isPending;
   const runtimeBusy = (runtime?.queueDepth ?? 0) > 0 || !!runtime?.currentText;
-  const sendDisabled = !doc?.paragraphs.length || runtime?.state !== "connected" || runtimeBusy || runBusy || mutationBusy || !!detail.error;
+  const paragraphChars = normalizeTranscriptFeed(doc?.paragraphs[index] ?? "").length;
+  const paragraphTooLong = paragraphChars > MAX_TRANSCRIPT_FEED_CHARS;
+  const sendDisabled = !doc?.paragraphs.length || paragraphTooLong || runtime?.state !== "connected" || runtimeBusy || runBusy || mutationBusy || !!detail.error;
   const deleteDisabled = !doc || runBusy || mutationBusy || !!detail.error;
   const needsReplay = !!doc && (
     index < doc.nextParagraph || run?.paragraphIndex === index || attempted.current.has(paragraphKey(doc.id, index))
@@ -247,6 +250,7 @@ export default function DiscordTranscriptControls({ runtime, onQueued }: Discord
     <header>
       <h3 className="text-lg font-semibold">원고 문단 송출 / Transcript</h3>
       <p className="mt-1 text-xs leading-relaxed text-[#607A91]">가져오기·선택·새로고침은 송출하지 않습니다. 매 문단을 직접 송출하세요. / Importing, selecting, or refreshing never sends speech.</p>
+      <p className="mt-1 text-xs leading-relaxed text-[#607A91]">문단 전체를 한 번에 합성합니다. 문장·일반 줄바꿈으로 잘라 송출하지 않습니다. 빈 줄은 문단 경계입니다. / One TTS request per paragraph; ordinary line wraps are joined.</p>
     </header>
     <p className="rounded-md border-l-4 border-[#C9973E] bg-white p-3 text-xs leading-relaxed">추출된 원고는 교역자·스태프 전용으로 저장됩니다. 원본 파일은 저장하지 않습니다. / Parsed text is private to staff; the raw file is not stored.</p>
     <details className="rounded-lg bg-white p-3">
@@ -286,13 +290,15 @@ export default function DiscordTranscriptControls({ runtime, onQueued }: Discord
       {index + 1 < doc.paragraphs.length && <details key={`${doc.id}:${index}`} className="rounded-md bg-white p-3 text-xs"><summary className="cursor-pointer font-semibold">다음 문단 미리보기 / Next paragraph preview</summary><p className="mt-2 max-h-28 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed text-[#607A91]">{doc.paragraphs[index + 1]}</p></details>}
       {run && <div role="status" aria-live="polite" className={`rounded-lg p-3 text-sm ${run.status === "completed" ? "bg-emerald-50 text-emerald-900" : runFailed ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-900"}`}>
         <p className="font-semibold">문단 {run.paragraphIndex + 1} · {statusLabels[run.status]}</p>
-        <p>문장 진행 / Sentences: {run.completedCount} / {run.sentenceCount}</p>
+        <p>{run.sentenceCount > 1 ? "이전 문장 진행 / Sentences" : "문단 합성 / Paragraph synthesis"}: {run.completedCount} / {run.sentenceCount}</p>
         {runFailed && <p className="mt-2 text-xs leading-relaxed">{run.error && <span>{run.error} · </span>}완료되지 않았습니다. 재송출은 문단 전체를 반복하며 이미 들은 문장도 다시 나올 수 있습니다. / Not completed; replay repeats the entire paragraph, including sentences already heard.</p>}
         {runFailed && <Button variant="outline" size="sm" className="mt-2" disabled={sendDisabled} onClick={() => setReplayTarget({ id: doc.id, index: run.paragraphIndex })}>실패 문단 다시 송출 / Replay unfinished paragraph</Button>}
       </div>}
-      {localAdmission && run?.id !== localAdmission.batchId && <p role="status" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">문단 {localAdmission.index + 1} 대기열 접수 · {localAdmission.sentenceCount} 문장. 아직 완료되지 않았습니다. / Queued; not completed.</p>}
+      {localAdmission && run?.id !== localAdmission.batchId && <p role="status" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">문단 {localAdmission.index + 1} 대기열 접수 · 문단 전체 1회 합성. 아직 완료되지 않았습니다. / Whole paragraph · Queued; not completed.</p>}
       {doc.nextParagraph >= doc.paragraphs.length && doc.paragraphs.length > 0 && <p role="status" className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-900">원고 끝 / End of transcript. 저장된 성공 위치가 끝에 도달했습니다. 이전 문단은 확인 후 재송출할 수 있습니다. / Saved success cursor reached the end; earlier paragraphs remain available for confirmed replay.</p>}
       <p className="text-xs text-[#607A91]">저장된 다음 위치 / Saved next: {doc.nextParagraph >= doc.paragraphs.length ? "끝 / End" : doc.nextParagraph + 1}. 성공 위치는 가장 먼 완료 문단 기준이며, 수동 이동은 자유입니다. / Highest successful position; navigation does not send.</p>
+      <p className={`text-xs ${paragraphTooLong ? "text-red-800" : "text-[#607A91]"}`}>현재 문단 {paragraphChars} / 2,000자 · 단일 합성 제한 / Single-request limit.</p>
+      {paragraphTooLong && <p role="alert" className="text-sm text-red-800">2,000자를 넘는 문단입니다. 원고에서 의미 단위로 문단을 나눠 다시 가져와 주세요. 자동 분할·생략하지 않습니다. / Split this oversized paragraph before importing again.</p>}
       <Button className="h-auto min-h-11 w-full whitespace-normal bg-[#17324D] text-white hover:bg-[#245170]" disabled={sendDisabled} onClick={requestSend}>현재 문단 송출 / Send paragraph</Button>
       <p className="text-xs text-[#607A91]">{runtime?.state !== "connected" ? "봇 연결 후 송출할 수 있습니다. / Connect the bot to send." : runtimeBusy || runBusy || sending ? "현재 재생·대기열이 끝난 후 송출하세요. / Wait for playback and queue to finish." : needsReplay ? "이 문단은 재송출 확인이 필요합니다. / This paragraph requires replay confirmation." : "선택한 문단 하나만 송출합니다. / Sends only the selected paragraph."}</p>
       {sendError && <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800"><p>송출 요청 오류 / Send request error: {sendError}</p><p className="mt-1 text-xs">응답 실패는 재생 실패를 뜻하지 않습니다. 같은 요청 재시도는 동일 ID를 사용합니다. / A lost response does not mean playback failed; retry uses the same request ID.</p>{retry && retry.id === doc.id && <Button variant="outline" className="mt-2" disabled={sendDisabled} onClick={() => sendAttempt({ id: retry.id, index: retry.index }, retry.replay, true)}>같은 요청 재시도 / Retry same request</Button>}</div>}

@@ -34,8 +34,8 @@ describe("manual paragraph runtime", () => {
     await bot.startDiscordTtsBot(); const updates: import("./discordBot").ParagraphBatch[] = [];
     bot.queueDiscordTranscriptParagraph(input, b => updates.push(b));
     await vi.waitFor(() => expect(bot.getDiscordParagraphBatch("a")?.status).toBe("completed"));
-    expect(test.spoken).toEqual(["Welcome to worship.", "We are glad you are here."]);
-    expect(updates.at(-1)?.completedCount).toBe(2); expect(updates[0].status).toBe("queued");
+    expect(test.spoken).toEqual([input.text]);
+    expect(updates.at(-1)?.completedCount).toBe(1); expect(updates[0].status).toBe("queued");
     expect(bot.getDiscordBotStatus().queueDepth).toBe(0);
   });
   it("deduplicates request IDs and rejects new paragraphs while busy", async () => {
@@ -50,7 +50,7 @@ describe("manual paragraph runtime", () => {
     await bot.startDiscordTtsBot(); test.failAt = 1;
     bot.queueDiscordTranscriptParagraph(input, vi.fn());
     await vi.waitFor(() => expect(bot.getDiscordParagraphBatch("a")?.status).toBe("failed"));
-    expect(test.spoken).toEqual(["Welcome to worship."]); expect(bot.getDiscordBotStatus().queueDepth).toBe(0);
+    expect(test.spoken).toEqual([input.text]); expect(bot.getDiscordBotStatus().queueDepth).toBe(0);
     expect(bot.getDiscordParagraphBatch("a")?.completedCount).toBe(0);
     await expect(bot.retryLastDiscordTtsMessage()).rejects.toThrow(/전체 문단/);
   });
@@ -64,6 +64,24 @@ describe("manual paragraph runtime", () => {
   });
   it("a failing progress callback cannot abort speech", async () => {
     await bot.startDiscordTtsBot(); bot.queueDiscordTranscriptParagraph(input, () => { throw new Error("Bad consumer"); });
-    await vi.waitFor(() => expect(bot.getDiscordParagraphBatch("a")?.status).toBe("completed")); expect(test.spoken).toHaveLength(2);
+    await vi.waitFor(() => expect(bot.getDiscordParagraphBatch("a")?.status).toBe("completed")); expect(test.spoken).toHaveLength(1);
+  });
+  it("joins line wraps and preserves a >400 character multi-sentence paragraph in one request", async () => {
+    await bot.startDiscordTtsBot();
+    const text = ("God welcomes us.\nWe gather to worship together. ").repeat(12);
+    bot.queueDiscordTranscriptParagraph({ ...input, text }, vi.fn());
+    await vi.waitFor(() => expect(bot.getDiscordParagraphBatch("a")?.status).toBe("completed"));
+    expect(test.spoken).toEqual([text.replace(/\s+/g, " ").trim()]);
+    expect(test.spoken[0].length).toBeGreaterThan(400);
+  });
+  it("rejects an oversized paragraph instead of splitting or truncating", async () => {
+    await bot.startDiscordTtsBot();
+    expect(() => bot.queueDiscordTranscriptParagraph({ ...input, text: "a".repeat(2001) }, vi.fn())).toThrow(/2,000/);
+    expect(test.spoken).toEqual([]);
+  });
+  it("retains sentence-by-sentence live Discord text playback", async () => {
+    await bot.startDiscordTtsBot(); bot.queueDiscordTtsTest(input.text);
+    await vi.waitFor(() => expect(bot.getDiscordBotStatus().history).toHaveLength(2));
+    expect(test.spoken).toEqual(["Welcome to worship.", "We are glad you are here."]);
   });
 });

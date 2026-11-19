@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { prepareTranscriptFeed } from "../shared/discordTranscriptFeed";
 import { once } from "node:events";
 import { createBufferedOpusResource, encodeDiscordOpus, type PlaybackDiagnostics } from "./discordAudio";
 import { summarizeVoiceConnection, voiceTimeoutMessage } from "./discordVoiceDiagnostics";
@@ -131,15 +132,15 @@ export function queueDiscordTranscriptParagraph(input: { id: string; transcriptI
   if (existing) return existing;
   if (runtimeState !== "connected" || connection?.state.status !== VoiceConnectionStatus.Ready) throw new Error("Discord 봇이 Connected 상태일 때 문단을 송출할 수 있습니다.");
   if (processing || currentText || queue.length) throw new Error("현재 송출이 끝난 뒤 다음 문단을 선택해 주세요.");
-  if (!input.text.trim() || input.text.length > 12000) throw new Error("문단이 비어 있거나 너무 깁니다. 12,000자 이내 문단으로 나눠 주세요.");
-  const sentences = splitDiscordTextIntoSentences(input.text);
-  const value: ParagraphBatch = { id: input.id, transcriptId: input.transcriptId, paragraphIndex: input.paragraphIndex, status: "queued", sentenceCount: sentences.length, completedCount: 0, error: null };
+  const text = prepareTranscriptFeed(input.text);
+  // Legacy counter names remain compatible; new runs have one whole-paragraph unit.
+  const value: ParagraphBatch = { id: input.id, transcriptId: input.transcriptId, paragraphIndex: input.paragraphIndex, status: "queued", sentenceCount: 1, completedCount: 0, error: null };
   for (const [id, batch] of Array.from(paragraphBatches.entries())) {
     if (paragraphBatches.size <= 40) break;
     if (["completed", "failed", "cancelled"].includes(batch.value.status)) paragraphBatches.delete(id);
   }
   paragraphBatches.set(input.id, { value, onUpdate });
-  for (const text of sentences) queue.push({ id: randomUUID(), text, engine: null, status: "queued", latencyMs: null, error: null, errorCode: null, createdAt: new Date().toISOString(), paragraphBatchId: input.id });
+  queue.push({ id: randomUUID(), text, engine: null, status: "queued", latencyMs: null, error: null, errorCode: null, createdAt: new Date().toISOString(), paragraphBatchId: input.id });
   emitParagraphBatch(paragraphBatches.get(input.id)!);
   void processQueue();
   return { ...value };
@@ -244,7 +245,7 @@ async function playPcm(pcm: Buffer) {
   try {
     player.play(resource);
     await entersState(player, AudioPlayerStatus.Playing, 10_000);
-    await entersState(player, AudioPlayerStatus.Idle, 120_000);
+    await entersState(player, AudioPlayerStatus.Idle, Math.max(120_000, Math.ceil(pcm.length / 192_000 * 1000) + 30_000));
     if (generation !== queueGeneration) throw new Error("Discord playback was stopped");
   } finally {
     diagnostics.wallPlaybackMs = Math.round(performance.now() - begin);
@@ -259,9 +260,8 @@ async function processQueue() {
   processing = true;
   const generation = queueGeneration;
   try {
-    // Each queue item is one sentence: synthesize, convert, and play it before
-    // advancing. This preserves spoken order and prevents a long Discord
-    // message from being sent to the TTS provider as one oversized request.
+    // Live text uses sentence items; manual transcripts use one full paragraph.
+    // Complete the current synthesis/resource before advancing the queue.
     while (queue.length && runtimeState === "connected" && generation === queueGeneration) {
       const item = queue.shift()!;
       currentText = item.text;

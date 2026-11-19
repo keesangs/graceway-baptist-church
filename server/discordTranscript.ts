@@ -1,8 +1,9 @@
 import { TRPCError } from "@trpc/server";
+import { prepareTranscriptFeed } from "../shared/discordTranscriptFeed";
 import { z } from "zod";
 import { adminProcedure, router } from "./_core/trpc";
 import { deleteDiscordTranscript, getDiscordTranscript, getDiscordTranscriptRun, getLatestDiscordTranscriptRun, insertDiscordTranscript, insertDiscordTranscriptRun, listDiscordTranscripts, updateDiscordTranscriptRun } from "./db";
-import { getDiscordBotStatus, getDiscordParagraphBatch, queueDiscordTranscriptParagraph, splitDiscordTextIntoSentences, type ParagraphBatch } from "./discordBot";
+import { getDiscordBotStatus, getDiscordParagraphBatch, queueDiscordTranscriptParagraph, type ParagraphBatch } from "./discordBot";
 import { parseTranscriptText, parseTranscriptUpload, TRANSCRIPT_MAX_CHARS, TRANSCRIPT_MAX_BYTES } from "./discordTranscriptParser";
 
 // Single Reserved process: serialize admission/delete, never block audio on DB writes.
@@ -75,8 +76,10 @@ export const discordTranscriptRouter = router({
     const previousRun = await getLatestDiscordTranscriptRun(input.id, input.index);
     if (!input.replay && (previousRun || input.index < transcript.nextParagraph)) throw new TRPCError({ code: "CONFLICT", message: "이미 요청한 문단입니다. 전체 문단 재송출 확인을 선택해 주세요." });
     const state = requireIdle();
-    const text = transcript.paragraphs[input.index];
-    const sentenceCount = splitDiscordTextIntoSentences(text).length;
+    let text: string;
+    try { text = prepareTranscriptFeed(transcript.paragraphs[input.index]); }
+    catch (error) { throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "문단을 확인해 주세요." }); }
+    const sentenceCount = 1;
     const now = Date.now();
     await insertDiscordTranscriptRun({ id: input.requestId, transcriptId: input.id, paragraphIndex: input.index, status: "queued", sentenceCount, completedCount: 0, error: null, runtimeId: state.instanceId, requestedBy: ctx.user.id, createdAt: now, updatedAt: now });
     try {
