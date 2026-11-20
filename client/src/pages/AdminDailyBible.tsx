@@ -8,13 +8,14 @@ import { Trash2, Edit2, Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { DailyBibleAccessPanel } from "@/components/DailyBibleAccessPanel";
-import { useState } from "react";
+import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
 
 export default function AdminDailyBible() {
   const { user, loading } = useAuth();
   const { lang } = useLang();
+  const utils = trpc.useUtils();
 
   const [formData, setFormData] = useState({
     meditationDate: new Date().toISOString().split("T")[0],
@@ -39,6 +40,7 @@ export default function AdminDailyBible() {
   
   const createMutation = trpc.meditation.create.useMutation({
     onSuccess: () => {
+      void utils.meditation.list.invalidate();
       setMessage({ type: "success", text: lang === "ko" ? "묵상이 추가되었습니다." : "Meditation added successfully." });
       setFormData({
         meditationDate: new Date().toISOString().split("T")[0],
@@ -62,6 +64,7 @@ export default function AdminDailyBible() {
 
   const updateMutation = trpc.meditation.update.useMutation({
     onSuccess: () => {
+      void utils.meditation.list.invalidate();
       setMessage({ type: "success", text: lang === "ko" ? "묵상이 수정되었습니다." : "Meditation updated successfully." });
       setEditingId(null);
       setFormData({
@@ -305,13 +308,19 @@ export default function AdminDailyBible() {
               </label>
               <Textarea
                 id="admin-content"
+                aria-describedby="admin-content-help"
                 name="content"
-                placeholder={lang === "ko" ? "묵상 내용을 입력하세요..." : "Enter meditation content..."}
+                placeholder={lang === "ko" ? "오늘의 기도 본문을 입력하세요..." : "Enter today's prayer..."}
                 value={formData.content}
                 onChange={handleInputChange}
                 rows={6}
                 required
               />
+              <p id="admin-content-help" className="mt-2 text-xs leading-relaxed text-[#607A91]">
+                {lang === "ko"
+                  ? "이 내용은 묵상페이지의 성경 본문 다음, 묵상 나눔 바로 앞에 ‘오늘의 기도’로 표시됩니다. 줄바꿈은 그대로 유지되며, 제목은 따로 입력하지 않아도 됩니다."
+                  : "Displayed as Today's Prayer after Scripture and before Meditation Sharing. Line breaks are preserved; no separate prayer heading is needed."}
+              </p>
             </div>
 
             <fieldset className="space-y-4 border-t border-[#B7C5CD] pt-6">
@@ -334,8 +343,8 @@ export default function AdminDailyBible() {
                 <Input id="admin-title-en" name="titleEn" placeholder="Enter an English meditation title" value={formData.titleEn} onChange={handleInputChange} />
               </div>
               <div>
-                <label htmlFor="admin-content-en" className="block text-sm font-medium text-[#17324D] mb-2">Meditation reflection</label>
-                <Textarea id="admin-content-en" name="contentEn" placeholder="Enter the English meditation reflection..." value={formData.contentEn} onChange={handleInputChange} rows={6} />
+                <label htmlFor="admin-content-en" className="block text-sm font-medium text-[#17324D] mb-2">Today's Prayer (English)</label>
+                <Textarea id="admin-content-en" name="contentEn" placeholder="Enter the English prayer..." value={formData.contentEn} onChange={handleInputChange} rows={6} />
               </div>
             </fieldset>
 

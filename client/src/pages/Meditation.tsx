@@ -4,7 +4,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Copy, Check, Heart, Loader2, LogIn, LogOut, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Check, HandHeart, Heart, Loader2, LogIn, LogOut, MessageCircle, Reply, Send, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BrandAbstractVisual } from "@/components/BrandAbstractVisual";
@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
 import { clearQtBrowserCopies, EMPTY_QT_ANSWERS, isPersonalNoteQueryEnabled, resolveQtAnswersForAccount, retryPersonalNoteSave as retryPersonalNoteSaveRequest, shouldSchedulePersonalNoteSave, type QtAnswers } from "@/lib/meditationNotes";
+import { getMeditationPrayerBody } from "@/lib/meditationPrayer";
 
 function getQtStorageKey(date: string) {
   return `qt_${date}`;
@@ -398,6 +399,7 @@ export default function Meditation() {
         }
       : currentMeditation;
   const scriptures = displayMeditation ? parseScripture(displayMeditation.scriptureText) : [];
+  const prayerBody = getMeditationPrayerBody(displayMeditation?.content);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FCFAF6]">
@@ -566,6 +568,24 @@ export default function Meditation() {
                     </div>
                   ))}
                 </div>
+
+                {/* 관리자 묵상 내용: 기존 저장 내용을 오늘의 기도로 표시 */}
+                {prayerBody && (
+                  <section className="mb-8 border-t border-[#DCE4E7] pt-6" aria-labelledby="meditation-prayer-title">
+                    <div className="mb-4 flex items-center gap-2">
+                      <HandHeart className="h-5 w-5 text-[#B07834]" aria-hidden="true" />
+                      <h4 id="meditation-prayer-title" className="font-semibold text-[#163B59]">
+                        {lang === "ko" ? "오늘의 기도" : "Today's Prayer"}
+                      </h4>
+                    </div>
+                    <p
+                      lang={lang === "en" && hasEnglishContent ? "en" : "ko"}
+                      className="whitespace-pre-wrap break-words rounded-lg border-l-2 border-[#B9955E] bg-[#FBF8F3] px-4 py-5 text-base leading-8 text-[#2E3A46] sm:px-5 [overflow-wrap:anywhere]"
+                    >
+                      {prayerBody}
+                    </p>
+                  </section>
+                )}
 
                 {/* 묵상 나눔 댓글 */}
                 <section className="border-t pt-6" aria-labelledby="meditation-comments-title">
