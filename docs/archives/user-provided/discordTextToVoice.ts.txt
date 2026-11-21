@@ -1,0 +1,402 @@
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { Client, GatewayIntentBits, type Message } from "discord.js";
+import { DiscordVoiceOutput } from "./discordVoice";
+import { discordTtsControl, type TtsSettings } from "./discordTtsControl";
+
+const SOURCE_RATE = 24_000;
+const DEFAULT_REMOTE_URL = "https://api.deepinfra.com/v1/inference/Qwen/Qwen3-TTS";
+const DEFAULT_REMOTE_TIMEOUT_MS = 30_000;
+
+type ProcessResult = { stdout: Buffer; stderr: Buffer; code: number | null };
+type TtsEngine = "deepinfra-qwen" | "local-qwen" | "espeak-fallback";
+
+function runProcess(command: string, args: string[], input: Buffer | string): Promise<ProcessResult> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args);
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let settled = false;
+
+    const rejectOnce = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+
+    child.stdout.on("data", (data: Buffer) => stdout.push(data));
+    child.stderr.on("data", (data: Buffer) => stderr.push(data));
+    child.on("error", rejectOnce);
+    child.on("close", (code) => {
+      if (settled) return;
+      settled = true;
+      resolve({ stdout: Buffer.concat(stdout), stderr: Buffer.concat(stderr), code });
+    });
+    child.stdin.on("error", rejectOnce);
+    child.stdin.end(input);
+  });
+}
+
+function parseTimeout(value: string | undefined, fallback: number): number {
+  const parsed = Number(value ?? fallback);
+  return Number.isFinite(parsed) && parsed >= 1_000 ? parsed : fallback;
+}
+
+function ffmpegPath(): string {
+  return process.env.FFMPEG_PATH ?? "ffmpeg";
+}
+
+interface QwenResponse {
+  id?: string;
+  type?: string;
+  ok?: boolean;
+  wav?: string;
+  error?: string;
+}
+
+interface DeepInfraJsonResponse {
+  audio?: string;
+  wav?: string;
+  audio_base64?: string;
+  data?: string;
+  output?: string;
+  error?: string | { message?: string };
+  detail?: string;
+}
+
+function deepInfraErrorMessage(payload: DeepInfraJsonResponse): string {
+  if (typeof payload.error === "string") return payload.error;
+  if (payload.error?.message) return payload.error.message;
+  return payload.detail ?? "DeepInfra returned an error without details";
+}
+
+/**
+ * Converts a DeepInfra response into audio bytes.
+ * DeepInfra normally returns audio bytes for audio formats, but this also
+ * accepts common JSON/base64 response shapes for provider compatibility.
+ */
+async function readDeepInfraAudio(response: Response): Promise<Buffer> {
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (contentType.includes("audio/") || contentType.includes("application/octet-stream")) {
+    const audio = Buffer.from(await response.arrayBuffer());
+    if (audio.length === 0) throw new Error("DeepInfra returned empty audio");
+    return audio;
+  }
+
+  const payload = (await response.json()) as DeepInfraJsonResponse;
+  const encoded = payload.audio ?? payload.wav ?? payload.audio_base64 ?? payload.data ?? payload.output;
+  if (!encoded || typeof encoded !== "string") {
+    throw new Error(deepInfraErrorMessage(payload));
+  }
+
+  const base64 = encoded.includes(",") ? encoded.slice(encoded.indexOf(",") + 1) : encoded;
+  const audio = Buffer.from(base64, "base64");
+  if (audio.length === 0) throw new Error("DeepInfra returned empty base64 audio");
+  return audio;
+}
+
+async function synthesizeWithDeepInfra(text: string, settings: TtsSettings): Promise<Buffer> {
+  const apiKey = process.env.DEEPINFRA_API_KEY;
+  if (!apiKey) throw new Error("DEEPINFRA_API_KEY is not configured");
+
+  const url = process.env.QWEN_TTS_REMOTE_URL ?? DEFAULT_REMOTE_URL;
+  const timeoutMs = parseTimeout(process.env.QWEN_TTS_REMOTE_TIMEOUT_MS, DEFAULT_REMOTE_TIMEOUT_MS);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Accept: "audio/wav, audio/pcm, application/octet-stream, application/json",
+      },
+      body: JSON.stringify({
+        input: text,
+        voice: settings.speaker,
+        language: "English",
+        instruct: settings.instruct,
+        response_format: process.env.QWEN_TTS_REMOTE_FORMAT ?? "wav",
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`DeepInfra HTTP ${response.status}: ${body.slice(0, 300)}`);
+    }
+
+    return await readDeepInfraAudio(response);
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`DeepInfra request timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/** Persistent local Qwen3-TTS worker client. */
+class QwenTtsClient {
+  private child: ChildProcessWithoutNullStreams | undefined;
+  private buffer = "";
+  private readonly pending = new Map<string, { resolve: (response: QwenResponse) => void; reject: (error: Error) => void }>();
+  private ready: Promise<void> | undefined;
+  private unavailableUntil = 0;
+
+  async synthesize(text: string, settings: TtsSettings): Promise<Buffer> {
+    if (Date.now() < this.unavailableUntil) throw new Error("Qwen3-TTS temporarily unavailable");
+    await this.ensureStarted();
+    const id = randomUUID();
+    const response = await new Promise<QwenResponse>((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      this.child?.stdin.write(
+        `${JSON.stringify({
+          id,
+          text,
+          language: "English",
+          speaker: settings.speaker,
+          instruct: settings.instruct,
+          speed: settings.speed,
+        })}\n`,
+      );
+      setTimeout(() => {
+        if (!this.pending.has(id)) return;
+        this.pending.delete(id);
+        reject(new Error("Qwen3-TTS request timed out"));
+      }, parseTimeout(process.env.QWEN_TTS_LOCAL_TIMEOUT_MS, 45_000));
+    });
+    if (!response.ok || !response.wav) throw new Error(response.error ?? "Qwen3-TTS returned no audio");
+    return Buffer.from(response.wav, "base64");
+  }
+
+  private async ensureStarted(): Promise<void> {
+    if (this.ready) return this.ready;
+    this.ready = new Promise<void>((resolve, reject) => {
+      const python = process.env.QWEN_TTS_PYTHON ?? "/home/ubuntu/qwen3-tts-venv/bin/python";
+      const worker = process.env.QWEN_TTS_WORKER ?? new URL("./qwenTtsWorker.py", import.meta.url).pathname;
+      this.child = spawn(python, [worker], { env: process.env });
+      let settled = false;
+      const fail = (error: Error) => {
+        if (settled) return;
+        settled = true;
+        this.unavailableUntil = Date.now() + 5 * 60_000;
+        this.ready = undefined;
+        reject(error);
+      };
+
+      this.child.on("error", (error) => fail(error));
+      this.child.on("exit", (code) => {
+        if (!settled && code !== 0) fail(new Error(`Qwen3-TTS worker exited (${code ?? "unknown"})`));
+        Array.from(this.pending.values()).forEach((item) => item.reject(new Error("Qwen3-TTS worker stopped")));
+        this.pending.clear();
+        this.child = undefined;
+      });
+      this.child.stderr.on("data", (data: Buffer) => console.warn(`[qwen-tts] ${data.toString().trim()}`));
+      this.child.stdout.on("data", (data: Buffer) => {
+        this.buffer += data.toString();
+        let newline = this.buffer.indexOf("\n");
+        while (newline >= 0) {
+          const line = this.buffer.slice(0, newline);
+          this.buffer = this.buffer.slice(newline + 1);
+          newline = this.buffer.indexOf("\n");
+          try {
+            const response = JSON.parse(line) as QwenResponse;
+            if (response.type === "ready") {
+              if (!settled) {
+                settled = true;
+                resolve();
+              }
+            } else if (response.type === "fatal") {
+              fail(new Error(response.error ?? "Qwen3-TTS worker failed"));
+            } else if (response.id) {
+              this.pending.get(response.id)?.resolve(response);
+              this.pending.delete(response.id);
+            }
+          } catch (error) {
+            console.warn("[qwen-tts] invalid worker response", error instanceof Error ? error.message : error);
+          }
+        }
+      });
+      setTimeout(() => fail(new Error("Qwen3-TTS worker startup timed out")), 120_000);
+    });
+    return this.ready;
+  }
+}
+
+const qwenTts = new QwenTtsClient();
+
+async function convertWavToPcm(wav: Buffer, settings: TtsSettings): Promise<Buffer> {
+  const pcm = await runProcess(
+    ffmpegPath(),
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      "pipe:0",
+      "-af",
+      [
+        `atempo=${settings.speed}`,
+        "acompressor=threshold=-18dB:ratio=2:attack=5:release=80:makeup=2",
+        "alimiter=limit=0.95",
+      ].join(","),
+      "-f",
+      "s16le",
+      "-ar",
+      String(SOURCE_RATE),
+      "-ac",
+      "1",
+      "pipe:1",
+    ],
+    wav,
+  );
+  if (pcm.code !== 0 || pcm.stdout.length === 0) {
+    throw new Error(`TTS audio conversion failed: ${pcm.stderr.toString().slice(0, 300) || "empty PCM"}`);
+  }
+  return pcm.stdout;
+}
+
+async function synthesizeWithEspeak(text: string, settings: TtsSettings): Promise<Buffer> {
+  const espeakCommand = process.env.ESPEAK_NG_PATH ?? "espeak-ng";
+  let espeak: ProcessResult;
+  try {
+    espeak = await runProcess(
+      espeakCommand,
+      ["-v", "en-us", "-s", String(Math.round(145 * settings.speed)), "--stdin", "--stdout"],
+      text,
+    );
+  } catch (error) {
+    throw new Error(`built-in TTS executable unavailable (${espeakCommand}): ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (espeak.code !== 0) throw new Error(`built-in TTS failed: ${espeak.stderr.toString().slice(0, 200)}`);
+
+  let pcm: ProcessResult;
+  try {
+    pcm = await runProcess(
+      ffmpegPath(),
+      ["-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-f", "s16le", "-ar", String(SOURCE_RATE), "-ac", "1", "pipe:1"],
+      espeak.stdout,
+    );
+  } catch (error) {
+    throw new Error(`audio converter unavailable (${ffmpegPath()}): ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (pcm.code !== 0) throw new Error(`TTS audio conversion failed: ${pcm.stderr.toString().slice(0, 200)}`);
+  if (pcm.stdout.length === 0) throw new Error("built-in TTS returned empty PCM audio");
+  return pcm.stdout;
+}
+
+/**
+ * DeepInfra Qwen first, local Qwen second, and eSpeak last.
+ * Returns 24 kHz mono signed 16-bit PCM for DiscordVoiceOutput.
+ */
+export async function synthesizeEnglish(
+  text: string,
+  settings: TtsSettings = discordTtsControl.getSettings(),
+): Promise<Buffer> {
+  const spoken = text.replace(/https?:\/\/\S+/g, " link ").replace(/<@!?\d+>/g, " mention ").trim();
+  if (!spoken) return Buffer.alloc(0);
+
+  let remoteError = "not attempted";
+  if (discordTtsControl.isRemoteTtsEnabled()) {
+    try {
+      const wav = await synthesizeWithDeepInfra(spoken, settings);
+      const pcm = await convertWavToPcm(wav, settings);
+      console.log("[discord-text-voice] synthesized with DeepInfra Qwen3-TTS");
+      return pcm;
+    } catch (error) {
+      remoteError = error instanceof Error ? error.message : String(error);
+      console.warn("[discord-text-voice] DeepInfra Qwen3-TTS failed; trying local Qwen", remoteError);
+    }
+  }
+
+  let localError = "disabled";
+  if (process.env.QWEN_TTS_ENABLED !== "false") {
+    try {
+      const wav = await qwenTts.synthesize(spoken, settings);
+      const pcm = await convertWavToPcm(wav, settings);
+      console.log("[discord-text-voice] synthesized with local Qwen3-TTS");
+      return pcm;
+    } catch (error) {
+      localError = error instanceof Error ? error.message : String(error);
+      console.warn("[discord-text-voice] local Qwen failed; using eSpeak fallback", localError);
+    }
+  }
+
+  try {
+    const pcm = await synthesizeWithEspeak(spoken, settings);
+    console.warn("[discord-text-voice] synthesized with eSpeak fallback");
+    return pcm;
+  } catch (fallbackError) {
+    const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+    throw new Error(`All TTS engines failed. DeepInfra=${remoteError}; local Qwen=${localError}; eSpeak=${fallbackMessage}`);
+  }
+}
+
+export interface DiscordTextToVoiceConfig {
+  token: string;
+  guildId: string;
+  textChannelId: string;
+  allowedUserId: string;
+  voice: DiscordVoiceOutput;
+}
+
+/** Listens only to Kee in one text channel and speaks each message sequentially. */
+export class DiscordTextToVoiceBot {
+  private readonly client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+  private queue: Promise<void> = Promise.resolve();
+  private started = false;
+
+  constructor(private readonly config: DiscordTextToVoiceConfig) {}
+
+  async start(): Promise<void> {
+    if (this.started) return;
+    this.started = true;
+    this.client.on("messageCreate", (message) => this.handleMessage(message));
+    await this.client.login(this.config.token);
+  }
+
+  async stop(): Promise<void> {
+    await this.queue;
+    if (this.client.isReady()) await this.client.destroy();
+    this.started = false;
+  }
+
+  private handleMessage(message: Message): void {
+    if (!message.guildId || message.guildId !== this.config.guildId) return;
+    if (message.channelId !== this.config.textChannelId) return;
+    if (message.author.id !== this.config.allowedUserId || message.author.bot) return;
+    const text = message.content.trim();
+    if (!text) return;
+
+    const item = discordTtsControl.accept(text);
+    if (!item) return;
+
+    this.queue = this.queue
+      .then(async () => {
+        discordTtsControl.markPlaying(item);
+        let pcm: Buffer;
+        try {
+          pcm = await synthesizeEnglish(text, discordTtsControl.getSettings());
+        } catch (error) {
+          throw new Error(`TTS synthesis stage failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        if (pcm.length === 0) throw new Error("TTS synthesis stage returned empty audio");
+
+        try {
+          await this.config.voice.write(pcm);
+        } catch (error) {
+          throw new Error(`Discord Voice playback stage failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+
+        discordTtsControl.markCompleted(item);
+        console.log(`[discord-text-voice] spoke Kee message (${text.length} chars)`);
+      })
+      .catch((error) => {
+        discordTtsControl.markFailed(item, error);
+        console.error("[discord-text-voice] message failed", error instanceof Error ? error.message : error);
+      });
+  }
+}

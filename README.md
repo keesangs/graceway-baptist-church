@@ -6,6 +6,10 @@ Graceway Baptist Church의 공식 웹사이트 프로젝트입니다. 한글과 
 
 **Live site:** [graceway-baptist.org](https://graceway-baptist.org)
 
+## 새 채팅에서 이어서 작업하기
+
+저장소 루트의 [CLAUDE.md](CLAUDE.md)를 시작점으로 사용하세요. [현재 프로젝트 컨텍스트](docs/PROJECT_CONTEXT.md), [개발·복원 runbook](docs/operations/development-and-restoration.md), [Discord 운영 가이드](docs/operations/discord-tts.md), [산출물 목록](docs/artifacts/README.md), [프로젝트 전용 skill](.claude/skills/graceway-maintenance/SKILL.md)이 새 Claude Code 채팅의 연속성을 제공합니다. 실제 keys·private DB·외부 계정/예약 설정은 Git에 포함되지 않습니다.
+
 ## Overview
 
 이 프로젝트는 Graceway의 네이비·슬레이트·아이보리·절제된 골드 브랜드 체계를 바탕으로 제작된 반응형 웹사이트입니다. 공개 방문자는 예배와 공동체 정보를 탐색하고, 최신 설교와 찬양 영상을 시청하며, 행사·주보·갤러리를 확인할 수 있습니다. 관리자는 인증된 관리 화면에서 말씀 묵상, 행사, 주보, 사진, 문의 및 YouTube 콘텐츠 동기화를 운영합니다.
@@ -15,9 +19,10 @@ Graceway Baptist Church의 공식 웹사이트 프로젝트입니다. 한글과 
 | 공개 웹사이트 | Home, 소개, 사역, 설교, 찬양, 일정·행사, 갤러리, 묵상, 방문·문의, 미디어 |
 | 설교·찬양 | YouTube 플레이리스트 수동 동기화, 최신순 아카이브, 영상 공유, 설교 날짜·제목·본문 메타데이터 표시 |
 | 일정·주보 | 공개 행사 캘린더, 반복 일정, 유형 필터, 추천 행사 카운트다운, Google Calendar 추가, PDF 주보 미리보기·보관함 |
-| 묵상 | 날짜 탐색, 캘린더 보기, 본문·QT 질문, 댓글·답글·공감, 관리자 입력 및 양언어 콘텐츠 지원 |
+| 묵상 | 날짜 탐색, 성경 본문·오늘의 기도·나눔, 계정 연동 private QT 노트, 댓글·답글·공감, 양언어 콘텐츠 |
 | 갤러리 | 앨범·사진 공개 상태 관리, 접근 가능한 뷰어, 수동 업로드, Google Photos Picker 선택 가져오기 |
 | 관리자 운영 | 문의·구독자 목록, Daily Bible 관리, 행사 CRUD, 주보 동기화·발행, YouTube 재동기화, 갤러리 일괄 관리 |
+| Discord voice | DeepInfra Inworld, Dennis/rate1.1/temperature1.1, voice picker, 수동 transcript 문단별 한 요청 송출, buffered Opus 및 진행도 저장 |
 
 ## Technology
 
@@ -50,7 +55,11 @@ Graceway Baptist Church의 공식 웹사이트 프로젝트입니다. 한글과 
 
 ### Daily Bible Meditation
 
-`/meditation`에서 방문자는 저장된 일일 본문을 읽고 QT 질문을 작성할 수 있습니다. 로그인한 사용자는 묵상 댓글, 답글, 공감을 통해 나눔에 참여할 수 있습니다. 관리자는 `/admin/daily-bible`에서 날짜별 한글·영문 묵상 콘텐츠를 관리합니다.
+`/meditation`은 성경 본문 다음·묵상 나눔 바로 앞에 **오늘의 기도**를 표시합니다. `/admin/daily-bible`의 기존 `content`/`contentEn` 필드를 사용하며 원문·줄바꿈·언어 fallback을 유지합니다. 로그인한 사용자의 QT 노트는 계정에 private 저장되어 기기 간 연동되며, 공개 댓글·답글·공감과 분리됩니다.
+
+### Discord TTS
+
+`/admin/discord-tts` 및 관리자 voice runtime tile에서 영어 transcript를 올리거나 붙여넣고 **운영자 클릭으로 한 문단만** 보냅니다. 다음 문단은 자동 송출되지 않습니다. 실시간 Discord 텍스트는 별도 문장 pipeline을 유지합니다. 실제 송출·재시작·배포 전 [운영 가이드](docs/operations/discord-tts.md)를 확인하세요.
 
 ## Project Structure
 
@@ -87,11 +96,11 @@ Do **not** commit `.env` files, OAuth secrets, API keys, service tokens, user cr
 ### Install and Run
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-The development server starts the Express/tRPC application and Vite frontend together. Open the local preview address emitted by the development server.
+The development server starts the Express/tRPC application and Vite frontend together. Open the local preview address emitted by the development server. Follow the restoration runbook for approved development secrets; keep Discord bot autostart disabled locally to avoid a duplicate production bot.
 
 ### Quality Checks
 
@@ -122,7 +131,7 @@ When evolving the data model, keep the database schema and application code sync
 | Content | Primary management path | Notes |
 | --- | --- | --- |
 | YouTube sermons and worship | `/admin` → playlist sync | Preserve manually curated sermon metadata; do not delete source records merely to resolve public-card duplicates. |
-| Daily Bible content | `/admin/daily-bible` | Add Korean and English titles, references, passages, and reflection content. |
+| Daily Bible content | `/admin/daily-bible` | Add Korean/English titles, references, passages and prayer in existing content/contentEn. |
 | Church events | `/admin` → Events | Set visibility, event type, venue, recurrence, and bilingual copy. |
 | Weekly bulletins | `/admin` → Bulletins | Review latest Drive sync, title, visibility, and manual retry controls. |
 | Gallery albums and photos | `/admin` → Gallery | Imported Google Photos remain drafts until published. |
@@ -130,7 +139,7 @@ When evolving the data model, keep the database schema and application code sync
 
 ## Deployment
 
-The project uses managed autoscaling hosting. A saved project checkpoint records the tested code state and automatically publishes the corresponding application version. Verify public pages after a change, particularly when modifying dynamic content integrations, scheduled tasks, or browser-cached frontend code.
+The last verified production hosting mode is **Reserved** (user-approved November 18, 2026), not Autoscale. A managed project checkpoint records the tested code state and can automatically publish a new application version, temporarily affecting the persistent Discord connection. Verify fresh public assets and applicable flows after functional deployments. Git commits/pushes and documentation handoffs are distinct from deployment: do not redeploy the bot just to archive context or completion notes.
 
 ## Security and Privacy
 

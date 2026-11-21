@@ -1,0 +1,459 @@
+{
+  "manifestVersion": 1,
+  "recordedAt": "2026-11-21",
+  "publicOrigin": "https://graceway-baptist.org",
+  "scope": "Available reviewed project-owned artifacts and static public references; not private data or a platform export.",
+  "codeBaseline": "b10db9c7; GitHub main already matched before this handoff commit.",
+  "committedArtifacts": [
+    {
+      "path": ".claude/skills/graceway-maintenance/SKILL.md",
+      "byteSize": 3763,
+      "sha256": "5c516082fa0ca9aa90ebe32ca9e85e3dd631c7593322100df4a12751a33a6b09"
+    },
+    {
+      "path": "docs/archives/user-provided/README.md",
+      "byteSize": 1465,
+      "sha256": "ca51008748f0a3c5b8e74dc3b1473dfdd618ae31cea75fd2fe877c813252735f"
+    },
+    {
+      "path": "docs/archives/user-provided/discordTextToVoice.ts.txt",
+      "byteSize": 14852,
+      "sha256": "34dab9fda897619a1d15629f5cca1270345d9d571a55259d73a599ba5fb10212"
+    },
+    {
+      "path": "docs/archives/user-provided/inworld-api-reference-supplied.md",
+      "byteSize": 20079,
+      "sha256": "04ffea3359baad09872ac76a0d5ce27557d1965f105ff29c4246d82249434d7e"
+    },
+    {
+      "path": "docs/archives/user-provided/qwen3-tts-production-handoff-2026-11-17.md",
+      "byteSize": 19074,
+      "sha256": "d71a0c0b3d9d7f35569c0b91fe94cc8c2894daa809494f2b64cbb0679c24637a"
+    },
+    {
+      "path": "docs/archives/user-provided/sermon-title-evidence-2026-09-28.md",
+      "byteSize": 936,
+      "sha256": "1a2b3d6a45126d9faf619ac4d30585cc3c0d8de33c8a452e0eee7f76d526cea9"
+    },
+    {
+      "path": "docs/artifacts/branding-source-archive.json",
+      "byteSize": 3282,
+      "sha256": "3b4340355a37c49bf78136936ff131e4b9110790e78515124fbf41db9b252534"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/facebook-genuine.png",
+      "byteSize": 776,
+      "sha256": "4ac357b10245575704bf84f818d2e3da969b63832a19c242168683bbe391a31c"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/facebook-outline.png",
+      "byteSize": 622,
+      "sha256": "26131481b38526a9ef85287871ac0f48e76972cb9fa929f269f194823ad5991e"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/instagram-genuine.png",
+      "byteSize": 1613,
+      "sha256": "1f0d0f0ec8a271a9f86fce9c7f817b62eecb789389ad4cd34aaf21c5974d194b"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/instagram-outline.png",
+      "byteSize": 787,
+      "sha256": "bc44d3819e6469b636c99064ff931abf715ff29c9e81c8abf602c110ddb94c97"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/youtube-genuine.png",
+      "byteSize": 661,
+      "sha256": "d1a352d0672896299e3650459af46ba0840063623a6cec6140b56df4f9931a74"
+    },
+    {
+      "path": "docs/artifacts/newsletter-icons/youtube-outline.png",
+      "byteSize": 720,
+      "sha256": "08e45580cdcc27006227117bf931fbd353d67334b24e4d263404249c884374a5"
+    },
+    {
+      "path": "docs/benchmarks/qwen-cpu-0.6b.json",
+      "byteSize": 2154,
+      "sha256": "3ec6cdbdded55199b2aa9fa6b8c73c24e56efa0ba9a6057c8d244065b6a928fc"
+    },
+    {
+      "path": "docs/benchmarks/qwen-cpu-1.7b.json",
+      "byteSize": 2153,
+      "sha256": "2f7ad4123e5253d4d4dd858f433d54b1d957494a00d5a39bd84fb335db29ad73"
+    },
+    {
+      "path": "docs/branding/logos/README.md",
+      "byteSize": 709,
+      "sha256": "49680cc8a5bc6a6c1a9a1cc7317119de0c7aa34f05de6f22de4e19bf4d19636c"
+    },
+    {
+      "path": "docs/branding/logos/graceway-logo-dark-updated.png",
+      "byteSize": 87288,
+      "sha256": "98d94480d46fb0b72035b06275ece99cf55380feae18590b78494cceee00732d"
+    },
+    {
+      "path": "docs/branding/logos/graceway-logo-light-updated.png",
+      "byteSize": 75973,
+      "sha256": "8b4e2ae928c114392030d242fd88efde195e5170a2df946738965cecade42507"
+    },
+    {
+      "path": "scripts/artifacts/audit_handoff.py",
+      "byteSize": 2977,
+      "sha256": "bbbdcf0ff68b7294fe2a75bd2b50a7988afd02bc83fecf7d598e9d46daeb0de8"
+    },
+    {
+      "path": "scripts/artifacts/build_artifact_inventory.py",
+      "byteSize": 5732,
+      "sha256": "d3b936620a7a6bd699569d6795d86cf11f45255bcf5c913fb75820a463efef67"
+    },
+    {
+      "path": "scripts/artifacts/create_brand_newsletter_icons.py",
+      "byteSize": 1903,
+      "sha256": "fd2e4f9cf2b74d16aa74ccee6d5fff6937a26e8a7b666190c3db080ae3f78050"
+    },
+    {
+      "path": "scripts/artifacts/create_newsletter_icons_legacy.py",
+      "byteSize": 1403,
+      "sha256": "27082540f1450f159ea688357082e40c236bb60739583871e55e632a63dd5a3d"
+    },
+    {
+      "path": "scripts/artifacts/qwen_cpu_latency_benchmark.py",
+      "byteSize": 3856,
+      "sha256": "739e6c1b2223cbb5b225122ce840590d6ed4ed99af07d377552ea42e61155520"
+    },
+    {
+      "path": "scripts/artifacts/restore_public_assets.py",
+      "byteSize": 3352,
+      "sha256": "33d05780fc821605d70536b7e188b59f0550782f1934bfb10230b895e4ee76b2"
+    }
+  ],
+  "projectDocuments": [
+    "CLAUDE.md",
+    "README.md",
+    "todo.md",
+    "docs/PROJECT_CONTEXT.md",
+    "docs/archives/user-provided/README.md",
+    "docs/archives/user-provided/inworld-api-reference-supplied.md",
+    "docs/archives/user-provided/qwen3-tts-production-handoff-2026-11-17.md",
+    "docs/archives/user-provided/sermon-title-evidence-2026-09-28.md",
+    "docs/artifacts/README.md",
+    "docs/branding/banners/README.md",
+    "docs/branding/logos/README.md",
+    "docs/church-photo-gallery-implementation-plan.md",
+    "docs/google-photos-picker-403-notes.md",
+    "docs/google-workspace-nonprofit-transition.md",
+    "docs/inworld-voice-controls.md",
+    "docs/ipad-responsive-layout-verification.md",
+    "docs/meditation-likes-validation.md",
+    "docs/navbar-logo-quality-notes.md",
+    "docs/newsletter-delivery-webhook-operational-notes.md",
+    "docs/newsletter-subscription-bulletin-delivery-plan.md",
+    "docs/operations/development-and-restoration.md",
+    "docs/operations/discord-tts.md",
+    "docs/operations/environment-variables.md",
+    "docs/photo-gallery-discovery-notes.md",
+    "docs/production-domain-routing-verification.md",
+    "docs/weekly-newsletter-automation-plan.md",
+    "docs/worship-pagination-verification.md",
+    "docs/www-domain-routing-audit.md",
+    "docs/youtube-scripture-display-verification.md",
+    "docs/youtube-speaker-display-verification.md"
+  ],
+  "externalAssets": [
+    {
+      "id": "branding-source-archive",
+      "storagePath": "/manus-storage/graceway-branding-source-archive-2026-11-21_a7c4cd7e.zip",
+      "byteSize": 59161878,
+      "sha256": "76f84ff8151e8e3628ff63baaafb9d409db8c4abb7bae8cf1d4abc540f874cb0",
+      "purpose": "14 original branding/export iteration files; CONTENTS.json verifies each file.",
+      "referencedBy": [
+        "docs/artifacts/branding-source-archive.json"
+      ]
+    },
+    {
+      "id": "public-8380f66c8313",
+      "storagePath": "/manus-storage/church-event-poster.png",
+      "referencedBy": [
+        "server/events.test.ts"
+      ]
+    },
+    {
+      "id": "public-5a8c7ed50621",
+      "storagePath": "/manus-storage/church-media/image/test_abc12345.png",
+      "referencedBy": [
+        "server/media.upload.test.ts"
+      ]
+    },
+    {
+      "id": "public-a2922a91b13a",
+      "storagePath": "/manus-storage/community_worship_a9637ac3.jpg",
+      "referencedBy": [
+        "client/src/pages/Connect.tsx"
+      ]
+    },
+    {
+      "id": "public-df89a3ea892a",
+      "storagePath": "/manus-storage/event-poster.png",
+      "referencedBy": [
+        "client/src/components/AdminEventsPanel.tsx"
+      ]
+    },
+    {
+      "id": "public-9da1269f6170",
+      "storagePath": "/manus-storage/facebook-genuine_59277064.png",
+      "referencedBy": [
+        "server/weeklyNewsletterDelivery.test.ts",
+        "server/weeklyNewsletterDelivery.ts"
+      ]
+    },
+    {
+      "id": "public-2db116b0366d",
+      "storagePath": "/manus-storage/graceway-about-marble-2026_83654443.jpeg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 1746271,
+      "sha256": "d2426af49df856da993a515add0650f73720fa718e154e128c30d1ad4381d9ce",
+      "mediaType": "image/jpeg"
+    },
+    {
+      "id": "public-fe72393f6908",
+      "storagePath": "/manus-storage/graceway-about-story-riverlight-2026_b7fceaa5.png",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 6178800,
+      "sha256": "8ae2cdf76b75a0777da05fccbfc5ac6d7e3057ec7f5408571a41d722cd5e040c",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-a4fbfd28662a",
+      "storagePath": "/manus-storage/graceway-events-journey-2026_a03d3ec8.png",
+      "referencedBy": [
+        "client/src/pages/Events.tsx"
+      ]
+    },
+    {
+      "id": "public-63bf9aa59e57",
+      "storagePath": "/manus-storage/graceway-home-ribbon-2026_8b537440.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 869281,
+      "sha256": "73a2d6d0165502023cb316a7517dd9cacbf2d3fdd960f31bccfd246ff3d3e6bb",
+      "mediaType": "image/jpeg"
+    },
+    {
+      "id": "public-18a19506d1fd",
+      "storagePath": "/manus-storage/graceway-logo-dark-updated_bda9aced.png",
+      "referencedBy": [
+        "client/src/components/BrandLogo.tsx",
+        "docs/branding/logos/README.md",
+        "docs/navbar-logo-asset-manifest.json",
+        "docs/navbar-logo-quality-notes.md",
+        "server/page-assets.test.ts",
+        "server/weeklyNewsletterDelivery.test.ts",
+        "server/weeklyNewsletterDelivery.ts"
+      ]
+    },
+    {
+      "id": "public-2c52d50e8f62",
+      "storagePath": "/manus-storage/graceway-logo-icon_344928c5.png",
+      "referencedBy": [
+        "client/src/pages/Home.tsx"
+      ]
+    },
+    {
+      "id": "public-eefa4aa251ef",
+      "storagePath": "/manus-storage/graceway-logo-light-updated_e386b8f1.png",
+      "referencedBy": [
+        "client/src/components/BrandLogo.tsx",
+        "docs/branding/logos/README.md",
+        "docs/navbar-logo-asset-manifest.json",
+        "docs/navbar-logo-quality-notes.md",
+        "server/page-assets.test.ts",
+        "server/weeklyNewsletterDelivery.test.ts",
+        "server/weeklyNewsletterDelivery.ts"
+      ]
+    },
+    {
+      "id": "public-4b2f796b41a4",
+      "storagePath": "/manus-storage/graceway-ministry-campus-2026_d5a584cf.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 6860995,
+      "sha256": "1daae53ecc18c015b229de927bec188a41a7f80904a4a5e2f305e47a87541518",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-79a58a040ea9",
+      "storagePath": "/manus-storage/graceway-ministry-community-2026_f8cf29df.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 7093796,
+      "sha256": "8a46cd95ee87ab8d912de0afb2da33b428e775153dcf0d748fa4b65140f9801a",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-e7b7e667659d",
+      "storagePath": "/manus-storage/graceway-ministry-sending-2026_46e8d75b.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 6379021,
+      "sha256": "ccab349eade50c212cfd1aabf6e512092cce0e8284afba4ac28feb3f92e4de63",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-7fdbef56abdf",
+      "storagePath": "/manus-storage/graceway-ministry-word-2026_c63669a4.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 7139100,
+      "sha256": "99db166363c86cad1d218cf85076a1f65f36bb16a8d866d773918d4ce4c3952d",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-5ccc982a196d",
+      "storagePath": "/manus-storage/graceway-ministry-youth-2026_2f2ea55f.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 7049985,
+      "sha256": "b6c9660886a17a01266c074f6cb9d923acd92fda7935399252b5640befa7dfe0",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-78e69918a1d1",
+      "storagePath": "/manus-storage/graceway-renewal-style-reference_dcc4d541.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 6277281,
+      "sha256": "befaf2c137ed1c504a7beccc55bf5827c08261ea7f56012ce8552e74b1f26044",
+      "mediaType": "image/png"
+    },
+    {
+      "id": "public-86c16d80fb22",
+      "storagePath": "/manus-storage/graceway-sermons-current-2026_29c55360.jpg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 2340689,
+      "sha256": "ab60bee7212423cb66ad53de8c279da35486b44b04bbfef93adfeb1bb912098c",
+      "mediaType": "image/jpeg"
+    },
+    {
+      "id": "public-3ed776f0e8ad",
+      "storagePath": "/manus-storage/graceway-worship-current-2026_95ba9b2b.jpeg",
+      "referencedBy": [
+        "client/src/lib/brandVisualAssets.ts",
+        "docs/brand-assets-manifest.json"
+      ],
+      "byteSize": 1513034,
+      "sha256": "f8b2ac7f97ae21bf32e77271f6fa68a78f3e66885b557694b088b1b5306a74c9",
+      "mediaType": "image/jpeg"
+    },
+    {
+      "id": "public-a6739301207f",
+      "storagePath": "/manus-storage/hero_river_poster_53c7cd5e.jpg",
+      "referencedBy": [
+        "client/src/pages/Home.tsx"
+      ]
+    },
+    {
+      "id": "public-7f4f59015fe1",
+      "storagePath": "/manus-storage/hero_river_web_95c0082f.mp4",
+      "referencedBy": [
+        "client/src/pages/Home.tsx"
+      ]
+    },
+    {
+      "id": "public-50a72fa45d52",
+      "storagePath": "/manus-storage/homecoming-poster.png",
+      "referencedBy": [
+        "server/weeklyNewsletterDelivery.test.ts"
+      ]
+    },
+    {
+      "id": "public-81b561947c66",
+      "storagePath": "/manus-storage/instagram-genuine_eabc4cfb.png",
+      "referencedBy": [
+        "server/weeklyNewsletterDelivery.test.ts",
+        "server/weeklyNewsletterDelivery.ts"
+      ]
+    },
+    {
+      "id": "public-6d03ec94bf94",
+      "storagePath": "/manus-storage/pastor_hunsuk_lee_a8925cb9.webp",
+      "referencedBy": [
+        "client/src/pages/About.tsx"
+      ]
+    },
+    {
+      "id": "public-3122ff170998",
+      "storagePath": "/manus-storage/sermon_stage_0620f4b7.jpg",
+      "referencedBy": [
+        "client/src/pages/Home.tsx"
+      ]
+    },
+    {
+      "id": "public-757a00fa4870",
+      "storagePath": "/manus-storage/weekly-newsletters/2026-09-13_bulletin.pdf",
+      "referencedBy": [
+        "server/weeklyNewsletterDelivery.test.ts"
+      ]
+    },
+    {
+      "id": "public-47fbcd163ca4",
+      "storagePath": "/manus-storage/youtube-genuine_9c29fc8a.png",
+      "referencedBy": [
+        "server/weeklyNewsletterDelivery.test.ts",
+        "server/weeklyNewsletterDelivery.ts"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "category": "Credentials and sessions",
+      "reason": "Environment values, API keys, OAuth/Discord/session/webhook tokens, browser profile and shell history are not public repository artifacts."
+    },
+    {
+      "category": "Private application and mailbox data",
+      "reason": "DB dumps, member QT notes, contact/subscriber records, raw sermon transcripts, OAuth state and supplied .eml files require separate private retention."
+    },
+    {
+      "category": "Raw screenshots and tool/browser captures",
+      "reason": "Generic/timestamped pasted images and raw page/console/terminal captures may expose credentials or personal data; useful decisions and verification are summarized in project docs."
+    },
+    {
+      "category": "Platform internals",
+      "reason": "Platform-provided system instructions, internal skill library and private tool/session metadata are excluded; the repository includes an original project-specific maintenance skill."
+    },
+    {
+      "category": "Reinstallable runtime/cache/build files",
+      "reason": "node_modules, dist, virtual environments, model weights, caches and logs are not source artifacts. Qwen benchmark script/results are retained instead."
+    },
+    {
+      "category": "Large branding binaries in Git",
+      "reason": "Preserve prior ignore policy; 14 available originals/iterations are saved in the externally referenced integrity-checked source ZIP."
+    },
+    {
+      "category": "External provider state",
+      "reason": "DNS/MX, Workspace, Resend domain/webhook, Photos OAuth, scheduler identity and live Discord state require the restoration runbook, not a Git clone."
+    }
+  ],
+  "availabilityNote": "Static storage references are not guarantees of current availability. Dynamic uploaded DB/media keys are not exported. The branding ZIP and selected newsletter images are verified separately during this handoff."
+}

@@ -1,0 +1,93 @@
+{
+  "model": "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+  "device": "cpu",
+  "threads": 6,
+  "load_seconds": 6.472,
+  "results": [
+    {
+      "label": "short",
+      "run": 1,
+      "characters": 35,
+      "seconds": 11.882,
+      "sample_rate": 24000,
+      "audio_seconds": 2.48,
+      "real_time_factor": 4.79,
+      "pcm_nonempty": true
+    },
+    {
+      "label": "short",
+      "run": 2,
+      "characters": 35,
+      "seconds": 13.547,
+      "sample_rate": 24000,
+      "audio_seconds": 2.72,
+      "real_time_factor": 4.98,
+      "pcm_nonempty": true
+    },
+    {
+      "label": "medium",
+      "run": 1,
+      "characters": 69,
+      "seconds": 22.187,
+      "sample_rate": 24000,
+      "audio_seconds": 4.4,
+      "real_time_factor": 5.04,
+      "pcm_nonempty": true
+    },
+    {
+      "label": "medium",
+      "run": 2,
+      "characters": 69,
+      "seconds": 23.985,
+      "sample_rate": 24000,
+      "audio_seconds": 4.72,
+      "real_time_factor": 5.08,
+      "pcm_nonempty": true
+    },
+    {
+      "label": "long",
+      "run": 1,
+      "characters": 167,
+      "seconds": 57.888,
+      "sample_rate": 24000,
+      "audio_seconds": 11.44,
+      "real_time_factor": 5.06,
+      "pcm_nonempty": true
+    },
+    {
+      "label": "long",
+      "run": 2,
+      "characters": 167,
+      "seconds": 61.729,
+      "sample_rate": 24000,
+      "audio_seconds": 11.6,
+      "real_time_factor": 5.32,
+      "pcm_nonempty": true
+    }
+  ],
+  "summary": {
+    "short": {
+      "first_run_seconds": 11.882,
+      "warm_run_seconds": 13.547,
+      "warm_rtf": 4.98,
+      "characters": 35
+    },
+    "medium": {
+      "first_run_seconds": 22.187,
+      "warm_run_seconds": 23.985,
+      "warm_rtf": 5.08,
+      "characters": 69
+    },
+    "long": {
+      "first_run_seconds": 57.888,
+      "warm_run_seconds": 61.729,
+      "warm_rtf": 5.32,
+      "characters": 167
+    }
+  },
+  "notes": [
+    "This measures the current 6-vCPU sandbox CPU, not a 2-vCPU Cloud Computer.",
+    "First run includes model warm-up effects; warm run is the relevant steady-state comparison.",
+    "real_time_factor > 1 means synthesis is slower than real-time playback."
+  ]
+}

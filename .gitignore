@@ -118,3 +118,21 @@ docs/branding/banners/*.svg
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+
+# Public-repository handoff safety: never commit credentials/private runtime data.
+.env*
+.manus/
+.manus-logs/
+.local-data/
+backups/
+private-backups/
+*.eml
+*.dump
+*.pem
+*.key
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# Large restored branding archives stay outside the project directory.
+docs/artifacts/*.zip

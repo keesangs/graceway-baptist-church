@@ -1,0 +1,80 @@
+{
+  "archiveFilename": "graceway-branding-source-archive-2026-11-21.zip",
+  "byteSize": 59161878,
+  "sha256": "76f84ff8151e8e3628ff63baaafb9d409db8c4abb7bae8cf1d4abc540f874cb0",
+  "files": [
+    {
+      "archivePath": "graceway-banner/graceway-sunday-worship-banner-150dpi.png",
+      "byteSize": 17175260,
+      "sha256": "4d686ee19b596d418c97b281d9f2a471d2baa5e25b84e2e9bca6af150285cf7a"
+    },
+    {
+      "archivePath": "graceway-banner/graceway-sunday-worship-banner.svg",
+      "byteSize": 848201,
+      "sha256": "b50d82c955cb37d97611697946a9b37c07685ad82b3a1cf2ff753a68a8233da2"
+    },
+    {
+      "archivePath": "graceway-banner-v2/graceway-church-service-banner-150dpi.png",
+      "byteSize": 17023998,
+      "sha256": "67ff1d54c4da59a298be78faed3f3167c8c90e62b008fbf6a624a45ca3072bce"
+    },
+    {
+      "archivePath": "graceway-banner-v2/graceway-church-service-banner-63.5x38.7in.svg",
+      "byteSize": 2610688,
+      "sha256": "2637fa0ac102782ed02c55e94e0040c268b3f80d5cda56f29b18e9554eaf370a"
+    },
+    {
+      "archivePath": "upload/GracewayChurchServiceBanner.png",
+      "byteSize": 1957544,
+      "sha256": "25d5c02e4b5ab7073799d26254164a73694a920bbba68ff5035da6bfd795e1a3"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-banner-2560x1440-safe-final.png",
+      "byteSize": 3992102,
+      "sha256": "34a13dc831680a6a05abe8ff6eca68f91ea24a5a495acc1bd13930654d63c00d"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-banner-4096x1152-final.png",
+      "byteSize": 4506524,
+      "sha256": "7853836553f6b83d46b87c5c18800459f03d8219cb75f5e7fea06fbcb8e6d9e6"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-banner-4096x1152-full-decoration.png",
+      "byteSize": 3402259,
+      "sha256": "702455c3d61e5cb26c3b1b317fc9d8c428d5b1beb16168648dbfd10b0f7f164c"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-banner.png",
+      "byteSize": 4540623,
+      "sha256": "2d17b41e911aa11fb9cfcfb526f4bd8b8aa6ce4e3e7f234d3a3c59c1276185d4"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-icon-90pct-exact-original.png",
+      "byteSize": 72722,
+      "sha256": "3d8965c78c95af62ae134b952dd62c4303f163b79d46f103980e89443c4a03ba"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-icon-90pct.png",
+      "byteSize": 74141,
+      "sha256": "202b7aaadd9161c6c371c94bf4044072c6cbc36a3467a3865f783469e3f32021"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-icon-bilingual.png",
+      "byteSize": 2775318,
+      "sha256": "d94bc9643626d6ac4bdfd16cd6b51fd4b5071fdeed35eeba273b6310fad92366"
+    },
+    {
+      "archivePath": "upload/graceway-youtube-channel-icon.png",
+      "byteSize": 2457171,
+      "sha256": "5edab30deb872c37e28b178cc465240a75c14a6d0f989983aa81f52059f249e2"
+    },
+    {
+      "archivePath": "upload/한글+영문교회로고(어두운바탕용).png",
+      "byteSize": 87288,
+      "sha256": "98d94480d46fb0b72035b06275ece99cf55380feae18590b78494cceee00732d"
+    }
+  ],
+  "storagePath": "/manus-storage/graceway-branding-source-archive-2026-11-21_a7c4cd7e.zip",
+  "recordedAt": "2026-11-21",
+  "note": "External archive of 14 reviewed branding originals/iterations; no private records; preserve source filenames and per-file SHA256."
+}
